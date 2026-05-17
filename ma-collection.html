@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Ma Collection — Allosticker</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --bg: #0f0f14;
+  --surface: #18181f;
+  --card: #1e1e28;
+  --card2: #23232f;
+  --yellow: #FFD93D;
+  --orange: #FF6B35;
+  --pink: #FF3D7F;
+  --blue: #3D9BFF;
+  --green: #3DFFB0;
+  --text: #F0EFF6;
+  --muted: #8585a0;
+  --border: rgba(255,255,255,0.07);
+  --navbar-h: 68px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  min-height: 100dvh;
+  padding-bottom: calc(var(--navbar-h) + var(--safe-bottom));
+  overflow-x: hidden;
+}
+
+/* ── APPBAR ── */
+.appbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(15,15,20,0.95);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 16px;
+}
+.appbar-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.back-btn {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  color: var(--text);
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+  transition: background .2s;
+}
+.back-btn:active { background: var(--card2); }
+.appbar-title {
+  flex: 1;
+  min-width: 0;
+}
+.appbar-title h1 {
+  font-size: 16px;
+  font-weight: 900;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.appbar-title p {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 700;
+}
+.appbar-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.icon-btn {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  color: var(--muted);
+  -webkit-tap-highlight-color: transparent;
+  transition: all .2s;
+}
+.icon-btn:active { background: var(--card2); color: var(--yellow); }
+
+/* Barre de progression */
+.progress-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.progress-bar-wrap {
+  flex: 1;
+  background: var(--card);
+  border-radius: 100px;
+  height: 8px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--yellow), var(--orange));
+  border-radius: 100px;
+  transition: width .6s cubic-bezier(.34,1.56,.64,1);
+  width: 0%;
+}
+.progress-stats {
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.progress-stat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 800;
+}
+.ps-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+}
+.ps-dot.double { background: var(--orange); }
+.ps-dot.manquante { background: var(--pink); }
+.ps-dot.possedee { background: var(--green); }
+
+/* ── FILTRES STATUT ── */
+.statut-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.statut-tabs::-webkit-scrollbar { display: none; }
+
+.statut-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 100px;
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all .2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.statut-tab .tab-count {
+  background: var(--card2);
+  border-radius: 100px;
+  padding: 1px 7px;
+  font-size: 11px;
+}
+.statut-tab.active-all { background: var(--card2); border-color: rgba(255,255,255,.15); color: var(--text); }
+.statut-tab.active-double { background: rgba(255,107,53,.15); border-color: var(--orange); color: var(--orange); }
+.statut-tab.active-manquante { background: rgba(255,61,127,.15); border-color: var(--pink); color: var(--pink); }
+.statut-tab.active-possedee { background: rgba(61,255,176,.15); border-color: var(--green); color: var(--green); }
+
+/* ── SEARCH ── */
+.search-wrap {
+  padding: 10px 16px 0;
+}
+.search-inner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: 9px 14px;
+  transition: border-color .2s;
+}
+.search-inner:focus-within { border-color: rgba(255,217,61,.4); }
+.search-inner svg { color: var(--muted); flex-shrink: 0; }
+.search-inner input {
+  background: none; border: none; outline: none;
+  color: var(--text); font-family: 'Nunito', sans-serif;
+  font-size: 13px; font-weight: 700; width: 100%;
+}
+.search-inner input::placeholder { color: var(--muted); }
+
+/* ── GRILLE CARTES ── */
+.cards-section {
+  padding: 12px 16px 0;
+}
+
+/* Vue grille (défaut) */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+/* Vue liste */
+.cards-grid.list-view {
+  grid-template-columns: 1fr;
+  gap: 6px;
+}
+
+.card-item {
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 8px;
+  cursor: pointer;
+  transition: all .15s;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+  min-height: 90px;
+}
+
+/* États */
+.card-item.statut-double { border-color: var(--orange); background: rgba(255,107,53,.08); }
+.card-item.statut-manquante { border-color: var(--pink); background: rgba(255,61,127,.08); }
+.card-item.statut-possedee { border-color: var(--green); background: rgba(61,255,176,.08); }
+.card-item:active { transform: scale(.95); }
+
+.card-num {
+  font-family: 'Bangers', cursive;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: .5px;
+}
+.card-nom {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.2;
+  word-break: break-word;
+}
+.card-sg {
+  font-size: 10px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+/* Badge statut */
+.card-statut-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px;
+}
+.csb-double { background: var(--orange); }
+.csb-manquante { background: var(--pink); }
+.csb-possedee { background: var(--green); }
+
+/* Rareté */
+.card-rarete {
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.rarete-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.rarete-commune { background: var(--muted); }
+.rarete-rare { background: var(--blue); }
+.rarete-ultra_rare { background: var(--yellow); }
+.rarete-secrete { background: linear-gradient(135deg, var(--yellow), var(--pink)); }
+
+/* Vue liste styles */
+.cards-grid.list-view .card-item {
+  flex-direction: row;
+  align-items: center;
+  text-align: left;
+  padding: 12px 14px;
+  gap: 12px;
+  min-height: unset;
+}
+.cards-grid.list-view .card-num { font-size: 12px; width: 36px; flex-shrink: 0; }
+.cards-grid.list-view .card-nom { font-size: 13px; flex: 1; }
+.cards-grid.list-view .card-sg { font-size: 11px; }
+.cards-grid.list-view .card-statut-badge { position: static; margin-left: auto; }
+.cards-grid.list-view .card-rarete { display: none; }
+
+/* Actions rapides (sélection multiple) */
+.quick-actions {
+  position: fixed;
+  bottom: calc(var(--navbar-h) + 12px + var(--safe-bottom));
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  z-index: 150;
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.5);
+  transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+  white-space: nowrap;
+}
+.quick-actions.show { transform: translateX(-50%) translateY(0); }
+.qa-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+  border: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .15s;
+}
+.qa-btn:active { transform: scale(.93); }
+.qa-double { background: rgba(255,107,53,.2); color: var(--orange); }
+.qa-manquante { background: rgba(255,61,127,.2); color: var(--pink); }
+.qa-possedee { background: rgba(61,255,176,.2); color: var(--green); }
+.qa-cancel { background: var(--card); color: var(--muted); }
+.qa-count {
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--muted);
+  padding: 0 4px;
+}
+
+/* ── SKELETON ── */
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 8px;
+  padding: 12px 16px;
+}
+.skeleton {
+  background: var(--card);
+  border-radius: 12px;
+  height: 90px;
+  position: relative;
+  overflow: hidden;
+}
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.04), transparent);
+  animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
+
+/* ── NAVBAR ── */
+.navbar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 100;
+  background: rgba(15,15,20,0.96);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  padding: 10px 0 calc(10px + var(--safe-bottom));
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+.nav-item {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 4px;
+  cursor: pointer; padding: 4px 16px;
+  border-radius: 12px; transition: all .2s;
+  -webkit-tap-highlight-color: transparent;
+  text-decoration: none; color: var(--muted);
+  min-width: 60px;
+}
+.nav-item.active { color: var(--yellow); }
+.nav-item svg { width: 22px; height: 22px; stroke-width: 2; }
+.nav-item span { font-size: 10px; font-weight: 800; letter-spacing: .3px; }
+.nav-fab {
+  width: 52px; height: 52px;
+  background: var(--yellow); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; box-shadow: 0 4px 20px rgba(255,217,61,.35);
+  transition: transform .2s, box-shadow .2s;
+  margin-top: -16px; flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.nav-fab:active { transform: scale(.93); }
+.nav-fab svg { width: 24px; height: 24px; color: #0f0f14; stroke-width: 2.5; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed;
+  bottom: calc(var(--navbar-h) + 16px + var(--safe-bottom));
+  left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: 10px 20px;
+  font-size: 13px; font-weight: 800;
+  color: var(--text); white-space: nowrap;
+  opacity: 0; transition: opacity .3s, transform .3s;
+  z-index: 200; pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── EMPTY ── */
+.empty-state {
+  text-align: center; padding: 60px 32px; color: var(--muted);
+}
+.empty-state .e-emoji { font-size: 48px; margin-bottom: 16px; }
+.empty-state p { font-size: 14px; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<!-- APPBAR -->
+<div class="appbar">
+  <div class="appbar-top">
+    <div class="back-btn" onclick="history.back()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
+    </div>
+    <div class="appbar-title">
+      <h1 id="coll-nom">Chargement…</h1>
+      <p id="coll-editeur">—</p>
+    </div>
+    <div class="appbar-actions">
+      <div class="icon-btn" id="view-btn" onclick="toggleView()" title="Changer la vue">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      </div>
+      <div class="icon-btn" onclick="showToast('Partager la collection')" title="Partager">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Progression -->
+  <div class="progress-section">
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill"></div>
+    </div>
+    <div class="progress-stats">
+      <div class="progress-stat">
+        <div class="ps-dot double"></div>
+        <span id="count-double">0</span>
+      </div>
+      <div class="progress-stat">
+        <div class="ps-dot manquante"></div>
+        <span id="count-manquante">0</span>
+      </div>
+      <div class="progress-stat">
+        <div class="ps-dot possedee"></div>
+        <span id="count-possedee">0</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FILTRES STATUT -->
+<div class="statut-tabs" id="statut-tabs">
+  <div class="statut-tab active-all" data-statut="all" onclick="setStatut('all', this)">
+    Tout <span class="tab-count" id="tab-all">0</span>
+  </div>
+  <div class="statut-tab" data-statut="none" onclick="setStatut('none', this)">
+    ⬜ Non marqué <span class="tab-count" id="tab-none">0</span>
+  </div>
+  <div class="statut-tab" data-statut="double" onclick="setStatut('double', this)">
+    🟠 Doubles <span class="tab-count" id="tab-double">0</span>
+  </div>
+  <div class="statut-tab" data-statut="manquante" onclick="setStatut('manquante', this)">
+    🔴 Manquantes <span class="tab-count" id="tab-manquante">0</span>
+  </div>
+  <div class="statut-tab" data-statut="possedee" onclick="setStatut('possedee', this)">
+    🟢 Possédées <span class="tab-count" id="tab-possedee">0</span>
+  </div>
+</div>
+
+<!-- SEARCH -->
+<div class="search-wrap">
+  <div class="search-inner">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="search-input" placeholder="Rechercher une carte…" oninput="filterCards()">
+  </div>
+</div>
+
+<!-- SKELETON -->
+<div class="skeleton-grid" id="skeleton">
+  <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
+  <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
+  <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
+</div>
+
+<!-- GRILLE CARTES -->
+<div class="cards-section" id="cards-section" style="display:none">
+  <div class="cards-grid" id="cards-grid"></div>
+  <div class="empty-state" id="empty-state" style="display:none">
+    <div class="e-emoji">🔍</div>
+    <p>Aucune carte trouvée</p>
+  </div>
+</div>
+
+<!-- ACTIONS RAPIDES -->
+<div class="quick-actions" id="quick-actions">
+  <span class="qa-count" id="qa-count">0 sélectionnées</span>
+  <button class="qa-btn qa-double" onclick="bulkUpdate('double')">🟠 Double</button>
+  <button class="qa-btn qa-manquante" onclick="bulkUpdate('manquante')">🔴 Manque</button>
+  <button class="qa-btn qa-possedee" onclick="bulkUpdate('possedee')">🟢 Possédée</button>
+  <button class="qa-btn qa-cancel" onclick="clearSelection()">✕</button>
+</div>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="nav-item" onclick="showToast('Accueil')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>Accueil</span>
+  </div>
+  <div class="nav-item active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+    <span>Mes cartes</span>
+  </div>
+  <div class="nav-fab" onclick="showToast('Proposer un échange')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M7 16V4m0 0L3 8m4-4 4 4"/><path d="M17 8v12m0 0 4-4m-4 4-4-4"/></svg>
+  </div>
+  <div class="nav-item" onclick="showToast('Matchings')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+    <span>Matchs</span>
+  </div>
+  <div class="nav-item" onclick="showToast('Mon profil')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span>Profil</span>
+  </div>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const { createClient } = supabase;
+const sb = createClient(
+  'https://gyierirtxsroaqlaphax.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5aWVyaXJ0eHNyb2FxbGFwaGF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5NzE0OTQsImV4cCI6MjA5NDU0NzQ5NH0.i5YjOBIDKFdZ4QXuFvV2r8ARuJBpNJUI010H86mOn30'
+);
+
+// ── STATE ──
+// Pour la démo : slug hardcodé. En prod: params URL
+const COLLECTION_SLUG = 'pokemon-ev35-pokemon-151';
+const USER_ID = null; // null = mode démo sans auth
+
+let allCards = [];
+let userCards = {}; // card_id → statut
+let currentStatut = 'all';
+let searchQuery = '';
+let isListView = false;
+let selectedCards = new Set();
+let saving = new Set();
+
+// ── INIT ──
+async function init() {
+  await loadCollection();
+  await Promise.all([loadCards(), loadUserCards()]);
+  render();
+}
+
+async function loadCollection() {
+  const { data } = await sb.from('collections').select('nom, editeur, nb_cartes').eq('slug', COLLECTION_SLUG).single();
+  if (data) {
+    document.getElementById('coll-nom').textContent = data.nom;
+    document.getElementById('coll-editeur').textContent = data.editeur + ' · ' + data.nb_cartes + ' ' + 'éléments';
+  }
+}
+
+async function loadCards() {
+  const { data } = await sb
+    .from('cards')
+    .select('id, numero, nom, sous_groupe, rarete')
+    .eq('collection_id', `(SELECT id FROM collections WHERE slug='${COLLECTION_SLUG}')`)
+    .order('numero', { ascending: true });
+
+  // Fallback: récupérer l'id de la collection d'abord
+  const { data: col } = await sb.from('collections').select('id').eq('slug', COLLECTION_SLUG).single();
+  if (!col) return;
+
+  const { data: cards } = await sb
+    .from('cards')
+    .select('id, numero, nom, sous_groupe, rarete')
+    .eq('collection_id', col.id)
+    .order('numero', { ascending: true });
+
+  allCards = cards || [];
+}
+
+async function loadUserCards() {
+  if (!USER_ID) return; // pas d'auth = pas de données perso
+  const { data } = await sb
+    .from('user_cards')
+    .select('card_id, statut')
+    .eq('user_id', USER_ID);
+  userCards = {};
+  (data || []).forEach(uc => userCards[uc.card_id] = uc.statut);
+}
+
+// ── RENDU ──
+function render() {
+  document.getElementById('skeleton').style.display = 'none';
+  document.getElementById('cards-section').style.display = 'block';
+
+  updateStats();
+
+  let filtered = allCards;
+
+  if (currentStatut === 'none') {
+    filtered = filtered.filter(c => !userCards[c.id]);
+  } else if (currentStatut !== 'all') {
+    filtered = filtered.filter(c => userCards[c.id] === currentStatut);
+  }
+
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    filtered = filtered.filter(c =>
+      (c.nom || '').toLowerCase().includes(q) ||
+      (c.numero || '').toLowerCase().includes(q) ||
+      (c.sous_groupe || '').toLowerCase().includes(q)
+    );
+  }
+
+  const grid = document.getElementById('cards-grid');
+  const empty = document.getElementById('empty-state');
+
+  if (filtered.length === 0) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  grid.innerHTML = filtered.map(card => {
+    const statut = userCards[card.id] || null;
+    const isSelected = selectedCards.has(card.id);
+    const statutClass = statut ? `statut-${statut}` : '';
+    const selectedClass = isSelected ? 'ring-selected' : '';
+
+    const badgeHtml = statut
+      ? `<div class="card-statut-badge csb-${statut}">${statut === 'double' ? '×2' : statut === 'manquante' ? '?' : '✓'}</div>`
+      : '';
+
+    const rareteMap = { commune: 'rarete-commune', rare: 'rarete-rare', ultra_rare: 'rarete-ultra_rare', secrete: 'rarete-secrete' };
+    const rareteClass = rareteMap[card.rarete] || 'rarete-commune';
+
+    if (isListView) {
+      return `
+      <div class="card-item ${statutClass}" data-id="${card.id}" onclick="handleCardClick('${card.id}')">
+        <div class="card-num">#${card.numero}</div>
+        <div>
+          <div class="card-nom">${card.nom || 'Carte #' + card.numero}</div>
+          ${card.sous_groupe ? `<div class="card-sg">${card.sous_groupe}</div>` : ''}
+        </div>
+        ${badgeHtml}
+      </div>`;
+    }
+
+    return `
+    <div class="card-item ${statutClass}" data-id="${card.id}" onclick="handleCardClick('${card.id}')">
+      ${badgeHtml}
+      <div class="card-num">#${card.numero}</div>
+      <div class="card-nom">${card.nom || 'Carte #' + card.numero}</div>
+      ${card.sous_groupe ? `<div class="card-sg">${card.sous_groupe}</div>` : ''}
+      <div class="card-rarete"><span class="rarete-dot ${rareteClass}"></span></div>
+    </div>`;
+  }).join('');
+}
+
+function updateStats() {
+  const doubles = Object.values(userCards).filter(s => s === 'double').length;
+  const manquantes = Object.values(userCards).filter(s => s === 'manquante').length;
+  const possedees = Object.values(userCards).filter(s => s === 'possedee').length;
+  const none = allCards.length - doubles - manquantes - possedees;
+  const total = allCards.length;
+
+  document.getElementById('count-double').textContent = doubles;
+  document.getElementById('count-manquante').textContent = manquantes;
+  document.getElementById('count-possedee').textContent = possedees;
+
+  const pct = total > 0 ? Math.round((possedees + doubles) / total * 100) : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+
+  document.getElementById('tab-all').textContent = total;
+  document.getElementById('tab-none').textContent = none;
+  document.getElementById('tab-double').textContent = doubles;
+  document.getElementById('tab-manquante').textContent = manquantes;
+  document.getElementById('tab-possedee').textContent = possedees;
+}
+
+// ── INTERACTION CARTE ──
+function handleCardClick(cardId) {
+  if (selectedCards.size > 0) {
+    // Mode sélection multiple
+    if (selectedCards.has(cardId)) {
+      selectedCards.delete(cardId);
+    } else {
+      selectedCards.add(cardId);
+    }
+    updateSelection();
+    render();
+    return;
+  }
+
+  // Mode tap simple → cycle des statuts
+  const current = userCards[cardId] || null;
+  const next = current === null ? 'possedee'
+    : current === 'possedee' ? 'double'
+    : current === 'double' ? 'manquante'
+    : null;
+
+  updateCardStatut(cardId, next);
+}
+
+function handleCardLongPress(cardId) {
+  selectedCards.add(cardId);
+  updateSelection();
+  render();
+  if (navigator.vibrate) navigator.vibrate(30);
+}
+
+// Long press support
+let pressTimer;
+document.addEventListener('pointerdown', e => {
+  const card = e.target.closest('.card-item');
+  if (!card) return;
+  pressTimer = setTimeout(() => handleCardLongPress(card.dataset.id), 500);
+});
+document.addEventListener('pointerup', () => clearTimeout(pressTimer));
+document.addEventListener('pointermove', () => clearTimeout(pressTimer));
+
+async function updateCardStatut(cardId, statut) {
+  if (saving.has(cardId)) return;
+  saving.add(cardId);
+
+  // Optimistic update
+  if (statut === null) {
+    delete userCards[cardId];
+  } else {
+    userCards[cardId] = statut;
+  }
+  render();
+
+  if (USER_ID) {
+    if (statut === null) {
+      await sb.from('user_cards').delete().eq('user_id', USER_ID).eq('card_id', cardId);
+    } else {
+      await sb.from('user_cards').upsert(
+        { user_id: USER_ID, card_id: cardId, statut },
+        { onConflict: 'user_id,card_id' }
+      );
+    }
+  } else {
+    // Mode démo: juste affichage local
+    const label = statut === 'double' ? '🟠 Double' : statut === 'manquante' ? '🔴 Manquante' : statut === 'possedee' ? '🟢 Possédée' : '⬜ Effacé';
+    showToast(label + ' · Connecte-toi pour sauvegarder');
+  }
+
+  saving.delete(cardId);
+}
+
+// ── SÉLECTION MULTIPLE ──
+function updateSelection() {
+  const qa = document.getElementById('quick-actions');
+  const count = selectedCards.size;
+  document.getElementById('qa-count').textContent = `${count} sélectionnée${count > 1 ? 's' : ''}`;
+  qa.classList.toggle('show', count > 0);
+}
+
+async function bulkUpdate(statut) {
+  const ids = [...selectedCards];
+  ids.forEach(id => { userCards[id] = statut; });
+  clearSelection();
+  render();
+  showToast(`✓ ${ids.length} carte${ids.length > 1 ? 's' : ''} marquée${ids.length > 1 ? 's' : ''}`);
+
+  if (USER_ID) {
+    const rows = ids.map(id => ({ user_id: USER_ID, card_id: id, statut }));
+    await sb.from('user_cards').upsert(rows, { onConflict: 'user_id,card_id' });
+  }
+}
+
+function clearSelection() {
+  selectedCards.clear();
+  updateSelection();
+  render();
+}
+
+// ── FILTRES ──
+function setStatut(statut, el) {
+  currentStatut = statut;
+  document.querySelectorAll('.statut-tab').forEach(t => {
+    t.className = 'statut-tab';
+  });
+  const activeClass = statut === 'all' ? 'active-all'
+    : statut === 'none' ? 'active-all'
+    : `active-${statut}`;
+  el.classList.add(activeClass);
+  render();
+}
+
+function filterCards() {
+  searchQuery = document.getElementById('search-input').value;
+  render();
+}
+
+// ── VUE ──
+function toggleView() {
+  isListView = !isListView;
+  const grid = document.getElementById('cards-grid');
+  grid.classList.toggle('list-view', isListView);
+  const btn = document.getElementById('view-btn');
+  btn.innerHTML = isListView
+    ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>`
+    : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>`;
+  render();
+}
+
+// ── TOAST ──
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+init();
+</script>
+</body>
+</html>
