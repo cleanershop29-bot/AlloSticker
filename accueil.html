@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Allosticker</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --bg: #0f0f14;
+  --surface: #18181f;
+  --card: #1e1e28;
+  --card2: #23232f;
+  --yellow: #FFD93D;
+  --orange: #FF6B35;
+  --pink: #FF3D7F;
+  --blue: #3D9BFF;
+  --green: #3DFFB0;
+  --text: #F0EFF6;
+  --muted: #8585a0;
+  --border: rgba(255,255,255,0.07);
+  --navbar-h: 68px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  min-height: 100dvh;
+  padding-bottom: calc(var(--navbar-h) + var(--safe-bottom));
+  overflow-x: hidden;
+}
+
+/* ── APPBAR ── */
+.appbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(15,15,20,0.92);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 20px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.appbar-logo {
+  font-family: 'Bangers', cursive;
+  font-size: 24px;
+  letter-spacing: 1px;
+  color: var(--yellow);
+  text-shadow: 2px 2px 0 var(--orange);
+  flex-shrink: 0;
+}
+.appbar-logo span { color: var(--text); }
+
+/* Barre de recherche */
+.search-bar {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: 9px 16px;
+  transition: border-color .2s;
+}
+.search-bar:focus-within { border-color: rgba(255,217,61,.4); }
+.search-bar svg { flex-shrink: 0; color: var(--muted); }
+.search-bar input {
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  width: 100%;
+}
+.search-bar input::placeholder { color: var(--muted); }
+
+.appbar-avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--yellow), var(--orange));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 900; color: #0f0f14;
+  flex-shrink: 0; cursor: pointer;
+  border: 2px solid rgba(255,217,61,.3);
+}
+
+/* ── CONTENU PRINCIPAL ── */
+.main { padding: 0 0 24px; }
+
+/* Hero strip */
+.hero-strip {
+  margin: 16px 16px 0;
+  background: linear-gradient(135deg, #1e1e28, #23232f);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.hero-strip::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 0% 50%, rgba(255,217,61,.08), transparent 60%);
+  pointer-events: none;
+}
+.hero-strip-text h2 {
+  font-family: 'Bangers', cursive;
+  font-size: 26px;
+  letter-spacing: 1px;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.hero-strip-text h2 span { color: var(--yellow); }
+.hero-strip-text p {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 700;
+  line-height: 1.4;
+}
+.hero-strip-cards {
+  display: flex;
+  gap: -8px;
+  flex-shrink: 0;
+}
+.mini-card {
+  width: 44px; height: 60px;
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  margin-left: -10px;
+  border: 2px solid var(--bg);
+  box-shadow: -4px 4px 12px rgba(0,0,0,.4);
+}
+.mini-card:first-child { margin-left: 0; }
+.mc1 { background: linear-gradient(135deg,#1a3a6e,#2a5cad); transform: rotate(-8deg); }
+.mc2 { background: linear-gradient(135deg,#6e1a1a,#ad2a2a); transform: rotate(-2deg); }
+.mc3 { background: linear-gradient(135deg,#1a5c3a,#2aad5c); transform: rotate(6deg); }
+
+/* ── FILTRES CATÉGORIES ── */
+.cats-scroll {
+  display: flex;
+  gap: 8px;
+  padding: 16px 16px 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.cats-scroll::-webkit-scrollbar { display: none; }
+
+.cat-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: 100px;
+  padding: 7px 14px;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .2s;
+  flex-shrink: 0;
+}
+.cat-chip.active {
+  background: var(--yellow);
+  border-color: var(--yellow);
+  color: #0f0f14;
+}
+.cat-chip:not(.active):hover {
+  border-color: rgba(255,217,61,.3);
+  color: var(--text);
+}
+.cat-chip .cat-emoji { font-size: 16px; }
+
+/* ── SECTION TITRE ── */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 16px 12px;
+}
+.section-title {
+  font-family: 'Bangers', cursive;
+  font-size: 22px;
+  letter-spacing: 1px;
+}
+.section-count {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 700;
+  background: var(--card);
+  padding: 4px 10px;
+  border-radius: 100px;
+  border: 1px solid var(--border);
+}
+
+/* ── GRILLE COLLECTIONS ── */
+.collections-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  padding: 0 16px;
+}
+
+.coll-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  cursor: pointer;
+  transition: transform .2s, border-color .2s, box-shadow .2s;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  -webkit-tap-highlight-color: transparent;
+}
+.coll-card:active { transform: scale(.97); }
+.coll-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle at 0% 0%, rgba(255,217,61,.04), transparent 60%);
+  pointer-events: none;
+}
+.coll-card:hover {
+  border-color: rgba(255,217,61,.25);
+  box-shadow: 0 8px 24px rgba(0,0,0,.3);
+}
+
+.coll-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.coll-emoji-wrap {
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px;
+  flex-shrink: 0;
+}
+
+.coll-type-badge {
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  padding: 3px 8px;
+  border-radius: 100px;
+}
+.badge-stickers { background: rgba(255,217,61,.15); color: var(--yellow); }
+.badge-cartes { background: rgba(61,155,255,.15); color: var(--blue); }
+
+.coll-nom {
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.3;
+  color: var(--text);
+}
+.coll-editeur {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.coll-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+.coll-nb {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 700;
+}
+.coll-nb strong { color: var(--text); }
+.coll-arrow {
+  width: 24px; height: 24px;
+  background: rgba(255,217,61,.1);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--yellow);
+  font-size: 12px;
+}
+
+/* Annee badge */
+.coll-annee {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 10px;
+  font-weight: 900;
+  color: var(--muted);
+  background: var(--card2);
+  padding: 2px 7px;
+  border-radius: 100px;
+  border: 1px solid var(--border);
+}
+
+/* ── LOADER ── */
+.loader-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  padding: 0 16px;
+}
+.skeleton {
+  background: var(--card);
+  border-radius: 16px;
+  height: 150px;
+  position: relative;
+  overflow: hidden;
+}
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.04), transparent);
+  animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* ── EMPTY STATE ── */
+.empty-state {
+  text-align: center;
+  padding: 60px 32px;
+  color: var(--muted);
+}
+.empty-state .empty-emoji { font-size: 48px; margin-bottom: 16px; }
+.empty-state p { font-size: 14px; font-weight: 700; }
+
+/* ── BOTTOM NAVBAR ── */
+.navbar {
+  position: fixed;
+  bottom: 0;
+  left: 0; right: 0;
+  z-index: 100;
+  background: rgba(15,15,20,0.96);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  padding: 10px 0 calc(10px + var(--safe-bottom));
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 4px 16px;
+  border-radius: 12px;
+  transition: all .2s;
+  -webkit-tap-highlight-color: transparent;
+  text-decoration: none;
+  color: var(--muted);
+  min-width: 60px;
+}
+.nav-item.active { color: var(--yellow); }
+.nav-item svg { width: 22px; height: 22px; stroke-width: 2; }
+.nav-item span {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .3px;
+}
+
+/* FAB central */
+.nav-fab {
+  width: 52px; height: 52px;
+  background: var(--yellow);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(255,217,61,.35);
+  transition: transform .2s, box-shadow .2s;
+  margin-top: -16px;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.nav-fab:active { transform: scale(.93); box-shadow: 0 2px 10px rgba(255,217,61,.2); }
+.nav-fab svg { width: 24px; height: 24px; color: #0f0f14; stroke-width: 2.5; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed;
+  bottom: calc(var(--navbar-h) + 16px + var(--safe-bottom));
+  left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity .3s, transform .3s;
+  z-index: 200;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* Scroll reveal */
+.reveal { opacity: 0; transform: translateY(16px); transition: opacity .4s ease, transform .4s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- APPBAR -->
+<div class="appbar">
+  <div class="appbar-logo">Allo<span>sticker</span></div>
+  <div class="search-bar">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="search-input" placeholder="Rechercher une collection…" oninput="filterCollections()">
+  </div>
+  <div class="appbar-avatar" id="avatar-btn">J</div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- Hero -->
+  <div class="hero-strip reveal">
+    <div class="hero-strip-text">
+      <h2>Trouve tes<br><span>manquants</span> 🎯</h2>
+      <p>Échange avec des<br>collectors près de toi</p>
+    </div>
+    <div class="hero-strip-cards">
+      <div class="mini-card mc1">⚽</div>
+      <div class="mini-card mc2">🃏</div>
+      <div class="mini-card mc3">🏀</div>
+    </div>
+  </div>
+
+  <!-- Filtres catégories -->
+  <div class="cats-scroll" id="cats-scroll">
+    <div class="cat-chip active" data-cat="all" onclick="setCat('all', this)">
+      <span class="cat-emoji">🌟</span> Tout
+    </div>
+    <div class="cat-chip" data-cat="foot" onclick="setCat('foot', this)">
+      <span class="cat-emoji">⚽</span> Foot
+    </div>
+    <div class="cat-chip" data-cat="pokemon" onclick="setCat('pokemon', this)">
+      <span class="cat-emoji">🃏</span> Pokémon
+    </div>
+    <div class="cat-chip" data-cat="manga" onclick="setCat('manga', this)">
+      <span class="cat-emoji">⚔️</span> Manga
+    </div>
+    <div class="cat-chip" data-cat="basketball" onclick="setCat('basketball', this)">
+      <span class="cat-emoji">🏀</span> Basketball
+    </div>
+    <div class="cat-chip" data-cat="f1" onclick="setCat('f1', this)">
+      <span class="cat-emoji">🏎️</span> F1
+    </div>
+    <div class="cat-chip" data-cat="rugby" onclick="setCat('rugby', this)">
+      <span class="cat-emoji">🏉</span> Rugby
+    </div>
+    <div class="cat-chip" data-cat="jeu_cartes" onclick="setCat('jeu_cartes', this)">
+      <span class="cat-emoji">🎴</span> Jeux
+    </div>
+    <div class="cat-chip" data-cat="football_americain" onclick="setCat('football_americain', this)">
+      <span class="cat-emoji">🏈</span> NFL
+    </div>
+    <div class="cat-chip" data-cat="baseball" onclick="setCat('baseball', this)">
+      <span class="cat-emoji">⚾</span> Baseball
+    </div>
+    <div class="cat-chip" data-cat="comics" onclick="setCat('comics', this)">
+      <span class="cat-emoji">💥</span> Comics
+    </div>
+    <div class="cat-chip" data-cat="disney" onclick="setCat('disney', this)">
+      <span class="cat-emoji">✨</span> Disney
+    </div>
+    <div class="cat-chip" data-cat="catch" onclick="setCat('catch', this)">
+      <span class="cat-emoji">🥊</span> Catch
+    </div>
+  </div>
+
+  <!-- Section header -->
+  <div class="section-header">
+    <div class="section-title" id="section-title">Toutes les collections</div>
+    <div class="section-count" id="section-count">—</div>
+  </div>
+
+  <!-- Loader -->
+  <div class="loader-grid" id="loader">
+    <div class="skeleton"></div>
+    <div class="skeleton"></div>
+    <div class="skeleton"></div>
+    <div class="skeleton"></div>
+  </div>
+
+  <!-- Grille collections -->
+  <div class="collections-grid" id="collections-grid" style="display:none"></div>
+
+  <!-- Empty state -->
+  <div class="empty-state" id="empty-state" style="display:none">
+    <div class="empty-emoji">🔍</div>
+    <p>Aucune collection trouvée</p>
+  </div>
+
+</div>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="nav-item active" onclick="showToast('Accueil')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>Accueil</span>
+  </div>
+  <div class="nav-item" onclick="showToast('Mes collections')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+    <span>Mes cartes</span>
+  </div>
+  <div class="nav-fab" onclick="showToast('Proposer un échange')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M7 16V4m0 0L3 8m4-4 4 4"/><path d="M17 8v12m0 0 4-4m-4 4-4-4"/></svg>
+  </div>
+  <div class="nav-item" onclick="showToast('Matchings')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+    <span>Matchs</span>
+  </div>
+  <div class="nav-item" onclick="showToast('Mon profil')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span>Profil</span>
+  </div>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const { createClient } = supabase;
+const sb = createClient(
+  'https://gyierirtxsroaqlaphax.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5aWVyaXJ0eHNyb2FxbGFwaGF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5NzE0OTQsImV4cCI6MjA5NDU0NzQ5NH0.i5YjOBIDKFdZ4QXuFvV2r8ARuJBpNJUI010H86mOn30'
+);
+
+// ── STATE ──
+let allCollections = [];
+let currentCat = 'all';
+let searchQuery = '';
+
+// ── EMOJIS PAR CATÉGORIE ──
+const CAT_EMOJI = {
+  foot: '⚽', pokemon: '🃏', manga: '⚔️', basketball: '🏀',
+  f1: '🏎️', rugby: '🏉', jeu_cartes: '🎴', football_americain: '🏈',
+  baseball: '⚾', comics: '💥', disney: '✨', catch: '🥊',
+  cinema: '🎬', nature: '🌿', tennis: '🎾'
+};
+
+const CAT_COLORS = {
+  foot: ['#1a3a6e','#2a5cad'],
+  pokemon: ['#c8a800','#f5d000'],
+  manga: ['#6e1a1a','#ad2a2a'],
+  basketball: ['#8b4513','#c25c1a'],
+  f1: ['#1a1a6e','#2a2aad'],
+  rugby: ['#3a1a6e','#5c2aad'],
+  jeu_cartes: ['#1a5c3a','#2aad5c'],
+  football_americain: ['#3a4a1a','#5c7a2a'],
+  baseball: ['#4a1a1a','#7a2a2a'],
+  comics: ['#6e3a1a','#ad5c2a'],
+  disney: ['#1a4a6e','#2a7aad'],
+  catch: ['#4a1a4a','#7a2a7a'],
+  cinema: ['#2a1a4a','#4a2a7a'],
+  nature: ['#1a4a1a','#2a7a2a'],
+};
+
+// ── CHARGEMENT ──
+async function loadCollections() {
+  const { data, error } = await sb
+    .from('collections')
+    .select('id, slug, nom, editeur, categorie, sous_categorie, annee, nb_cartes, type, description')
+    .order('annee', { ascending: false });
+
+  if (error) { console.error(error); return; }
+  allCollections = data || [];
+  renderCollections();
+}
+
+// ── RENDU ──
+function renderCollections() {
+  const grid = document.getElementById('collections-grid');
+  const loader = document.getElementById('loader');
+  const empty = document.getElementById('empty-state');
+  const count = document.getElementById('section-count');
+
+  let filtered = allCollections;
+
+  if (currentCat !== 'all') {
+    filtered = filtered.filter(c => c.categorie === currentCat);
+  }
+
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    filtered = filtered.filter(c =>
+      c.nom.toLowerCase().includes(q) ||
+      c.editeur.toLowerCase().includes(q) ||
+      (c.description || '').toLowerCase().includes(q)
+    );
+  }
+
+  loader.style.display = 'none';
+  count.textContent = `${filtered.length} collection${filtered.length > 1 ? 's' : ''}`;
+
+  if (filtered.length === 0) {
+    grid.style.display = 'none';
+    empty.style.display = 'block';
+    return;
+  }
+
+  empty.style.display = 'none';
+  grid.style.display = 'grid';
+
+  grid.innerHTML = filtered.map((c, i) => {
+    const emoji = CAT_EMOJI[c.categorie] || '🃏';
+    const colors = CAT_COLORS[c.categorie] || ['#1e1e28','#23232f'];
+    const badgeClass = c.type === 'stickers' ? 'badge-stickers' : 'badge-cartes';
+    const badgeLabel = c.type === 'stickers' ? 'Stickers' : 'Cartes';
+
+    return `
+    <div class="coll-card reveal" style="animation-delay:${i * 30}ms" onclick="openCollection('${c.slug}', '${c.nom.replace(/'/g,"\\'")}')">
+      <div class="coll-annee">${c.annee || ''}</div>
+      <div class="coll-card-top">
+        <div class="coll-emoji-wrap" style="background:linear-gradient(135deg,${colors[0]},${colors[1]})">
+          ${emoji}
+        </div>
+        <div class="coll-type-badge ${badgeClass}">${badgeLabel}</div>
+      </div>
+      <div>
+        <div class="coll-nom">${c.nom}</div>
+        <div class="coll-editeur">${c.editeur}</div>
+      </div>
+      <div class="coll-footer">
+        <div class="coll-nb"><strong>${c.nb_cartes}</strong> ${c.type === 'stickers' ? 'stickers' : 'cartes'}</div>
+        <div class="coll-arrow">→</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Scroll reveal
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.coll-card.reveal').forEach((el, i) => {
+      setTimeout(() => el.classList.add('visible'), i * 30);
+    });
+  });
+}
+
+// ── FILTRES ──
+function setCat(cat, el) {
+  currentCat = cat;
+  document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+
+  const labels = {
+    all: 'Toutes les collections', foot: 'Football', pokemon: 'Pokémon',
+    manga: 'Manga & Anime', basketball: 'Basketball', f1: 'Formule 1',
+    rugby: 'Rugby', jeu_cartes: 'Jeux de cartes', football_americain: 'Football américain',
+    baseball: 'Baseball', comics: 'Comics', disney: 'Disney', catch: 'Catch'
+  };
+  document.getElementById('section-title').textContent = labels[cat] || cat;
+  renderCollections();
+}
+
+function filterCollections() {
+  searchQuery = document.getElementById('search-input').value;
+  renderCollections();
+}
+
+// ── OPEN COLLECTION ──
+function openCollection(slug, nom) {
+  showToast(`📂 ${nom}`);
+  // → navigation vers l'écran collection (prochain écran)
+}
+
+// ── TOAST ──
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ── SCROLL REVEAL initial ──
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: .1 });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+// ── INIT ──
+loadCollections();
+</script>
+</body>
+</html>
