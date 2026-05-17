@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Matchings — Allosticker</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --bg: #0f0f14;
+  --surface: #18181f;
+  --card: #1e1e28;
+  --card2: #23232f;
+  --yellow: #FFD93D;
+  --orange: #FF6B35;
+  --pink: #FF3D7F;
+  --blue: #3D9BFF;
+  --green: #3DFFB0;
+  --text: #F0EFF6;
+  --muted: #8585a0;
+  --border: rgba(255,255,255,0.07);
+  --navbar-h: 68px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  min-height: 100dvh;
+  padding-bottom: calc(var(--navbar-h) + var(--safe-bottom));
+  overflow-x: hidden;
+}
+
+/* ── APPBAR ── */
+.appbar {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(15,15,20,0.95);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 16px 12px;
+}
+.appbar-row {
+  display: flex; align-items: center;
+  justify-content: space-between; gap: 12px;
+}
+.appbar-logo {
+  font-family: 'Bangers', cursive;
+  font-size: 22px; letter-spacing: 1px;
+  color: var(--yellow); text-shadow: 2px 2px 0 var(--orange);
+}
+.appbar-logo span { color: var(--text); }
+.appbar-title {
+  font-family: 'Bangers', cursive;
+  font-size: 22px; letter-spacing: 1px; color: var(--text);
+}
+.match-badge {
+  background: var(--yellow); color: #0f0f14;
+  font-size: 11px; font-weight: 900;
+  padding: 3px 10px; border-radius: 100px;
+}
+
+/* ── FILTRES ── */
+.filter-row {
+  display: flex; gap: 8px;
+  padding: 12px 16px 0;
+  overflow-x: auto; scrollbar-width: none;
+}
+.filter-row::-webkit-scrollbar { display: none; }
+.filter-chip {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--card); border: 1.5px solid var(--border);
+  border-radius: 100px; padding: 7px 14px;
+  white-space: nowrap; font-size: 12px; font-weight: 800;
+  color: var(--muted); cursor: pointer;
+  transition: all .2s; flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.filter-chip.active {
+  background: rgba(255,217,61,.15);
+  border-color: var(--yellow); color: var(--yellow);
+}
+
+/* ── SECTION HEADER ── */
+.section-hdr {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px 8px;
+}
+.section-hdr h2 {
+  font-family: 'Bangers', cursive;
+  font-size: 20px; letter-spacing: 1px;
+}
+.section-hdr p { font-size: 12px; color: var(--muted); font-weight: 700; }
+
+/* ── MATCH CARDS ── */
+.matches-list {
+  display: flex; flex-direction: column;
+  gap: 12px; padding: 0 16px;
+}
+
+.match-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  overflow: hidden;
+  transition: transform .2s, border-color .2s;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+}
+.match-card:active { transform: scale(.98); }
+.match-card:hover { border-color: rgba(255,217,61,.2); }
+
+/* En-tête utilisateur */
+.match-user {
+  display: flex; align-items: center;
+  gap: 12px; padding: 14px 16px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.user-avatar {
+  width: 42px; height: 42px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 900; color: #0f0f14;
+  flex-shrink: 0; position: relative;
+}
+.user-avatar-ring {
+  position: absolute; inset: -2px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+}
+.user-info { flex: 1; min-width: 0; }
+.user-nom {
+  font-size: 15px; font-weight: 900;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.user-meta {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 2px;
+}
+.user-ville {
+  font-size: 11px; color: var(--muted); font-weight: 700;
+  display: flex; align-items: center; gap: 3px;
+}
+.user-rep {
+  font-size: 11px; font-weight: 900;
+  color: var(--yellow); display: flex; align-items: center; gap: 2px;
+}
+.user-echanges {
+  font-size: 11px; color: var(--muted); font-weight: 700;
+}
+
+/* Score de match */
+.match-score-wrap {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
+}
+.match-score {
+  font-family: 'Bangers', cursive;
+  font-size: 28px; letter-spacing: 1px; line-height: 1;
+}
+.match-score-label {
+  font-size: 10px; font-weight: 900; color: var(--muted); text-transform: uppercase;
+}
+
+/* Corps du match — cartes échangeables */
+.match-body { padding: 12px 16px; }
+
+.exchange-row {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+}
+.exchange-row:last-child { margin-bottom: 0; }
+
+.ex-label {
+  font-size: 10px; font-weight: 900; text-transform: uppercase;
+  letter-spacing: .5px; flex-shrink: 0; width: 56px;
+}
+.ex-label.give { color: var(--orange); }
+.ex-label.get  { color: var(--green); }
+
+.ex-cards {
+  display: flex; gap: 6px; flex: 1;
+  overflow-x: auto; scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.ex-cards::-webkit-scrollbar { display: none; }
+
+.ex-card-pill {
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: 4px 10px;
+  font-size: 11px; font-weight: 800;
+  white-space: nowrap; flex-shrink: 0;
+  color: var(--text);
+}
+.ex-card-pill.give { border-color: rgba(255,107,53,.3); color: var(--orange); background: rgba(255,107,53,.08); }
+.ex-card-pill.get  { border-color: rgba(61,255,176,.3); color: var(--green); background: rgba(61,255,176,.08); }
+.ex-more {
+  font-size: 11px; font-weight: 800;
+  color: var(--muted); flex-shrink: 0;
+  padding: 4px 6px;
+}
+
+/* Footer du match */
+.match-footer {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px 14px;
+  border-top: 1px solid var(--border);
+}
+.match-collection {
+  display: flex; align-items: center; gap: 6px;
+}
+.match-coll-emoji { font-size: 16px; }
+.match-coll-nom { font-size: 12px; font-weight: 800; color: var(--muted); }
+
+.propose-btn {
+  background: var(--yellow);
+  color: #0f0f14; border: none;
+  font-family: 'Nunito', sans-serif;
+  font-size: 12px; font-weight: 900;
+  padding: 8px 16px; border-radius: 100px;
+  cursor: pointer; transition: transform .15s, box-shadow .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.propose-btn:active { transform: scale(.93); box-shadow: none; }
+
+/* ── DISTANCE BADGE ── */
+.distance-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: rgba(61,155,255,.12);
+  border: 1px solid rgba(61,155,255,.25);
+  border-radius: 100px;
+  padding: 3px 8px;
+  font-size: 10px; font-weight: 900; color: var(--blue);
+}
+
+/* ── EMPTY / DEMO STATES ── */
+.demo-banner {
+  margin: 12px 16px 0;
+  background: rgba(255,217,61,.08);
+  border: 1px solid rgba(255,217,61,.2);
+  border-radius: 14px;
+  padding: 12px 16px;
+  display: flex; align-items: center; gap: 10px;
+}
+.demo-banner p { font-size: 12px; font-weight: 700; color: var(--muted); }
+.demo-banner strong { color: var(--yellow); }
+.demo-banner .demo-icon { font-size: 20px; flex-shrink: 0; }
+
+.empty-state {
+  text-align: center; padding: 80px 32px;
+}
+.empty-state .e-emoji { font-size: 56px; margin-bottom: 16px; }
+.empty-state h3 { font-family: 'Bangers', cursive; font-size: 24px; letter-spacing: 1px; margin-bottom: 8px; }
+.empty-state p { font-size: 13px; color: var(--muted); font-weight: 700; line-height: 1.6; }
+
+/* ── SKELETON ── */
+.skeleton-list { display: flex; flex-direction: column; gap: 12px; padding: 0 16px; }
+.skeleton {
+  background: var(--card); border-radius: 20px; height: 180px;
+  position: relative; overflow: hidden;
+}
+.skeleton::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.04), transparent);
+  animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
+
+/* ── NAVBAR ── */
+.navbar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(15,15,20,0.96); backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  padding: 10px 0 calc(10px + var(--safe-bottom));
+  display: flex; align-items: center; justify-content: space-around;
+}
+.nav-item {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 4px; cursor: pointer; padding: 4px 16px;
+  border-radius: 12px; transition: all .2s;
+  -webkit-tap-highlight-color: transparent;
+  text-decoration: none; color: var(--muted); min-width: 60px;
+}
+.nav-item.active { color: var(--yellow); }
+.nav-item svg { width: 22px; height: 22px; stroke-width: 2; }
+.nav-item span { font-size: 10px; font-weight: 800; letter-spacing: .3px; }
+.nav-fab {
+  width: 52px; height: 52px; background: var(--yellow);
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; box-shadow: 0 4px 20px rgba(255,217,61,.35);
+  transition: transform .2s; margin-top: -16px; flex-shrink: 0;
+}
+.nav-fab:active { transform: scale(.93); }
+.nav-fab svg { width: 24px; height: 24px; color: #0f0f14; stroke-width: 2.5; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed;
+  bottom: calc(var(--navbar-h) + 16px + var(--safe-bottom));
+  left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--card2); border: 1px solid var(--border);
+  border-radius: 100px; padding: 10px 20px;
+  font-size: 13px; font-weight: 800; color: var(--text);
+  white-space: nowrap; opacity: 0;
+  transition: opacity .3s, transform .3s;
+  z-index: 200; pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* Reveal */
+.reveal { opacity: 0; transform: translateY(16px); transition: opacity .4s, transform .4s; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- APPBAR -->
+<div class="appbar">
+  <div class="appbar-row">
+    <div class="appbar-logo">Allo<span>sticker</span></div>
+    <div class="appbar-title">Mes Matchs</div>
+    <div class="match-badge" id="match-total">0 match</div>
+  </div>
+</div>
+
+<!-- FILTRES -->
+<div class="filter-row">
+  <div class="filter-chip active" data-f="all" onclick="setFilter('all',this)">🌟 Tous</div>
+  <div class="filter-chip" data-f="foot" onclick="setFilter('foot',this)">⚽ Foot</div>
+  <div class="filter-chip" data-f="pokemon" onclick="setFilter('pokemon',this)">🃏 Pokémon</div>
+  <div class="filter-chip" data-f="manga" onclick="setFilter('manga',this)">⚔️ Manga</div>
+  <div class="filter-chip" data-f="basketball" onclick="setFilter('basketball',this)">🏀 Basketball</div>
+  <div class="filter-chip" data-f="proche" onclick="setFilter('proche',this)">📍 Près de moi</div>
+</div>
+
+<!-- DEMO BANNER -->
+<div class="demo-banner">
+  <div class="demo-icon">🔑</div>
+  <p><strong>Mode démo</strong> — Connecte-toi pour voir tes vrais matchs avec d'autres collectionneurs.</p>
+</div>
+
+<!-- SECTION -->
+<div class="section-hdr">
+  <div>
+    <h2>Échanges possibles</h2>
+    <p id="section-sub">Chargement…</p>
+  </div>
+</div>
+
+<!-- SKELETON -->
+<div class="skeleton-list" id="skeleton">
+  <div class="skeleton"></div>
+  <div class="skeleton"></div>
+  <div class="skeleton"></div>
+</div>
+
+<!-- LISTE MATCHS -->
+<div class="matches-list" id="matches-list" style="display:none"></div>
+
+<!-- EMPTY -->
+<div class="empty-state" id="empty-state" style="display:none">
+  <div class="e-emoji">🎯</div>
+  <h3>Aucun match pour l'instant</h3>
+  <p>Marque tes doubles et tes manquants<br>dans tes collections pour trouver<br>des partenaires d'échange.</p>
+</div>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="nav-item" onclick="showToast('Accueil')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>Accueil</span>
+  </div>
+  <div class="nav-item" onclick="showToast('Mes collections')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+    <span>Mes cartes</span>
+  </div>
+  <div class="nav-fab" onclick="showToast('Proposer un échange')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M7 16V4m0 0L3 8m4-4 4 4"/><path d="M17 8v12m0 0 4-4m-4 4-4-4"/></svg>
+  </div>
+  <div class="nav-item active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+    <span>Matchs</span>
+  </div>
+  <div class="nav-item" onclick="showToast('Mon profil')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span>Profil</span>
+  </div>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const { createClient } = supabase;
+const sb = createClient(
+  'https://gyierirtxsroaqlaphax.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5aWVyaXJ0eHNyb2FxbGFwaGF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5NzE0OTQsImV4cCI6MjA5NDU0NzQ5NH0.i5YjOBIDKFdZ4QXuFvV2r8ARuJBpNJUI010H86mOn30'
+);
+
+// ── DONNÉES DEMO ──
+// En prod ces données viennent de la vue `matches` + profiles
+const DEMO_MATCHES = [
+  {
+    id: 1,
+    user: { nom: "Thomas R.", initiales: "TR", ville: "Paris 11e", reputation: 4.9, nb_echanges: 23, distance: "2 km", color: ["#1a3a6e","#2a5cad"] },
+    collection: { nom: "Pokémon 151", emoji: "🃏", categorie: "pokemon" },
+    score: 8,
+    je_donne: ["Pikachu #25","Mewtwo #150","Dracaufeu #6"],
+    je_recois: ["Evoli #133","Mew #151","Alakazam #65","Leviator #130"],
+  },
+  {
+    id: 2,
+    user: { nom: "Léa M.", initiales: "LM", ville: "Lyon 6e", reputation: 5.0, nb_echanges: 47, distance: "12 km", color: ["#6e1a1a","#ad2a2a"] },
+    collection: { nom: "Panini Ligue 1 2024-25", emoji: "⚽", categorie: "foot" },
+    score: 5,
+    je_donne: ["Mbappé #L1-009","David #L1-031"],
+    je_recois: ["Donnarumma #L1-001","Zaire-Emery #L1-007","Barcola #L1-010"],
+  },
+  {
+    id: 3,
+    user: { nom: "Marc D.", initiales: "MD", ville: "Bordeaux", reputation: 4.7, nb_echanges: 12, distance: "38 km", color: ["#1a5c3a","#2aad5c"] },
+    collection: { nom: "One Piece OP-01", emoji: "⚔️", categorie: "manga" },
+    score: 6,
+    je_donne: ["Shanks #OP01-012","Mihawk #OP01-022","Ace #OP01-017"],
+    je_recois: ["Luffy #OP01-001","Zoro #OP01-003","Akainu #OP01-030"],
+  },
+  {
+    id: 4,
+    user: { nom: "Sarah K.", initiales: "SK", ville: "Nantes", reputation: 4.8, nb_echanges: 31, distance: "5 km", color: ["#4a1a4a","#7a2a7a"] },
+    collection: { nom: "Pokémon 151", emoji: "🃏", categorie: "pokemon" },
+    score: 3,
+    je_donne: ["Ronflex #143","Lokhlass #131"],
+    je_recois: ["Voltali #135","Pyroli #136"],
+  },
+  {
+    id: 5,
+    user: { nom: "Jules B.", initiales: "JB", ville: "Marseille", reputation: 4.6, nb_echanges: 8, distance: "67 km", color: ["#1a4a6e","#2a7aad"] },
+    collection: { nom: "Panini Champions League 2024-25", emoji: "⚽", categorie: "foot" },
+    score: 4,
+    je_donne: ["Mbappé (Logo PSG)","Vinicius Jr","Bellingham"],
+    je_recois: ["Haaland","Salah","Pedri"],
+  },
+];
+
+let currentFilter = 'all';
+let allMatches = [...DEMO_MATCHES];
+
+function init() {
+  setTimeout(() => {
+    document.getElementById('skeleton').style.display = 'none';
+    renderMatches();
+  }, 800);
+}
+
+function renderMatches() {
+  const list = document.getElementById('matches-list');
+  const empty = document.getElementById('empty-state');
+
+  let filtered = allMatches;
+  if (currentFilter !== 'all' && currentFilter !== 'proche') {
+    filtered = filtered.filter(m => m.collection.categorie === currentFilter);
+  }
+  if (currentFilter === 'proche') {
+    filtered = filtered.filter(m => parseInt(m.user.distance) < 20);
+  }
+
+  // Trier par score décroissant
+  filtered.sort((a,b) => b.score - a.score);
+
+  document.getElementById('match-total').textContent = `${filtered.length} match${filtered.length > 1 ? 's' : ''}`;
+  document.getElementById('section-sub').textContent = `${filtered.length} échange${filtered.length > 1 ? 's' : ''} possible${filtered.length > 1 ? 's' : ''} trouvé${filtered.length > 1 ? 's' : ''}`;
+
+  if (filtered.length === 0) {
+    list.style.display = 'none';
+    empty.style.display = 'block';
+    return;
+  }
+
+  empty.style.display = 'none';
+  list.style.display = 'flex';
+
+  const scoreColor = (s) => s >= 7 ? 'var(--green)' : s >= 4 ? 'var(--yellow)' : 'var(--orange)';
+
+  list.innerHTML = filtered.map((m, i) => {
+    const MAX_PILLS = 3;
+    const donnePills = m.je_donne.slice(0, MAX_PILLS).map(c => `<div class="ex-card-pill give">${c}</div>`).join('');
+    const donneMore = m.je_donne.length > MAX_PILLS ? `<div class="ex-more">+${m.je_donne.length - MAX_PILLS}</div>` : '';
+    const recoisPills = m.je_recois.slice(0, MAX_PILLS).map(c => `<div class="ex-card-pill get">${c}</div>`).join('');
+    const recoisMore = m.je_recois.length > MAX_PILLS ? `<div class="ex-more">+${m.je_recois.length - MAX_PILLS}</div>` : '';
+
+    return `
+    <div class="match-card reveal" style="animation-delay:${i*60}ms" onclick="openMatch(${m.id})">
+      <div class="match-user">
+        <div class="user-avatar" style="background:linear-gradient(135deg,${m.user.color[0]},${m.user.color[1]})">
+          ${m.user.initiales}
+        </div>
+        <div class="user-info">
+          <div class="user-nom">${m.user.nom}</div>
+          <div class="user-meta">
+            <div class="user-ville">📍 ${m.user.ville}</div>
+            <div class="distance-badge">🚗 ${m.user.distance}</div>
+          </div>
+          <div class="user-meta" style="margin-top:3px">
+            <div class="user-rep">⭐ ${m.user.reputation}</div>
+            <div class="user-echanges">${m.user.nb_echanges} échange${m.user.nb_echanges > 1 ? 's' : ''}</div>
+          </div>
+        </div>
+        <div class="match-score-wrap">
+          <div class="match-score" style="color:${scoreColor(m.score)}">${m.score}</div>
+          <div class="match-score-label">cartes</div>
+        </div>
+      </div>
+
+      <div class="match-body">
+        <div class="exchange-row">
+          <div class="ex-label give">Je donne</div>
+          <div class="ex-cards">${donnePills}${donneMore}</div>
+        </div>
+        <div class="exchange-row">
+          <div class="ex-label get">Je reçois</div>
+          <div class="ex-cards">${recoisPills}${recoisMore}</div>
+        </div>
+      </div>
+
+      <div class="match-footer">
+        <div class="match-collection">
+          <span class="match-coll-emoji">${m.collection.emoji}</span>
+          <span class="match-coll-nom">${m.collection.nom}</span>
+        </div>
+        <button class="propose-btn" onclick="event.stopPropagation(); proposeEchange(${m.id})">
+          🤝 Proposer
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Reveal
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.match-card.reveal').forEach((el, i) => {
+      setTimeout(() => el.classList.add('visible'), i * 60);
+    });
+  });
+}
+
+function setFilter(f, el) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderMatches();
+}
+
+function openMatch(id) {
+  showToast('💬 Ouverture de la conversation…');
+}
+
+function proposeEchange(id) {
+  showToast('🤝 Proposition envoyée ! (bientôt disponible)');
+}
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// Scroll reveal
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: .1 });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+init();
+</script>
+</body>
+</html>
