@@ -16,7 +16,7 @@ exports.handler = async (event) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        from: 'Allosticker <contact@axionappstudio.com>',
+        from: 'Allosticker <noreply@autocarnet.fr>',
         to: email,
         subject: '🎴 Tu es sur la liste — Allosticker arrive bientôt !',
         html: `
