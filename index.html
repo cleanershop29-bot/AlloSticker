@@ -996,6 +996,13 @@
       return;
     }
 
+    // Envoyer email confirmation
+    fetch('/.netlify/functions/waitlist', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    }).catch(err => console.warn('Email failed:', err));
+
     // Succès
     input.style.borderColor = 'rgba(61,255,176,0.5)';
     document.querySelector('.waitlist-form').style.display = 'none';
