@@ -964,7 +964,12 @@ async function forgotPassword() {
   showAuthError('📬 Email de réinitialisation envoyé !');
 }
 
-async function resendVerify(){if(STATE.regEmail)await sb.auth.resend({type:'signup',email:STATE.regEmail});}
+async function resendVerify(){
+  if(!STATE.regEmail){showToast('Email non trouvé, réessaie l\'inscription');return;}
+  const{error}=await sb.auth.resend({type:'signup',email:STATE.regEmail});
+  if(error) showToast('Erreur : '+error.message);
+  else showToast('📬 Email renvoyé à '+STATE.regEmail);
+}
 
 async function doLogout() {
   await sb.auth.signOut();
