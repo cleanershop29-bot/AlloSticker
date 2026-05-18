@@ -1076,10 +1076,14 @@ async function openCollection(slug,nom,id) {
   document.getElementById('mc-grid').style.display='none';
   goTo('ma-collection');
   const[cardsRes,ucRes]=await Promise.all([
-    sb.from('cards').select('id,numero,nom,sous_groupe,rarete').eq('collection_id',id).order('numero',{ascending:true}),
+    sb.from('cards').select('id,numero,nom,sous_groupe,rarete').eq('collection_id',id),
     STATE.user?sb.from('user_cards').select('card_id,statut').eq('user_id',STATE.user.id):Promise.resolve({data:[]})
   ]);
-  STATE.allCards=cardsRes.data||[];
+  STATE.allCards=(cardsRes.data||[]).sort((a,b)=>{
+    const na=parseInt(a.numero)||0, nb=parseInt(b.numero)||0;
+    if(na!==nb) return na-nb;
+    return (a.numero||'').localeCompare(b.numero||'');
+  });
   STATE.userCards={};
   (ucRes.data||[]).forEach(uc=>STATE.userCards[uc.card_id]=uc.statut);
   const coll=STATE.collections.find(c=>c.slug===slug);
