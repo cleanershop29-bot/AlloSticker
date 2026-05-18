@@ -101,6 +101,62 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
 /* ── PROGRESS BAR ── */
 .progress-bar-wrap{background:var(--card);border-radius:100px;height:7px;overflow:hidden}
 .progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--yellow),var(--orange));border-radius:100px;transition:width .6s cubic-bezier(.34,1.56,.64,1)}
+
+/* ════════════════════════════════
+   ADMIN PANEL
+════════════════════════════════ */
+.admin-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);z-index:500;display:none;align-items:flex-end;justify-content:center}
+.admin-overlay.open{display:flex}
+.admin-panel{background:var(--surface);border-radius:24px 24px 0 0;border-top:1px solid var(--border);width:100%;max-width:600px;max-height:90dvh;display:flex;flex-direction:column;overflow:hidden}
+.admin-drag{width:40px;height:4px;background:var(--border);border-radius:100px;margin:12px auto 0}
+.admin-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0}
+.admin-header h2{font-family:'Bangers',cursive;font-size:22px;letter-spacing:1px;color:var(--yellow)}
+.admin-close{width:32px;height:32px;border-radius:50%;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:var(--muted)}
+.admin-body{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:16px}
+/* Auth admin */
+.admin-auth{display:flex;flex-direction:column;gap:12px}
+.admin-auth p{font-size:13px;color:var(--muted);font-weight:700;text-align:center}
+.admin-pwd-wrap{display:flex;align-items:center;gap:10px;background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:12px 16px;transition:border-color .2s}
+.admin-pwd-wrap:focus-within{border-color:rgba(255,217,61,.5)}
+.admin-pwd-wrap input{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:'Nunito',sans-serif;font-size:15px;font-weight:700}
+.admin-pwd-wrap input::placeholder{color:var(--muted)}
+.admin-error-msg{color:var(--pink);font-size:12px;font-weight:700;text-align:center;min-height:16px}
+/* Sections admin */
+.admin-section{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.admin-section-title{padding:12px 16px;font-size:13px;font-weight:900;color:var(--yellow);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.admin-section-body{padding:12px 16px;display:flex;flex-direction:column;gap:10px}
+/* Recherche collection admin */
+.admin-search{display:flex;align-items:center;gap:8px;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:8px 12px}
+.admin-search input{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:'Nunito',sans-serif;font-size:13px;font-weight:700}
+.admin-search input::placeholder{color:var(--muted)}
+.admin-coll-item{display:flex;align-items:center;gap:10px;padding:10px;background:var(--card2);border-radius:10px;border:1px solid var(--border);cursor:pointer;transition:border-color .2s}
+.admin-coll-item:hover{border-color:rgba(255,217,61,.3)}
+.admin-coll-emoji{font-size:18px;flex-shrink:0}
+.admin-coll-info{flex:1;min-width:0}
+.admin-coll-nom{font-size:12px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.admin-coll-meta{font-size:11px;color:var(--muted);font-weight:700}
+.admin-coll-arrow{color:var(--muted);font-size:14px}
+/* Edition collection */
+.admin-edit-back{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:800;color:var(--muted);margin-bottom:4px}
+.admin-field{display:flex;flex-direction:column;gap:5px}
+.admin-field label{font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.admin-field input{background:var(--card2);border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;color:var(--text);outline:none;transition:border-color .2s}
+.admin-field input:focus{border-color:rgba(255,217,61,.5)}
+.admin-btn{padding:12px 20px;border-radius:12px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:900;border:none;cursor:pointer;transition:transform .15s,opacity .2s;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;justify-content:center;gap:6px}
+.admin-btn:active{transform:scale(.96)}
+.admin-btn-yellow{background:var(--yellow);color:#0f0f14}
+.admin-btn-red{background:rgba(255,61,127,.15);color:var(--pink);border:1px solid rgba(255,61,127,.3)}
+.admin-btn-muted{background:var(--card2);color:var(--muted);border:1px solid var(--border)}
+.admin-btn:disabled{opacity:.5;cursor:not-allowed}
+.admin-progress-bar{height:4px;background:var(--card2);border-radius:100px;overflow:hidden;margin-top:4px}
+.admin-progress-fill{height:100%;background:linear-gradient(90deg,var(--yellow),var(--orange));border-radius:100px;transition:width .3s;width:0%}
+.admin-log{background:var(--card2);border-radius:10px;padding:10px;font-size:11px;color:var(--muted);font-weight:700;max-height:120px;overflow-y:auto;font-family:monospace;line-height:1.6}
+.admin-log .log-ok{color:var(--green)}.admin-log .log-err{color:var(--pink)}.admin-log .log-info{color:var(--yellow)}
+/* Stats admin */
+.admin-stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.admin-stat-card{background:var(--card2);border-radius:10px;padding:12px;text-align:center}
+.admin-stat-val{font-family:'Bangers',cursive;font-size:24px;color:var(--yellow);letter-spacing:1px;line-height:1}
+.admin-stat-lbl{font-size:10px;color:var(--muted);font-weight:800;text-transform:uppercase;margin-top:2px}
 </style>
 <style>
 /* ════════════════════════════════
@@ -190,7 +246,7 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
 .coll-nb{font-size:10px;color:var(--muted);font-weight:700}
 .coll-nb strong{color:var(--text)}
 .coll-arrow{width:22px;height:22px;background:rgba(255,217,61,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--yellow);font-size:11px}
-.coll-annee{position:absolute;top:10px;right:10px;font-size:9px;font-weight:900;color:var(--muted);background:var(--card2);padding:2px 6px;border-radius:100px;border:1px solid var(--border)}
+.coll-annee{position:absolute;bottom:10px;right:10px;font-size:9px;font-weight:900;color:var(--muted);background:var(--card2);padding:2px 6px;border-radius:100px;border:1px solid var(--border)}
 
 /* ════════════════════════════════
    MA COLLECTION
@@ -532,7 +588,7 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
 <!-- ════════ ACCUEIL ════════ -->
 <div class="view" id="view-accueil">
   <div class="appbar">
-    <div class="appbar-logo" style="display:flex;align-items:center;gap:8px"><img src="/allosticker-icon-512.png" style="width:28px;height:28px;border-radius:7px" alt="">Allo<span>sticker</span></div>
+    <div class="appbar-logo" style="display:flex;align-items:center;gap:8px"><img src="/allosticker-icon-512.png" style="width:28px;height:28px;border-radius:7px" alt=""><span style="letter-spacing:1px">Allo<span style="color:var(--text)">sticker</span></span></div>
     <div class="search-bar">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       <input type="text" id="accueil-search" placeholder="Rechercher une collection…" oninput="filterColls()">
@@ -640,7 +696,7 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
 <!-- ════════ MATCHS ════════ -->
 <div class="view" id="view-matchs">
   <div class="appbar">
-    <div class="appbar-logo" style="display:flex;align-items:center;gap:8px"><img src="/allosticker-icon-512.png" style="width:28px;height:28px;border-radius:7px" alt="">Allo<span>sticker</span></div>
+    <div class="appbar-logo" style="display:flex;align-items:center;gap:8px"><img src="/allosticker-icon-512.png" style="width:28px;height:28px;border-radius:7px" alt=""><span style="letter-spacing:1px">Allo<span style="color:var(--text)">sticker</span></span></div>
     <div style="font-family:'Bangers',cursive;font-size:20px;letter-spacing:1px">Mes Matchs</div>
     <div class="match-badge-count" id="match-total-badge">0</div>
   </div>
@@ -672,7 +728,7 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
   <!-- Liste des échanges -->
   <div id="echanges-list-view" style="display:flex;flex-direction:column;flex:1">
     <div class="appbar">
-      <div class="appbar-logo" style="display:flex;align-items:center;gap:8px"><img src="/allosticker-icon-512.png" style="width:28px;height:28px;border-radius:7px" alt="">Allo<span>sticker</span></div>
+      <div class="appbar-logo" style="display:flex;align-items:center;gap:8px"><img src="/allosticker-icon-512.png" style="width:28px;height:28px;border-radius:7px" alt=""><span style="letter-spacing:1px">Allo<span style="color:var(--text)">sticker</span></span></div>
       <div style="font-family:'Bangers',cursive;font-size:20px;letter-spacing:1px">Échanges</div>
       <div style="position:relative;cursor:pointer" onclick="showToast('Notifications')">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -722,7 +778,7 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
 <!-- ════════ MES CARTES (sélecteur de collections) ════════ -->
 <div class="view" id="view-mes-cartes">
   <div class="appbar">
-    <div class="appbar-logo" style="display:flex;align-items:center;gap:8px"><img src="/allosticker-icon-512.png" style="width:28px;height:28px;border-radius:7px" alt="">Allo<span>sticker</span></div>
+    <div class="appbar-logo" style="display:flex;align-items:center;gap:8px"><img src="/allosticker-icon-512.png" style="width:28px;height:28px;border-radius:7px" alt=""><span style="letter-spacing:1px">Allo<span style="color:var(--text)">sticker</span></span></div>
     <div style="font-family:'Bangers',cursive;font-size:20px;letter-spacing:1px">Mes Cartes</div>
     <div style="font-size:12px;color:var(--muted);font-weight:700" id="mes-cartes-count">0 collection</div>
   </div>
@@ -750,7 +806,7 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
 <!-- ════════ PROFIL ════════ -->
 <div class="view" id="view-profil">
   <div class="appbar">
-    <div class="appbar-logo" style="display:flex;align-items:center;gap:8px"><img src="/allosticker-icon-512.png" style="width:28px;height:28px;border-radius:7px" alt="">Allo<span>sticker</span></div>
+    <div class="appbar-logo" style="display:flex;align-items:center;gap:8px"><img src="/allosticker-icon-512.png" style="width:28px;height:28px;border-radius:7px" alt=""><span style="letter-spacing:1px">Allo<span style="color:var(--text)">sticker</span></span></div>
     <div style="font-family:'Bangers',cursive;font-size:20px;letter-spacing:1px">Mon Profil</div>
     <div class="icon-btn" onclick="showToast('Modifier le profil')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
   </div>
@@ -808,6 +864,98 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
     <div class="nav-item" onclick="goTo('matchs')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg><span>Matchs</span></div>
     <div class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profil</span></div>
   </nav>
+</div>
+
+
+<!-- ════════ ADMIN PANEL ════════ -->
+<div class="admin-overlay" id="admin-overlay" onclick="adminOverlayClick(event)">
+  <div class="admin-panel" id="admin-panel">
+    <div class="admin-drag"></div>
+    <div class="admin-header">
+      <h2 id="admin-panel-title">🔧 Administration</h2>
+      <div class="admin-close" onclick="closeAdmin()">✕</div>
+    </div>
+    <div class="admin-body" id="admin-body">
+      <!-- AUTH -->
+      <div id="admin-auth-section">
+        <div class="admin-auth">
+          <p>Accès réservé à l'administrateur</p>
+          <div class="admin-pwd-wrap">
+            <span style="font-size:16px">🔒</span>
+            <input type="password" id="admin-pwd-input" placeholder="Mot de passe admin" onkeydown="if(event.key==='Enter')checkAdminPwd()">
+            <span style="cursor:pointer;font-size:15px;color:var(--muted)" onclick="toggleAdminPwd()">👁️</span>
+          </div>
+          <div class="admin-error-msg" id="admin-error-msg"></div>
+          <button class="admin-btn admin-btn-yellow" onclick="checkAdminPwd()">Accéder au panneau</button>
+        </div>
+      </div>
+
+      <!-- DASHBOARD (après auth) -->
+      <div id="admin-dashboard" style="display:none;flex-direction:column;gap:16px">
+
+        <!-- Stats -->
+        <div class="admin-section">
+          <div class="admin-section-title">📊 Statistiques</div>
+          <div class="admin-section-body">
+            <div class="admin-stats-grid">
+              <div class="admin-stat-card"><div class="admin-stat-val" id="adm-stat-colls">—</div><div class="admin-stat-lbl">Collections</div></div>
+              <div class="admin-stat-card"><div class="admin-stat-val" id="adm-stat-cards">—</div><div class="admin-stat-lbl">Cartes</div></div>
+              <div class="admin-stat-card"><div class="admin-stat-val" id="adm-stat-users">—</div><div class="admin-stat-lbl">Utilisateurs</div></div>
+              <div class="admin-stat-card"><div class="admin-stat-val" id="adm-stat-waitlist">—</div><div class="admin-stat-lbl">Waitlist</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gestion collections -->
+        <div class="admin-section">
+          <div class="admin-section-title">🎴 Gestion des collections</div>
+          <div class="admin-section-body" id="admin-colls-section">
+            <div class="admin-search">
+              <span style="color:var(--muted);font-size:14px">🔍</span>
+              <input type="text" id="admin-search-coll" placeholder="Rechercher une collection…" oninput="adminFilterColls()">
+            </div>
+            <div id="admin-colls-list" style="display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto"></div>
+          </div>
+        </div>
+
+        <!-- Edition collection (masqué par défaut) -->
+        <div class="admin-section" id="admin-edit-section" style="display:none">
+          <div class="admin-section-title">✏️ Modifier la collection</div>
+          <div class="admin-section-body">
+            <div class="admin-edit-back" onclick="adminBackToList()">← Retour à la liste</div>
+            <div style="font-size:13px;font-weight:900;color:var(--text);margin-bottom:4px" id="admin-edit-nom"></div>
+            <div class="admin-field">
+              <label>Nombre de stickers/cartes</label>
+              <input type="number" id="admin-edit-nb" placeholder="Ex: 680" min="1" max="9999">
+            </div>
+            <div class="admin-field">
+              <label>Nom de la collection</label>
+              <input type="text" id="admin-edit-name-input">
+            </div>
+            <div class="admin-field">
+              <label>Année</label>
+              <input type="number" id="admin-edit-annee" min="1970" max="2030">
+            </div>
+            <button class="admin-btn admin-btn-yellow" onclick="adminSaveCollection()" id="admin-save-btn">💾 Sauvegarder</button>
+            <div style="margin-top:4px;font-size:12px;font-weight:700;color:var(--muted)">Regénérer les cartes manquantes :</div>
+            <button class="admin-btn admin-btn-muted" onclick="adminRegenCards()" id="admin-regen-btn">🔄 Regénérer les cartes</button>
+            <div class="admin-progress-bar"><div class="admin-progress-fill" id="admin-regen-progress"></div></div>
+            <div class="admin-log" id="admin-log" style="display:none"></div>
+          </div>
+        </div>
+
+        <!-- Export waitlist -->
+        <div class="admin-section">
+          <div class="admin-section-title">📧 Waitlist</div>
+          <div class="admin-section-body">
+            <div style="font-size:13px;color:var(--muted);font-weight:700" id="admin-waitlist-count">Chargement…</div>
+            <button class="admin-btn admin-btn-muted" onclick="adminExportWaitlist()">⬇️ Exporter CSV</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -1139,9 +1287,7 @@ async function openCollection(slug,nom,id){
   const[cardsRes,ucRes]=await Promise.all([
     sb.from('cards').select('id,numero,nom,sous_groupe,rarete').eq('collection_id',id),
     STATE.user
-      ? sb.from('user_cards').select('card_id,statut').eq('user_id',STATE.user.id).in('card_id',
-          await sb.from('cards').select('id').eq('collection_id',id).then(r=>(r.data||[]).map(c=>c.id))
-        )
+      ? sb.from('user_cards').select('card_id,statut').eq('user_id',STATE.user.id)
       : Promise.resolve({data:[]}),
   ]);
 
@@ -1150,8 +1296,12 @@ async function openCollection(slug,nom,id){
     if(na!==nb) return na-nb;
     return (a.numero||'').localeCompare(b.numero||'');
   });
+  // Créer un Set des card IDs de cette collection pour filtrer
+  const collCardIds=new Set(STATE.allCards.map(c=>c.id));
   STATE.userCards={};
-  (ucRes.data||[]).forEach(uc=>STATE.userCards[uc.card_id]=uc.statut);
+  (ucRes.data||[]).forEach(uc=>{
+    if(collCardIds.has(uc.card_id)) STATE.userCards[uc.card_id]=uc.statut;
+  });
 
   const coll=STATE.collections.find(c=>c.id===id);
   document.getElementById('mc-sub').textContent=(coll?.editeur||'')+' · '+(coll?.nb_cartes||STATE.allCards.length)+' éléments';
@@ -1530,6 +1680,253 @@ document.addEventListener('keydown',e=>{
   const loginVisible=document.getElementById('form-login').style.display!=='none';
   if(loginVisible)doLogin();else doRegister();
 });
+
+
+// ══════════════════════════════
+// ADMIN PANEL
+// ══════════════════════════════
+const ADMIN_PWD = 'Jj0624988240@';
+let adminTapCount = 0;
+let adminTapTimer = null;
+let adminAuthenticated = false;
+let adminCurrentColl = null;
+let adminAllColls = [];
+
+// Détecter les tapotements multiples sur le logo
+document.addEventListener('DOMContentLoaded', () => {
+  // Attacher sur tous les logos
+  document.querySelectorAll('.appbar-logo').forEach(logo => {
+    logo.addEventListener('click', handleAdminTap);
+  });
+});
+
+function handleAdminTap() {
+  adminTapCount++;
+  clearTimeout(adminTapTimer);
+  if(adminTapCount >= 7) {
+    adminTapCount = 0;
+    openAdminPanel();
+    return;
+  }
+  adminTapTimer = setTimeout(() => { adminTapCount = 0; }, 800);
+}
+
+function openAdminPanel() {
+  const overlay = document.getElementById('admin-overlay');
+  overlay.classList.add('open');
+  if(adminAuthenticated) {
+    showAdminDashboard();
+  } else {
+    document.getElementById('admin-auth-section').style.display = 'block';
+    document.getElementById('admin-dashboard').style.display = 'none';
+    setTimeout(() => document.getElementById('admin-pwd-input')?.focus(), 300);
+  }
+}
+
+function closeAdmin() {
+  document.getElementById('admin-overlay').classList.remove('open');
+}
+
+function adminOverlayClick(e) {
+  if(e.target === document.getElementById('admin-overlay')) closeAdmin();
+}
+
+function toggleAdminPwd() {
+  const i = document.getElementById('admin-pwd-input');
+  i.type = i.type === 'password' ? 'text' : 'password';
+}
+
+function checkAdminPwd() {
+  const val = document.getElementById('admin-pwd-input').value;
+  const errEl = document.getElementById('admin-error-msg');
+  if(val === ADMIN_PWD) {
+    adminAuthenticated = true;
+    document.getElementById('admin-pwd-input').value = '';
+    errEl.textContent = '';
+    showAdminDashboard();
+  } else {
+    errEl.textContent = 'Mot de passe incorrect';
+    document.getElementById('admin-pwd-input').value = '';
+    setTimeout(() => errEl.textContent = '', 2000);
+  }
+}
+
+async function showAdminDashboard() {
+  document.getElementById('admin-auth-section').style.display = 'none';
+  const dash = document.getElementById('admin-dashboard');
+  dash.style.display = 'flex';
+
+  // Stats
+  const [{count:nbColls},{count:nbCards},{count:nbUsers},{count:nbWait}] = await Promise.all([
+    sb.from('collections').select('*',{count:'exact',head:true}),
+    sb.from('cards').select('*',{count:'exact',head:true}),
+    sb.from('profiles').select('*',{count:'exact',head:true}),
+    sb.from('waitlist_allosticker').select('*',{count:'exact',head:true}),
+  ]);
+  const sv = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v??'—'; };
+  sv('adm-stat-colls', nbColls);
+  sv('adm-stat-cards', nbCards ? (nbCards>999 ? (nbCards/1000).toFixed(1)+'k' : nbCards) : '—');
+  sv('adm-stat-users', nbUsers);
+  sv('adm-stat-waitlist', nbWait);
+  const wEl = document.getElementById('admin-waitlist-count');
+  if(wEl) wEl.textContent = (nbWait||0)+' personne'+(nbWait>1?'s':'')+' inscrite'+(nbWait>1?'s':'');
+
+  // Charger les collections
+  const {data} = await sb.from('collections').select('id,slug,nom,editeur,categorie,annee,nb_cartes,type').order('nom');
+  adminAllColls = data || [];
+  adminRenderCollsList(adminAllColls);
+}
+
+function adminRenderCollsList(list) {
+  const container = document.getElementById('admin-colls-list');
+  if(!container) return;
+  if(!list.length) { container.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:16px">Aucune collection trouvée</div>'; return; }
+  container.innerHTML = list.map(c => {
+    const emoji = CAT_EMOJI[c.categorie] || '🃏';
+    return `<div class="admin-coll-item" onclick="adminOpenEdit('${c.id}')">
+      <div class="admin-coll-emoji">${emoji}</div>
+      <div class="admin-coll-info">
+        <div class="admin-coll-nom">${c.nom}</div>
+        <div class="admin-coll-meta">${c.editeur} · ${c.nb_cartes} ${c.type} · ${c.annee||''}</div>
+      </div>
+      <div class="admin-coll-arrow">›</div>
+    </div>`;
+  }).join('');
+}
+
+function adminFilterColls() {
+  const q = (document.getElementById('admin-search-coll')?.value||'').toLowerCase();
+  const filtered = q ? adminAllColls.filter(c => c.nom.toLowerCase().includes(q) || c.editeur.toLowerCase().includes(q)) : adminAllColls;
+  adminRenderCollsList(filtered);
+}
+
+function adminOpenEdit(id) {
+  adminCurrentColl = adminAllColls.find(c => c.id === id);
+  if(!adminCurrentColl) return;
+  document.getElementById('admin-colls-section').style.display = 'none';
+  document.getElementById('admin-edit-section').style.display = 'block';
+  document.getElementById('admin-edit-nom').textContent = adminCurrentColl.nom;
+  document.getElementById('admin-edit-nb').value = adminCurrentColl.nb_cartes || '';
+  document.getElementById('admin-edit-name-input').value = adminCurrentColl.nom || '';
+  document.getElementById('admin-edit-annee').value = adminCurrentColl.annee || '';
+  document.getElementById('admin-log').style.display = 'none';
+  document.getElementById('admin-log').innerHTML = '';
+  document.getElementById('admin-regen-progress').style.width = '0%';
+}
+
+function adminBackToList() {
+  document.getElementById('admin-edit-section').style.display = 'none';
+  document.getElementById('admin-colls-section').style.display = 'block';
+  adminCurrentColl = null;
+}
+
+async function adminSaveCollection() {
+  if(!adminCurrentColl) return;
+  const nb = parseInt(document.getElementById('admin-edit-nb').value);
+  const nom = document.getElementById('admin-edit-name-input').value.trim();
+  const annee = parseInt(document.getElementById('admin-edit-annee').value);
+  if(!nb || nb < 1) { showToast('Nombre de cartes invalide'); return; }
+
+  const btn = document.getElementById('admin-save-btn');
+  btn.disabled = true; btn.textContent = '⏳ Sauvegarde…';
+
+  const updates = {};
+  if(nb) updates.nb_cartes = nb;
+  if(nom) updates.nom = nom;
+  if(annee) updates.annee = annee;
+
+  const {error} = await sb.from('collections').update(updates).eq('id', adminCurrentColl.id);
+  btn.disabled = false; btn.textContent = '💾 Sauvegarder';
+
+  if(error) { showToast('Erreur : '+error.message); return; }
+
+  // Mettre à jour le state local
+  adminCurrentColl = {...adminCurrentColl, ...updates};
+  const idx = adminAllColls.findIndex(c => c.id === adminCurrentColl.id);
+  if(idx !== -1) adminAllColls[idx] = adminCurrentColl;
+  document.getElementById('admin-edit-nom').textContent = adminCurrentColl.nom;
+
+  // Rafraîchir collections dans l'app
+  STATE.collections = STATE.collections.map(c => c.id === adminCurrentColl.id ? {...c,...updates} : c);
+
+  showToast('✓ Collection mise à jour !');
+}
+
+async function adminRegenCards() {
+  if(!adminCurrentColl) return;
+  const nb = parseInt(document.getElementById('admin-edit-nb').value);
+  if(!nb || nb < 1) { showToast('Renseigne le nombre de cartes d\'abord'); return; }
+
+  const btn = document.getElementById('admin-regen-btn');
+  const log = document.getElementById('admin-log');
+  const progress = document.getElementById('admin-regen-progress');
+  btn.disabled = true;
+  log.style.display = 'block';
+  log.innerHTML = '';
+  progress.style.width = '0%';
+
+  const addLog = (msg, type='info') => {
+    log.innerHTML += `<div class="log-${type}">${msg}</div>`;
+    log.scrollTop = log.scrollHeight;
+  };
+
+  addLog(`📋 Collection : ${adminCurrentColl.nom}`, 'info');
+  addLog(`🎯 Objectif : ${nb} cartes`, 'info');
+
+  // Récupérer les cartes existantes
+  const {data: existing} = await sb.from('cards').select('numero').eq('collection_id', adminCurrentColl.id);
+  const existingNums = new Set((existing||[]).map(c => c.numero));
+  addLog(`✓ ${existingNums.size} cartes déjà en base`, 'ok');
+
+  // Générer les manquantes
+  const toInsert = [];
+  for(let i = 1; i <= nb; i++) {
+    if(!existingNums.has(String(i))) {
+      toInsert.push({collection_id: adminCurrentColl.id, numero: String(i), nom: `Carte #${i}`, rarete: 'commune'});
+    }
+  }
+
+  if(!toInsert.length) {
+    addLog(`✅ Toutes les cartes sont déjà présentes !`, 'ok');
+    btn.disabled = false;
+    progress.style.width = '100%';
+    return;
+  }
+
+  addLog(`🔄 ${toInsert.length} cartes à insérer…`, 'info');
+
+  // Insérer par chunks de 100
+  const chunkSize = 100;
+  let inserted = 0;
+  for(let i = 0; i < toInsert.length; i += chunkSize) {
+    const chunk = toInsert.slice(i, i + chunkSize);
+    const {error} = await sb.from('cards').upsert(chunk, {onConflict:'collection_id,numero', ignoreDuplicates:true});
+    if(error) {
+      addLog(`✗ Erreur chunk ${i}: ${error.message}`, 'err');
+      break;
+    }
+    inserted += chunk.length;
+    const pct = Math.round(inserted / toInsert.length * 100);
+    progress.style.width = pct + '%';
+    addLog(`  ✓ ${inserted}/${toInsert.length} cartes insérées`, 'ok');
+  }
+
+  addLog(`🎉 Terminé ! ${inserted} cartes ajoutées`, 'ok');
+  btn.disabled = false;
+  showToast(`✓ ${inserted} cartes générées`);
+}
+
+async function adminExportWaitlist() {
+  const {data} = await sb.from('waitlist_allosticker').select('email,created_at').order('created_at');
+  if(!data?.length) { showToast('Waitlist vide'); return; }
+  const csv = ['Email,Date inscription', ...data.map(r=>r.email+','+new Date(r.created_at).toLocaleDateString('fr-FR'))].join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'waitlist_allosticker.csv';
+  a.click(); URL.revokeObjectURL(url);
+  showToast(`📥 ${data.length} emails exportés`);
+}
 
 initAuth();
 </script>
