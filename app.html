@@ -157,6 +157,44 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
 .admin-stat-card{background:var(--card2);border-radius:10px;padding:12px;text-align:center}
 .admin-stat-val{font-family:'Bangers',cursive;font-size:24px;color:var(--yellow);letter-spacing:1px;line-height:1}
 .admin-stat-lbl{font-size:10px;color:var(--muted);font-weight:800;text-transform:uppercase;margin-top:2px}
+
+/* ════ MODAL EDITION PROFIL ════ */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);z-index:400;display:none;align-items:flex-end;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal-sheet{background:var(--surface);border-radius:24px 24px 0 0;border-top:1px solid var(--border);width:100%;max-width:600px;max-height:92dvh;display:flex;flex-direction:column;overflow:hidden}
+.modal-drag{width:40px;height:4px;background:var(--border);border-radius:100px;margin:12px auto 0}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px 12px;border-bottom:1px solid var(--border);flex-shrink:0}
+.modal-header h3{font-family:"Bangers",cursive;font-size:20px;letter-spacing:1px;color:var(--text)}
+.modal-close{width:32px;height:32px;border-radius:50%;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;color:var(--muted)}
+.modal-body{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:14px}
+.modal-footer{padding:12px 20px calc(12px + var(--safe-bottom));border-top:1px solid var(--border);flex-shrink:0;display:flex;gap:10px}
+/* ════ AVIS ════ */
+.stars-input{display:flex;gap:6px;justify-content:center;margin:8px 0}
+.star-btn{font-size:28px;cursor:pointer;opacity:.35;transition:opacity .15s,transform .15s}
+.star-btn.active{opacity:1}
+.star-btn:hover{transform:scale(1.2)}
+/* ════ LOADER GLOBAL ════ */
+.global-loader{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:16px}
+.global-loader img{width:80px;height:80px;border-radius:18px;animation:pulse-load 1.5s ease-in-out infinite}
+@keyframes pulse-load{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(.95)}}
+.global-loader p{font-size:14px;font-weight:700;color:var(--muted)}
+/* ════ HERO STRIP REDESIGN ════ */
+.hero-strip-v2{margin:14px 16px 0;background:linear-gradient(135deg,#1a1a24,#0f0f18);border:1px solid var(--border);border-radius:20px;padding:20px;position:relative;overflow:hidden;min-height:110px}
+.hero-strip-v2::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 10% 50%,rgba(255,217,61,.1),transparent 55%),radial-gradient(ellipse at 90% 20%,rgba(61,155,255,.07),transparent 50%);pointer-events:none}
+.hero-strip-v2-content{position:relative;z-index:1;display:flex;align-items:center;gap:16px}
+.hero-strip-v2-text h2{font-family:"Bangers",cursive;font-size:22px;letter-spacing:1px;line-height:1.1;margin-bottom:6px}
+.hero-strip-v2-text h2 span{color:var(--yellow)}
+.hero-strip-v2-text p{font-size:12px;color:var(--muted);font-weight:700;line-height:1.4}
+.hero-strip-v2-visual{flex-shrink:0;display:flex;align-items:center;justify-content:center;width:80px;height:80px;position:relative}
+.hero-card-svg{position:absolute;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.5)}
+/* ════ STATS ACCUEIL ════ */
+.hero-stats-row{display:flex;gap:0;margin:12px 16px 0;background:var(--card);border-radius:14px;border:1px solid var(--border);overflow:hidden}
+.hero-stat{flex:1;padding:10px 8px;text-align:center;border-right:1px solid var(--border)}
+.hero-stat:last-child{border-right:none}
+.hero-stat-val{font-family:"Bangers",cursive;font-size:20px;color:var(--yellow);line-height:1;letter-spacing:1px}
+.hero-stat-lbl{font-size:9px;color:var(--muted);font-weight:800;text-transform:uppercase;margin-top:2px}
+/* ════ NOTIFICATION BADGE ════ */
+.notif-count{position:absolute;top:-2px;right:4px;background:var(--pink);color:white;font-size:9px;font-weight:900;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px;border:1.5px solid var(--bg)}
 </style>
 <style>
 /* ════════════════════════════════
@@ -593,19 +631,35 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       <input type="text" id="accueil-search" placeholder="Rechercher une collection…" oninput="filterColls()">
     </div>
-    <div class="avatar-btn" id="accueil-avatar" onclick="goTo('profil')">J</div>
+    <div class="avatar-btn" id="accueil-avatar" onclick="goTo('profil')" id="accueil-avatar-btn">J</div>
   </div>
   <div class="scroll-area">
-    <div class="hero-strip reveal">
-      <div class="hs-text">
-        <h2>Trouve tes<br><span>manquants</span> 🎯</h2>
-        <p>Échange avec des<br>collectors près de toi</p>
+    <div class="hero-strip-v2 reveal">
+      <div class="hero-strip-v2-content">
+        <div class="hero-strip-v2-text" style="flex:1">
+          <h2>Trouve tes<br><span>manquants</span> 🎯</h2>
+          <p>Matching automatique entre<br>collectionneurs près de toi</p>
+        </div>
+        <div class="hero-strip-v2-visual">
+          <svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="14" width="34" height="48" rx="6" fill="#1a3a6e" transform="rotate(-12 21 38)"/>
+            <rect x="4" y="14" width="34" height="48" rx="6" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="1" transform="rotate(-12 21 38)"/>
+            <text x="21" y="42" font-size="20" text-anchor="middle" transform="rotate(-12 21 38)" fill="white" opacity=".9">⚽</text>
+            <rect x="22" y="10" width="34" height="48" rx="6" fill="#6e1a1a" transform="rotate(-3 39 34)"/>
+            <rect x="22" y="10" width="34" height="48" rx="6" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="1" transform="rotate(-3 39 34)"/>
+            <text x="39" y="38" font-size="20" text-anchor="middle" transform="rotate(-3 39 34)" fill="white" opacity=".9">🃏</text>
+            <rect x="38" y="8" width="34" height="48" rx="6" fill="#1a5c3a" transform="rotate(8 55 32)"/>
+            <rect x="38" y="8" width="34" height="48" rx="6" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="1" transform="rotate(8 55 32)"/>
+            <text x="55" y="36" font-size="20" text-anchor="middle" transform="rotate(8 55 32)" fill="white" opacity=".9">🏀</text>
+          </svg>
+        </div>
       </div>
-      <div class="hs-cards">
-        <div class="mini-card mc1">⚽</div>
-        <div class="mini-card mc2">🃏</div>
-        <div class="mini-card mc3">🏀</div>
-      </div>
+    </div>
+    <div class="hero-stats-row reveal">
+      <div class="hero-stat"><div class="hero-stat-val" id="hero-stat-colls">—</div><div class="hero-stat-lbl">Collections</div></div>
+      <div class="hero-stat"><div class="hero-stat-val" id="hero-stat-cartes">—</div><div class="hero-stat-lbl">Mes cartes</div></div>
+      <div class="hero-stat"><div class="hero-stat-val" id="hero-stat-matchs">—</div><div class="hero-stat-lbl">Matchs</div></div>
+      <div class="hero-stat"><div class="hero-stat-val" id="hero-stat-echanges">—</div><div class="hero-stat-lbl">Échanges</div></div>
     </div>
     <div class="cats-scroll" id="cats-scroll">
       <div class="chip active" onclick="setCat('all',this)">🌟 Tout</div>
@@ -640,7 +694,7 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
   <nav class="navbar">
     <div class="nav-item active" onclick="goTo('accueil')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Accueil</span></div>
     <div class="nav-item" onclick="goTo('mes-cartes')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg><span>Mes cartes</span></div>
-    <div class="nav-fab" onclick="showToast('Bientôt disponible !')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M7 16V4m0 0L3 8m4-4 4 4"/><path d="M17 8v12m0 0 4-4m-4 4-4-4"/></svg></div>
+    <div class="nav-fab" onclick="openNewEchange()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M7 16V4m0 0L3 8m4-4 4 4"/><path d="M17 8v12m0 0 4-4m-4 4-4-4"/></svg></div>
     <div class="nav-item" onclick="goTo('matchs')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg><span>Matchs</span></div>
     <div class="nav-item" onclick="goTo('echanges')" style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Échanges</span><div class="nav-notif" id="nav-notif-msg" style="display:none"></div></div>
   </nav>
@@ -717,7 +771,7 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
   <nav class="navbar">
     <div class="nav-item" onclick="goTo('accueil')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Accueil</span></div>
     <div class="nav-item" onclick="goTo('mes-cartes')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg><span>Mes cartes</span></div>
-    <div class="nav-fab" onclick="showToast('Bientôt disponible !')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M7 16V4m0 0L3 8m4-4 4 4"/><path d="M17 8v12m0 0 4-4m-4 4-4-4"/></svg></div>
+    <div class="nav-fab" onclick="openNewEchange()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M7 16V4m0 0L3 8m4-4 4 4"/><path d="M17 8v12m0 0 4-4m-4 4-4-4"/></svg></div>
     <div class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg><span>Matchs</span></div>
     <div class="nav-item" onclick="goTo('echanges')" style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Échanges</span></div>
   </nav>
@@ -745,7 +799,7 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
     <nav class="navbar">
       <div class="nav-item" onclick="goTo('accueil')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Accueil</span></div>
       <div class="nav-item" onclick="goTo('mes-cartes')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg><span>Mes cartes</span></div>
-      <div class="nav-fab" onclick="showToast('Bientôt disponible !')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M7 16V4m0 0L3 8m4-4 4 4"/><path d="M17 8v12m0 0 4-4m-4 4-4-4"/></svg></div>
+      <div class="nav-fab" onclick="openNewEchange()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M7 16V4m0 0L3 8m4-4 4 4"/><path d="M17 8v12m0 0 4-4m-4 4-4-4"/></svg></div>
       <div class="nav-item" onclick="goTo('matchs')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg><span>Matchs</span></div>
       <div class="nav-item active" style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Échanges</span><div class="nav-notif"></div></div>
     </nav>
@@ -787,7 +841,7 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
       <div class="section-tag">Mes collections actives</div>
     </div>
     <div style="padding:12px 16px 0" id="mes-cartes-list">
-      <div class="empty-state"><div class="e-emoji">📋</div><h3>Pas encore de cartes</h3><p>Va dans l'Accueil et sélectionne<br>une collection pour commencer.</p></div>
+      <div class="empty-state"><div class="e-emoji">📋</div><h3>Pas encore de cartes</h3><p>Va dans l\'Accueil et sélectionne<br>une collection pour commencer.</p></div>
     </div>
     <div style="padding:16px 16px 0">
       <div class="section-tag" style="margin-bottom:12px">Explorer d'autres collections</div>
@@ -797,7 +851,7 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
   <nav class="navbar">
     <div class="nav-item" onclick="goTo('accueil')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Accueil</span></div>
     <div class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg><span>Mes cartes</span></div>
-    <div class="nav-fab" onclick="showToast('Bientôt disponible !')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M7 16V4m0 0L3 8m4-4 4 4"/><path d="M17 8v12m0 0 4-4m-4 4-4-4"/></svg></div>
+    <div class="nav-fab" onclick="openNewEchange()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M7 16V4m0 0L3 8m4-4 4 4"/><path d="M17 8v12m0 0 4-4m-4 4-4-4"/></svg></div>
     <div class="nav-item" onclick="goTo('matchs')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg><span>Matchs</span></div>
     <div class="nav-item" onclick="goTo('echanges')" style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Échanges</span></div>
   </nav>
@@ -808,14 +862,14 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
   <div class="appbar">
     <div class="appbar-logo" style="display:flex;align-items:center;gap:8px"><img src="/allosticker-icon-512.png" style="width:28px;height:28px;border-radius:7px" alt=""><span style="letter-spacing:1px">Allo<span style="color:var(--text)">sticker</span></span></div>
     <div style="font-family:'Bangers',cursive;font-size:20px;letter-spacing:1px">Mon Profil</div>
-    <div class="icon-btn" onclick="showToast('Modifier le profil')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+    <div class="icon-btn" onclick="openEditProfil()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
   </div>
   <div class="scroll-area">
     <div class="profile-hero">
       <div class="avatar-wrap">
         <div class="avatar-main" id="profil-avatar">J</div>
         <div class="avatar-ring"></div>
-        <div class="avatar-edit-btn" onclick="showToast('Modifier la photo')">✏️</div>
+        <div class="avatar-edit-btn" onclick="openEditProfil()">✏️</div>
       </div>
       <div class="profile-nom" id="profil-nom">Utilisateur</div>
       <div class="profile-ville-row">📍 <span id="profil-ville">Non renseigné</span></div>
@@ -849,8 +903,8 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
     <div class="settings-section reveal">
       <div class="section-title" style="margin-bottom:4px">⚙️ Paramètres</div>
       <div class="settings-item" onclick="showToast('Notifications')"><div class="settings-icon">🔔</div><div class="settings-label">Notifications</div><div class="settings-value">Activées</div><div class="settings-arrow">›</div></div>
-      <div class="settings-item" onclick="showToast('Localisation')"><div class="settings-icon">📍</div><div class="settings-label">Ma localisation</div><div class="settings-value" id="settings-ville">—</div><div class="settings-arrow">›</div></div>
-      <div class="settings-item" onclick="showToast('Rayon d\'échange')"><div class="settings-icon">🗺️</div><div class="settings-label">Rayon d'échange</div><div class="settings-value">50 km</div><div class="settings-arrow">›</div></div>
+      <div class="settings-item" onclick="openEditVille()"><div class="settings-icon">📍</div><div class="settings-label">Ma localisation</div><div class="settings-value" id="settings-ville">—</div><div class="settings-arrow">›</div></div>
+      <div class="settings-item" onclick="openEditRayon()"><div class="settings-icon">🗺️</div><div class="settings-label">Rayon d'échange</div><div class="settings-value">50 km</div><div class="settings-arrow">›</div></div>
       <div class="settings-item" onclick="showToast('Confidentialité')"><div class="settings-icon">🔒</div><div class="settings-label">Confidentialité</div><div class="settings-arrow">›</div></div>
       <div class="settings-item" onclick="showToast('Aide & contact')"><div class="settings-icon">❓</div><div class="settings-label">Aide & contact</div><div class="settings-arrow">›</div></div>
       <div class="settings-item" onclick="showToast('CGU')"><div class="settings-icon">📄</div><div class="settings-label">CGU & mentions légales</div><div class="settings-arrow">›</div></div>
@@ -860,12 +914,116 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
   <nav class="navbar">
     <div class="nav-item" onclick="goTo('accueil')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Accueil</span></div>
     <div class="nav-item" onclick="goTo('mes-cartes')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg><span>Mes cartes</span></div>
-    <div class="nav-fab" onclick="showToast('Bientôt disponible !')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M7 16V4m0 0L3 8m4-4 4 4"/><path d="M17 8v12m0 0 4-4m-4 4-4-4"/></svg></div>
+    <div class="nav-fab" onclick="openNewEchange()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M7 16V4m0 0L3 8m4-4 4 4"/><path d="M17 8v12m0 0 4-4m-4 4-4-4"/></svg></div>
     <div class="nav-item" onclick="goTo('matchs')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg><span>Matchs</span></div>
     <div class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profil</span></div>
   </nav>
 </div>
 
+
+
+<!-- ════════ MODAL EDIT PROFIL ════════ -->
+<div class="modal-overlay" id="modal-edit-profil" onclick="if(event.target===this)closeModal('modal-edit-profil')">
+  <div class="modal-sheet">
+    <div class="modal-drag"></div>
+    <div class="modal-header">
+      <h3>✏️ Mon profil</h3>
+      <div class="modal-close" onclick="closeModal('modal-edit-profil')">✕</div>
+    </div>
+    <div class="modal-body">
+      <div class="field-wrap">
+        <div class="field-label">Prénom &amp; Nom</div>
+        <div class="field-input-wrap"><span class="field-icon">👤</span><input class="field-input" id="edit-nom" type="text" placeholder="Ton nom"></div>
+      </div>
+      <div class="field-wrap">
+        <div class="field-label">Ville</div>
+        <div class="field-input-wrap"><span class="field-icon">📍</span><input class="field-input" id="edit-ville" type="text" placeholder="Ex: Paris, Lyon…"></div>
+      </div>
+      <div class="field-wrap">
+        <div class="field-label">Bio</div>
+        <div class="field-input-wrap"><span class="field-icon">💬</span><input class="field-input" id="edit-bio" type="text" placeholder="Présente-toi en quelques mots"></div>
+      </div>
+      <div class="field-wrap">
+        <div class="field-label">Rayon d'échange</div>
+        <div class="field-input-wrap">
+          <span class="field-icon">🗺️</span>
+          <input class="field-input" id="edit-rayon" type="number" placeholder="50" min="1" max="500">
+          <span style="color:var(--muted);font-size:13px;font-weight:700">km</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal('modal-edit-profil')" style="flex:0 0 auto">Annuler</button>
+      <button class="btn-primary btn-full" onclick="saveEditProfil()" id="btn-save-profil">💾 Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ MODAL AVIS ════════ -->
+<div class="modal-overlay" id="modal-avis" onclick="if(event.target===this)closeModal('modal-avis')">
+  <div class="modal-sheet">
+    <div class="modal-drag"></div>
+    <div class="modal-header">
+      <h3>⭐ Laisser un avis</h3>
+      <div class="modal-close" onclick="closeModal('modal-avis')">✕</div>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--muted);font-weight:700;text-align:center">Comment s'est passé l'échange avec <strong id="avis-user-nom" style="color:var(--text)">—</strong> ?</p>
+      <div class="stars-input" id="stars-input">
+        <span class="star-btn" data-v="1" onclick="setAvisNote(1)">⭐</span>
+        <span class="star-btn" data-v="2" onclick="setAvisNote(2)">⭐</span>
+        <span class="star-btn" data-v="3" onclick="setAvisNote(3)">⭐</span>
+        <span class="star-btn" data-v="4" onclick="setAvisNote(4)">⭐</span>
+        <span class="star-btn" data-v="5" onclick="setAvisNote(5)">⭐</span>
+      </div>
+      <div class="field-wrap">
+        <div class="field-label">Commentaire (optionnel)</div>
+        <div class="field-input-wrap"><span class="field-icon">💬</span><input class="field-input" id="avis-commentaire" type="text" placeholder="Super échange, rapide et sérieux !"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal('modal-avis')" style="flex:0 0 auto">Annuler</button>
+      <button class="btn-primary btn-full" onclick="submitAvis()" id="btn-submit-avis">✓ Envoyer l'avis</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ MODAL PROPOSER ÉCHANGE ════════ -->
+<div class="modal-overlay" id="modal-new-echange" onclick="if(event.target===this)closeModal('modal-new-echange')">
+  <div class="modal-sheet">
+    <div class="modal-drag"></div>
+    <div class="modal-header">
+      <h3>🤝 Proposer un échange</h3>
+      <div class="modal-close" onclick="closeModal('modal-new-echange')">✕</div>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--muted);font-weight:700;text-align:center">Pour proposer un échange, commence par trouver un <strong style="color:var(--yellow)">match</strong> dans l'onglet Matchs puis clique sur <strong style="color:var(--yellow)">Proposer</strong>.</p>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px">
+          <span style="font-size:20px">1️⃣</span>
+          <div><div style="font-size:13px;font-weight:900">Marque tes doubles et manquants</div><div style="font-size:11px;color:var(--muted);font-weight:700">Dans tes collections</div></div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px">
+          <span style="font-size:20px">2️⃣</span>
+          <div><div style="font-size:13px;font-weight:900">Va dans l'onglet Matchs</div><div style="font-size:11px;color:var(--muted);font-weight:700">L'algorithme trouve les échanges possibles</div></div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px">
+          <span style="font-size:20px">3️⃣</span>
+          <div><div style="font-size:13px;font-weight:900">Clique sur Proposer</div><div style="font-size:11px;color:var(--muted);font-weight:700">L'autre collectionneur recevra ta proposition</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-primary btn-full" onclick="closeModal('modal-new-echange');goTo('matchs')">🎯 Voir mes matchs</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ LOADER GLOBAL ════════ -->
+<div class="global-loader" id="global-loader">
+  <img src="/allosticker-icon-512.png" alt="Allosticker">
+  <p>Chargement…</p>
+</div>
 
 <!-- ════════ ADMIN PANEL ════════ -->
 <div class="admin-overlay" id="admin-overlay" onclick="adminOverlayClick(event)">
@@ -964,7 +1122,7 @@ const{createClient}=supabase;
 const sb=createClient('https://gyierirtxsroaqlaphax.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5aWVyaXJ0eHNyb2FxbGFwaGF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5NzE0OTQsImV4cCI6MjA5NDU0NzQ5NH0.i5YjOBIDKFdZ4QXuFvV2r8ARuJBpNJUI010H86mOn30');
 
 // ══ STATE ══
-let STATE={
+let S={
   user:null,profile:null,collections:[],
   currentCat:'all',currentCollSlug:null,currentCollId:null,
   allCards:[],userCards:{},
@@ -972,48 +1130,60 @@ let STATE={
   matchFilter:'all',tradeTab:'tous',currentTrade:null,localMessages:[],
   obStep:0,obCats:new Set(),regEmail:'',
   viewStack:[],activeColls:{},
+  trades:[],unreadCount:0,
+  avisNote:0,avisTradeId:null,
 };
 
 const CAT_EMOJI={foot:'⚽',pokemon:'🃏',manga:'⚔️',basketball:'🏀',f1:'🏎️',rugby:'🏉',jeu_cartes:'🎴',football_americain:'🏈',baseball:'⚾',comics:'💥',disney:'✨',catch:'🥊',cinema:'🎬',nature:'🌿',tennis:'🎾'};
 const CAT_COLORS={foot:['#1a3a6e','#2a5cad'],pokemon:['#c8a800','#f5d000'],manga:['#6e1a1a','#ad2a2a'],basketball:['#8b4513','#c25c1a'],f1:['#1a1a6e','#2a2aad'],rugby:['#3a1a6e','#5c2aad'],jeu_cartes:['#1a5c3a','#2aad5c'],football_americain:['#3a4a1a','#5c7a2a'],baseball:['#4a1a1a','#7a2a2a'],comics:['#6e3a1a','#ad5c2a'],disney:['#1a4a6e','#2a7aad'],catch:['#4a1a4a','#7a2a7a']};
-const DEMO_MATCHES=[
-  {id:1,user:{nom:'Thomas R.',initiales:'TR',ville:'Paris 11e',reputation:4.9,nb_echanges:23,distance:'2 km',color:['#1a3a6e','#2a5cad']},collection:{nom:'Pokémon 151',emoji:'🃏',categorie:'pokemon'},score:8,je_donne:['Pikachu #25','Mewtwo #150'],je_recois:['Evoli #133','Mew #151','Alakazam #65']},
-  {id:2,user:{nom:'Léa M.',initiales:'LM',ville:'Lyon 6e',reputation:5.0,nb_echanges:47,distance:'12 km',color:['#6e1a1a','#ad2a2a']},collection:{nom:'Panini Ligue 1',emoji:'⚽',categorie:'foot'},score:5,je_donne:['Mbappé #L1-009'],je_recois:['Donnarumma #L1-001','Zaire-Emery #L1-007']},
-  {id:3,user:{nom:'Marc D.',initiales:'MD',ville:'Bordeaux',reputation:4.7,nb_echanges:12,distance:'38 km',color:['#1a5c3a','#2aad5c']},collection:{nom:'One Piece OP-01',emoji:'⚔️',categorie:'manga'},score:6,je_donne:['Shanks #OP01-012','Mihawk #OP01-022'],je_recois:['Luffy #OP01-001','Zoro #OP01-003']},
-];
-const DEMO_TRADES=[
-  {id:1,user:{nom:'Thomas R.',initiales:'TR',color:['#1a3a6e','#2a5cad']},statut:'en_attente',collection:'Pokémon 151',collection_emoji:'🃏',dernier_msg:'Salut ! Dispo ce weekend pour l\'échange 🎴',heure:'14:32',unread:true,je_donne:['Pikachu #25'],je_recois:['Evoli #133'],messages:[{id:1,role:'other',texte:'Salut ! On peut faire un échange sur Pokémon 151 ?',time:'14:20'},{id:2,role:'me',texte:'Oui parfait ! Tu es où ?',time:'14:28'},{id:3,role:'other',texte:'Salut ! Dispo ce weekend 🎴',time:'14:32'}]},
-  {id:2,user:{nom:'Léa M.',initiales:'LM',color:['#6e1a1a','#ad2a2a']},statut:'accepte',collection:'Panini Ligue 1',collection_emoji:'⚽',dernier_msg:'J\'envoie mes stickers demain 📬',heure:'Hier',unread:false,je_donne:['Mbappé #L1-009'],je_recois:['Donnarumma #L1-001'],messages:[{id:1,role:'other',texte:'Hello ! Tu as Mbappé en double ?',time:'10:00'},{id:2,role:'me',texte:'Oui ! Et toi Donnarumma ?',time:'10:05'},{id:3,role:'system',texte:'Échange accepté',time:''},{id:4,role:'other',texte:'J\'envoie mes stickers demain 📬',time:'10:08'}]},
-];
+
+// ══ UTILS ══
+const $=(id)=>document.getElementById(id);
+const set=(id,v)=>{const el=$(id);if(el)el.textContent=v;};
+function showToast(msg,dur=2500){
+  const t=$('toast');if(!t)return;
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer=setTimeout(()=>t.classList.remove('show'),dur);
+}
+function openModal(id){$(id)?.classList.add('open');}
+function closeModal(id){$(id)?.classList.remove('open');}
+function openEditProfil(){
+  if(!S.user){showToast('Connecte-toi pour modifier ton profil');return;}
+  $('edit-nom').value=S.profile?.nom||'';
+  $('edit-ville').value=S.profile?.ville||'';
+  $('edit-bio').value=S.profile?.bio||'';
+  $('edit-rayon').value=S.profile?.rayon||50;
+  openModal('modal-edit-profil');
+}
+function openEditVille(){openEditProfil();}
+function openEditRayon(){openEditProfil();}
+function openNewEchange(){openModal('modal-new-echange');}
 
 // ══ NAVIGATION ══
 function goTo(view){
-  // Éviter les doublons dans la stack
-  if(STATE.viewStack[STATE.viewStack.length-1]===view) return;
+  if(S.viewStack[S.viewStack.length-1]===view) return;
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  const el=document.getElementById('view-'+view);
-  if(!el) return;
+  const el=$('view-'+view);if(!el)return;
   el.classList.add('active');
-  STATE.viewStack.push(view);
+  S.viewStack.push(view);
   window.scrollTo(0,0);
   if(view==='accueil') loadCollections();
   if(view==='matchs') renderMatches();
-  if(view==='echanges'){document.getElementById('echanges-list-view').style.display='flex';document.getElementById('echanges-chat-view').style.display='none';renderConvList();}
+  if(view==='echanges'){$('echanges-list-view').style.display='flex';$('echanges-chat-view').style.display='none';loadTrades();}
   if(view==='profil') loadProfile();
-  if(view==='mes-cartes') renderMesCartes();
+  if(view==='mes-cartes') loadMesCartes();
   revealAll();
 }
-
 function goBack(){
-  STATE.viewStack.pop();
-  const prev=STATE.viewStack[STATE.viewStack.length-1]||'accueil';
-  // Si on revient sur ma-collection sans collection courante → accueil
-  const target=(prev==='ma-collection'&&!STATE.currentCollId)?'accueil':prev;
+  S.viewStack.pop();
+  const prev=S.viewStack[S.viewStack.length-1]||'accueil';
+  const target=(prev==='ma-collection'&&!S.currentCollId)?'accueil':prev;
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  document.getElementById('view-'+target)?.classList.add('active');
+  $('view-'+target)?.classList.add('active');
+  if(target==='accueil') renderColls();
   revealAll();
 }
-
 function revealAll(){
   setTimeout(()=>{
     document.querySelectorAll('.reveal:not(.visible)').forEach(el=>{
@@ -1027,75 +1197,72 @@ function revealAll(){
 
 // ══ AUTH ══
 async function initAuth(){
+  const loader=$('global-loader');
   const{data:{session}}=await sb.auth.getSession();
   if(session){
-    STATE.user=session.user;
+    S.user=session.user;
     await loadUserProfile();
-    // Détecter si nouveau compte (profil sans nom → onboarding)
-    const{data:p}=await sb.from('profiles').select('nom,ville').eq('id',STATE.user.id).single();
-    if(p&&!p.nom&&!p.ville){
-      showOnboarding();
-    } else {
-      goTo('accueil');
-    }
+    const{data:p}=await sb.from('profiles').select('nom,ville').eq('id',S.user.id).single();
+    if(loader) loader.style.display='none';
+    if(p&&!p.nom&&!p.ville) showOnboarding();
+    else goTo('accueil');
+  } else {
+    if(loader) loader.style.display='none';
   }
   sb.auth.onAuthStateChange(async(_,session)=>{
-    if(session&&!STATE.user){
-      STATE.user=session.user;
+    if(session&&!S.user){
+      S.user=session.user;
       await loadUserProfile();
-      const{data:p}=await sb.from('profiles').select('nom,ville').eq('id',STATE.user.id).single();
+      const{data:p}=await sb.from('profiles').select('nom,ville').eq('id',S.user.id).single();
       if(p&&!p.nom&&!p.ville) showOnboarding();
       else goTo('accueil');
     }
-    if(!session&&STATE.user){STATE.user=null;STATE.profile=null;}
+    if(!session&&S.user){S.user=null;S.profile=null;}
   });
 }
 
 function showOnboarding(){
-  document.getElementById('auth-tabs-section').style.display='none';
-  document.getElementById('auth-verify').style.display='none';
-  document.getElementById('auth-onboard').style.display='block';
+  $('auth-tabs-section').style.display='none';
+  $('auth-verify').style.display='none';
+  $('auth-onboard').style.display='block';
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  document.getElementById('view-auth').classList.add('active');
+  $('view-auth').classList.add('active');
 }
 
 async function loadUserProfile(){
-  if(!STATE.user) return;
-  const{data}=await sb.from('profiles').select('*').eq('id',STATE.user.id).single();
-  STATE.profile=data;
+  if(!S.user) return;
+  const{data}=await sb.from('profiles').select('*').eq('id',S.user.id).single();
+  S.profile=data;
   if(data){
-    const initials=(data.nom||STATE.user.email||'U').substring(0,2).toUpperCase();
-    const av=document.getElementById('accueil-avatar');
-    if(av) av.textContent=initials;
-    updateProfileUI(data,initials);
+    const ini=(data.nom||S.user.email||'U').substring(0,2).toUpperCase();
+    const av=$('accueil-avatar');if(av)av.textContent=ini;
+    updateProfileUI(data,ini);
   }
 }
 
-function updateProfileUI(p,initials){
-  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
-  set('profil-avatar',initials);
-  set('profil-nom',p.nom||STATE.user?.email||'Utilisateur');
+function updateProfileUI(p,ini){
+  set('profil-avatar',ini);
+  set('profil-nom',p.nom||S.user?.email||'Utilisateur');
   set('profil-ville',p.ville||'Non renseigné');
   set('profil-bio',p.bio||'Collectionneur passionné');
   set('profil-rep',(p.reputation||5.0).toFixed(1));
-  set('profil-rep-count',`(${p.nb_echanges||0} avis)`);
+  set('profil-rep-count','('+( p.nb_echanges||0)+' avis)');
   set('profil-stat-echanges',p.nb_echanges||0);
   set('settings-ville',p.ville||'—');
 }
 
 function switchAuthTab(tab){
-  document.getElementById('tab-login').classList.toggle('active',tab==='login');
-  document.getElementById('tab-register').classList.toggle('active',tab==='register');
-  document.getElementById('form-login').style.display=tab==='login'?'flex':'none';
-  document.getElementById('form-register').style.display=tab==='register'?'flex':'none';
+  $('tab-login').classList.toggle('active',tab==='login');
+  $('tab-register').classList.toggle('active',tab==='register');
+  $('form-login').style.display=tab==='login'?'flex':'none';
+  $('form-register').style.display=tab==='register'?'flex':'none';
   hideAuthError();
 }
 
 async function doLogin(){
-  const email=document.getElementById('login-email').value.trim();
-  const pwd=document.getElementById('login-pwd').value;
+  const email=$('login-email').value.trim();
+  const pwd=$('login-pwd').value;
   if(!email||!pwd){showAuthError('Remplis tous les champs');return;}
-  // Validation email basique
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){showAuthError('Email invalide');return;}
   setAuthLoading('login',true);
   const{error}=await sb.auth.signInWithPassword({email,password:pwd});
@@ -1104,146 +1271,183 @@ async function doLogin(){
     showAuthError(error.message.includes('Invalid')||error.message.includes('credentials')?'Email ou mot de passe incorrect':error.message.includes('confirmed')?'Confirme ton email avant de te connecter':error.message);
     return;
   }
-  STATE.user=(await sb.auth.getUser()).data.user;
+  S.user=(await sb.auth.getUser()).data.user;
   await loadUserProfile();
   goTo('accueil');
 }
 
 async function doRegister(){
-  const nom=document.getElementById('reg-nom').value.trim();
-  const email=document.getElementById('reg-email').value.trim();
-  const pwd=document.getElementById('reg-pwd').value;
+  const nom=$('reg-nom').value.trim();
+  const email=$('reg-email').value.trim();
+  const pwd=$('reg-pwd').value;
   if(!nom||!email||!pwd){showAuthError('Remplis tous les champs');return;}
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){showAuthError('Email invalide');return;}
   if(pwd.length<8){showAuthError('Mot de passe trop court (8 min)');return;}
-  setAuthLoading('register',true);
-  STATE.regEmail=email;
+  setAuthLoading('register',true);S.regEmail=email;
   const{error}=await sb.auth.signUp({email,password:pwd,options:{data:{nom}}});
   setAuthLoading('register',false);
-  if(error){
-    showAuthError(error.message.includes('already')?'Email déjà utilisé':error.message);
-    return;
-  }
-  document.getElementById('auth-tabs-section').style.display='none';
-  document.getElementById('auth-verify').style.display='block';
-  document.getElementById('verify-email-display').textContent=email;
+  if(error){showAuthError(error.message.includes('already')?'Email déjà utilisé':error.message);return;}
+  $('auth-tabs-section').style.display='none';
+  $('auth-verify').style.display='block';
+  $('verify-email-display').textContent=email;
 }
 
 async function forgotPassword(){
-  const email=document.getElementById('login-email').value.trim();
-  if(!email){showAuthError('Entre ton email d\'abord');return;}
+  const email=$('login-email').value.trim();
+  if(!email){showAuthError('Entre ton email');return;}
   const{error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+'/app.html'});
   if(error){showAuthError(error.message);return;}
+  const el=$('auth-error');
+  el.style.background='rgba(61,255,176,.1)';el.style.borderColor='rgba(61,255,176,.3)';el.style.color='var(--green)';
   showAuthError('📬 Email de réinitialisation envoyé !');
-  document.getElementById('auth-error').style.background='rgba(61,255,176,.1)';
-  document.getElementById('auth-error').style.borderColor='rgba(61,255,176,.3)';
-  document.getElementById('auth-error').style.color='var(--green)';
 }
 
 async function resendVerify(){
-  if(!STATE.regEmail){showToast('Email non trouvé, réessaie l\'inscription');return;}
-  const{error}=await sb.auth.resend({type:'signup',email:STATE.regEmail});
-  if(error) showToast('Erreur : '+error.message);
-  else showToast('📬 Email renvoyé à '+STATE.regEmail);
+  if(!S.regEmail){showToast('Email non trouvé');return;}
+  const{error}=await sb.auth.resend({type:'signup',email:S.regEmail});
+  showToast(error?'Erreur : '+error.message:'📬 Email renvoyé à '+S.regEmail);
 }
 
 async function doLogout(){
   await sb.auth.signOut();
-  STATE.user=null;STATE.profile=null;STATE.collections=[];
-  STATE.allCards=[];STATE.userCards={};STATE.activeColls={};STATE.viewStack=[];
+  S.user=null;S.profile=null;S.collections=[];
+  S.allCards=[];S.userCards={};S.activeColls={};S.viewStack=[];S.trades=[];
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  document.getElementById('view-auth').classList.add('active');
-  document.getElementById('auth-tabs-section').style.display='block';
-  document.getElementById('auth-verify').style.display='none';
-  document.getElementById('auth-onboard').style.display='none';
-  document.getElementById('form-login').style.display='flex';
-  document.getElementById('form-register').style.display='none';
-  document.getElementById('tab-login').classList.add('active');
-  document.getElementById('tab-register').classList.remove('active');
+  $('view-auth').classList.add('active');
+  $('auth-tabs-section').style.display='block';
+  $('auth-verify').style.display='none';
+  $('auth-onboard').style.display='none';
+  $('form-login').style.display='flex';
+  $('form-register').style.display='none';
+  $('tab-login').classList.add('active');
+  $('tab-register').classList.remove('active');
 }
 
 function setAuthLoading(form,loading){
-  const btn=document.getElementById('btn-'+form);
-  const sp=document.getElementById('spinner-'+form);
-  const lb=document.getElementById('label-'+form);
+  const btn=$('btn-'+form),sp=$('spinner-'+form),lb=$('label-'+form);
   if(btn)btn.disabled=loading;
   if(sp)sp.style.display=loading?'block':'none';
   if(lb)lb.style.display=loading?'none':'inline';
 }
 function showAuthError(msg){
-  const el=document.getElementById('auth-error');
-  const m=document.getElementById('auth-error-msg');
-  if(el&&m){
-    el.style.background='rgba(255,61,127,.1)';
-    el.style.borderColor='rgba(255,61,127,.3)';
-    el.style.color='var(--pink)';
-    m.textContent=msg;el.classList.add('show');
-  }
+  const el=$('auth-error'),m=$('auth-error-msg');
+  if(el&&m){m.textContent=msg;el.classList.add('show');}
 }
-function hideAuthError(){document.getElementById('auth-error')?.classList.remove('show');}
-function togglePwd(id,btn){const i=document.getElementById(id);i.type=i.type==='password'?'text':'password';btn.textContent=i.type==='password'?'👁️':'🙈';}
+function hideAuthError(){$('auth-error')?.classList.remove('show');}
+function togglePwd(id,btn){const i=$(id);i.type=i.type==='password'?'text':'password';btn.textContent=i.type==='password'?'👁️':'🙈';}
 
 // Onboarding
-let obCurrentStep=0;
+let obStep=0;
 function obNext(){
-  document.getElementById('os-'+obCurrentStep)?.classList.remove('active');
-  document.getElementById('od-'+obCurrentStep)?.classList.remove('active');
-  document.getElementById('od-'+obCurrentStep)?.classList.add('done');
-  obCurrentStep++;
-  document.getElementById('os-'+obCurrentStep)?.classList.add('active');
-  document.getElementById('od-'+obCurrentStep)?.classList.add('active');
+  $('os-'+obStep)?.classList.remove('active');$('od-'+obStep)?.classList.remove('active');$('od-'+obStep)?.classList.add('done');
+  obStep++;$('os-'+obStep)?.classList.add('active');$('od-'+obStep)?.classList.add('active');
 }
 function obPrev(){
-  document.getElementById('os-'+obCurrentStep)?.classList.remove('active');
-  document.getElementById('od-'+obCurrentStep)?.classList.remove('active');
-  obCurrentStep--;
-  document.getElementById('os-'+obCurrentStep)?.classList.add('active');
-  document.getElementById('od-'+obCurrentStep)?.classList.remove('done');
-  document.getElementById('od-'+obCurrentStep)?.classList.add('active');
+  $('os-'+obStep)?.classList.remove('active');$('od-'+obStep)?.classList.remove('active');
+  obStep--;$('os-'+obStep)?.classList.add('active');$('od-'+obStep)?.classList.remove('done');$('od-'+obStep)?.classList.add('active');
 }
-function toggleObCat(el,cat){el.classList.toggle('selected');STATE.obCats.has(cat)?STATE.obCats.delete(cat):STATE.obCats.add(cat);}
+function toggleObCat(el,cat){el.classList.toggle('selected');S.obCats.has(cat)?S.obCats.delete(cat):S.obCats.add(cat);}
 async function finishOnboard(){
-  const ville=document.getElementById('ob-ville')?.value.trim();
-  if(STATE.user){
-    await sb.from('profiles').upsert({id:STATE.user.id,ville:ville||null,updated_at:new Date().toISOString()},{onConflict:'id'});
-    STATE.profile={...STATE.profile,ville:ville||null};
-  }
-  document.getElementById('auth-onboard').style.display='none';
-  goTo('accueil');
+  const ville=$('ob-ville')?.value.trim();
+  if(S.user){await sb.from('profiles').upsert({id:S.user.id,ville:ville||null,updated_at:new Date().toISOString()},{onConflict:'id'});}
+  $('auth-onboard').style.display='none';goTo('accueil');
+}
+
+// ══ EDIT PROFIL ══
+async function saveEditProfil(){
+  if(!S.user) return;
+  const nom=$('edit-nom').value.trim();
+  const ville=$('edit-ville').value.trim();
+  const bio=$('edit-bio').value.trim();
+  const rayon=parseInt($('edit-rayon').value)||50;
+  const btn=$('btn-save-profil');
+  btn.disabled=true;btn.textContent='⏳ Sauvegarde…';
+  const updates={nom:nom||null,ville:ville||null,bio:bio||null,rayon,updated_at:new Date().toISOString()};
+  const{error}=await sb.from('profiles').update(updates).eq('id',S.user.id);
+  btn.disabled=false;btn.textContent='💾 Sauvegarder';
+  if(error){showToast('Erreur : '+error.message);return;}
+  S.profile={...S.profile,...updates};
+  const ini=(nom||S.user.email||'U').substring(0,2).toUpperCase();
+  updateProfileUI(S.profile,ini);
+  const av=$('accueil-avatar');if(av)av.textContent=ini;
+  closeModal('modal-edit-profil');
+  showToast('✓ Profil mis à jour !');
 }
 
 // ══ ACCUEIL ══
 async function loadCollections(){
-  if(STATE.collections.length>0){renderColls();return;}
+  if(S.collections.length>0){renderColls();updateHeroStats();return;}
   const{data,error}=await sb.from('collections').select('id,slug,nom,editeur,categorie,annee,nb_cartes,type').order('annee',{ascending:false});
   if(error){console.error('Collections:',error);return;}
-  STATE.collections=data||[];
+  S.collections=data||[];
+  // Charger les user_cards existantes si connecté
+  if(S.user) await loadAllUserCards();
   renderColls();
+  updateHeroStats();
+}
+
+async function loadAllUserCards(){
+  // Charger toutes les user_cards pour calculer les stats globales
+  const{data}=await sb.from('user_cards').select('card_id,statut,cards(collection_id)').eq('user_id',S.user.id);
+  if(!data) return;
+  // Grouper par collection
+  const byCol={};
+  data.forEach(uc=>{
+    const cid=uc.cards?.collection_id;
+    if(!cid) return;
+    if(!byCol[cid]) byCol[cid]={d:0,p:0,m:0,total:0};
+    if(uc.statut==='double') byCol[cid].d++;
+    else if(uc.statut==='possedee') byCol[cid].p++;
+    else if(uc.statut==='manquante') byCol[cid].m++;
+    byCol[cid].total++;
+  });
+  // Remplir activeColls avec les % de progression
+  Object.entries(byCol).forEach(([cid,counts])=>{
+    const coll=S.collections.find(c=>c.id===cid);
+    const total=coll?.nb_cartes||counts.total;
+    const pct=total>0?Math.round((counts.d+counts.p)/total*100):0;
+    S.activeColls[cid]=pct;
+  });
+  updateHeroStats();
+}
+
+async function updateHeroStats(){
+  if(!S.user){
+    set('hero-stat-colls','—');set('hero-stat-cartes','—');set('hero-stat-matchs','—');set('hero-stat-echanges','—');
+    return;
+  }
+  const nbColls=Object.keys(S.activeColls).length;
+  set('hero-stat-colls',nbColls||'0');
+  // Compter les cartes marquées
+  const{count:nbCartes}=await sb.from('user_cards').select('*',{count:'exact',head:true}).eq('user_id',S.user.id);
+  set('hero-stat-cartes',nbCartes||'0');
+  // Compter les échanges
+  const{count:nbEchanges}=await sb.from('trades').select('*',{count:'exact',head:true}).or('proposer_id.eq.'+S.user.id+',receiver_id.eq.'+S.user.id);
+  set('hero-stat-echanges',nbEchanges||'0');
+  set('hero-stat-matchs','—');
 }
 
 function renderColls(){
-  const grid=document.getElementById('colls-grid');
-  const skel=document.getElementById('colls-skeleton');
-  const empty=document.getElementById('colls-empty');
-  const count=document.getElementById('accueil-count');
-  let filtered=STATE.collections;
-  if(STATE.currentCat!=='all') filtered=filtered.filter(c=>c.categorie===STATE.currentCat);
-  const q=(document.getElementById('accueil-search')?.value||'').toLowerCase();
+  const grid=$('colls-grid'),skel=$('colls-skeleton'),empty=$('colls-empty'),count=$('accueil-count');
+  let filtered=S.collections;
+  if(S.currentCat!=='all') filtered=filtered.filter(c=>c.categorie===S.currentCat);
+  const q=($('accueil-search')?.value||'').toLowerCase();
   if(q) filtered=filtered.filter(c=>c.nom.toLowerCase().includes(q)||c.editeur.toLowerCase().includes(q));
-  if(skel) skel.style.display='none';
+  if(skel)skel.style.display='none';
   count.textContent=filtered.length+' collection'+(filtered.length>1?'s':'');
-  if(filtered.length===0){grid.style.display='none';empty.style.display='block';return;}
+  if(!filtered.length){grid.style.display='none';empty.style.display='block';return;}
   empty.style.display='none';grid.style.display='grid';
   const LABELS={all:'Toutes les collections',foot:'Football',pokemon:'Pokémon',manga:'Manga & Anime',basketball:'Basketball',f1:'Formule 1',rugby:'Rugby',jeu_cartes:'Jeux de cartes',football_americain:'NFL',baseball:'Baseball',comics:'Comics',disney:'Disney',catch:'Catch'};
-  document.getElementById('accueil-section-title').textContent=LABELS[STATE.currentCat]||'Collections';
+  $('accueil-section-title').textContent=LABELS[S.currentCat]||'Collections';
   grid.innerHTML=filtered.map((c,i)=>{
     const emoji=CAT_EMOJI[c.categorie]||'🃏';
     const colors=CAT_COLORS[c.categorie]||['#1e1e28','#23232f'];
     const bc=c.type==='stickers'?'badge-stickers':'badge-cartes';
     const bl=c.type==='stickers'?'Stickers':'Cartes';
-    // Sanitize nom pour onclick
-    const nomSafe=c.nom.split("'").join("\\'");
-    const pct=STATE.activeColls[c.id]!=null?`<div style="margin-top:4px;height:3px;border-radius:100px;background:var(--card2);overflow:hidden"><div style="height:100%;width:${STATE.activeColls[c.id]}%;background:linear-gradient(90deg,var(--yellow),var(--orange));border-radius:100px"></div></div>`:'';
+    const nomSafe=c.nom.split("'").join("\'");
+    const pct=S.activeColls[c.id]!=null?
+      `<div style="margin-top:4px;height:3px;border-radius:100px;background:var(--card2);overflow:hidden"><div style="height:100%;width:${S.activeColls[c.id]}%;background:linear-gradient(90deg,var(--yellow),var(--orange));border-radius:100px"></div></div>`
+      :'';
     return`<div class="coll-card reveal" style="animation-delay:${i*20}ms" onclick="openCollection('${c.slug}','${nomSafe}','${c.id}')">
       <div class="coll-annee">${c.annee||''}</div>
       <div class="coll-card-top">
@@ -1251,210 +1455,166 @@ function renderColls(){
         <div class="coll-type-badge ${bc}">${bl}</div>
       </div>
       <div><div class="coll-nom">${c.nom}</div><div class="coll-editeur">${c.editeur}</div></div>
-      <div class="coll-footer"><div class="coll-nb"><strong>${c.nb_cartes}</strong> ${bl.toLowerCase()}</div><div class="coll-arrow">→</div></div>
+      <div class="coll-footer"><div class="coll-nb"><strong id="nb-${c.id}">${c.nb_cartes}</strong> ${bl.toLowerCase()}</div><div class="coll-arrow">→</div></div>
       ${pct}
     </div>`;
   }).join('');
   setTimeout(()=>document.querySelectorAll('.coll-card.reveal').forEach((el,i)=>setTimeout(()=>el.classList.add('visible'),i*20)),50);
 }
-
-function setCat(cat,el){
-  STATE.currentCat=cat;
-  document.querySelectorAll('#cats-scroll .chip').forEach(c=>c.classList.remove('active'));
-  el.classList.add('active');
-  renderColls();
-}
+function setCat(cat,el){S.currentCat=cat;document.querySelectorAll('#cats-scroll .chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');renderColls();}
 function filterColls(){renderColls();}
 
 // ══ MA COLLECTION ══
 async function openCollection(slug,nom,id){
-  STATE.currentCollSlug=slug;STATE.currentCollId=id;
-  STATE.allCards=[];STATE.userCards={};
-  STATE.mcStatut='all';STATE.mcSearch='';STATE.mcSelected=new Set();
-  // Reset tabs
+  S.currentCollSlug=slug;S.currentCollId=id;
+  S.allCards=[];S.userCards={};
+  S.mcStatut='all';S.mcSearch='';S.mcSelected=new Set();
   document.querySelectorAll('.statut-tab').forEach(t=>{
-    t.className='statut-tab '+(t.dataset.s==='all'||t.dataset.s==='none'?'st-all':t.dataset.s==='double'?'st-double':t.dataset.s==='manquante'?'st-manquante':'st-possedee');
-    if(t.dataset.s==='all') t.classList.add('active');
+    t.className='statut-tab '+(t.dataset.s==='double'?'st-double':t.dataset.s==='manquante'?'st-manquante':t.dataset.s==='possedee'?'st-possedee':'st-all');
+    if(t.dataset.s==='all')t.classList.add('active');
   });
-  document.getElementById('mc-search').value='';
-  document.getElementById('mc-nom').textContent=nom;
-  document.getElementById('mc-skeleton').style.display='grid';
-  document.getElementById('mc-grid').style.display='none';
-  document.getElementById('mc-empty').style.display='none';
+  $('mc-search').value='';
+  $('mc-nom').textContent=nom;
+  $('mc-skeleton').style.display='grid';
+  $('mc-grid').style.display='none';
+  $('mc-empty').style.display='none';
+  $('mc-quick-actions').classList.remove('show');
   goTo('ma-collection');
-
-  // Charger cartes + user_cards en parallèle
   const[cardsRes,ucRes]=await Promise.all([
     sb.from('cards').select('id,numero,nom,sous_groupe,rarete').eq('collection_id',id),
-    STATE.user
-      ? sb.from('user_cards').select('card_id,statut').eq('user_id',STATE.user.id)
-      : Promise.resolve({data:[]}),
+    S.user?sb.from('user_cards').select('card_id,statut').eq('user_id',S.user.id):Promise.resolve({data:[]}),
   ]);
-
-  STATE.allCards=(cardsRes.data||[]).sort((a,b)=>{
+  S.allCards=(cardsRes.data||[]).sort((a,b)=>{
     const na=parseInt(a.numero)||0,nb=parseInt(b.numero)||0;
-    if(na!==nb) return na-nb;
-    return (a.numero||'').localeCompare(b.numero||'');
+    if(na!==nb)return na-nb;
+    return(a.numero||'').localeCompare(b.numero||'');
   });
-  // Créer un Set des card IDs de cette collection pour filtrer
-  const collCardIds=new Set(STATE.allCards.map(c=>c.id));
-  STATE.userCards={};
-  (ucRes.data||[]).forEach(uc=>{
-    if(collCardIds.has(uc.card_id)) STATE.userCards[uc.card_id]=uc.statut;
-  });
-
-  const coll=STATE.collections.find(c=>c.id===id);
-  document.getElementById('mc-sub').textContent=(coll?.editeur||'')+' · '+(coll?.nb_cartes||STATE.allCards.length)+' éléments';
-  document.getElementById('mc-skeleton').style.display='none';
-  renderMcCards();
-  updateMcStats();
+  const ids=new Set(S.allCards.map(c=>c.id));
+  S.userCards={};
+  (ucRes.data||[]).forEach(uc=>{if(ids.has(uc.card_id))S.userCards[uc.card_id]=uc.statut;});
+  const coll=S.collections.find(c=>c.id===id);
+  $('mc-sub').textContent=(coll?.editeur||'')+' · '+(coll?.nb_cartes||S.allCards.length)+' éléments';
+  $('mc-skeleton').style.display='none';
+  renderMcCards();updateMcStats();
 }
 
 function renderMcCards(){
-  const grid=document.getElementById('mc-grid');
-  const empty=document.getElementById('mc-empty');
-  let filtered=STATE.allCards;
-  if(STATE.mcStatut==='none') filtered=filtered.filter(c=>!STATE.userCards[c.id]);
-  else if(STATE.mcStatut!=='all') filtered=filtered.filter(c=>STATE.userCards[c.id]===STATE.mcStatut);
-  if(STATE.mcSearch){
-    const q=STATE.mcSearch.toLowerCase();
-    filtered=filtered.filter(c=>(c.nom||'').toLowerCase().includes(q)||(c.numero||'').toLowerCase().includes(q)||(c.sous_groupe||'').toLowerCase().includes(q));
-  }
+  const grid=$('mc-grid'),empty=$('mc-empty');
+  let filtered=S.allCards;
+  if(S.mcStatut==='none')filtered=filtered.filter(c=>!S.userCards[c.id]);
+  else if(S.mcStatut!=='all')filtered=filtered.filter(c=>S.userCards[c.id]===S.mcStatut);
+  if(S.mcSearch){const q=S.mcSearch.toLowerCase();filtered=filtered.filter(c=>(c.nom||'').toLowerCase().includes(q)||(c.numero||'').toLowerCase().includes(q)||(c.sous_groupe||'').toLowerCase().includes(q));}
   updateMcStats();
-  if(STATE.mcListView) grid.classList.add('list-view'); else grid.classList.remove('list-view');
+  if(S.mcListView)grid.classList.add('list-view');else grid.classList.remove('list-view');
   if(!filtered.length){grid.style.display='none';empty.style.display='block';return;}
   empty.style.display='none';grid.style.display='grid';
   const rm={commune:'r-commune',rare:'r-rare',ultra_rare:'r-ultra_rare',secrete:'r-secrete'};
   grid.innerHTML=filtered.map(card=>{
-    const s=STATE.userCards[card.id]||null;
-    const sc=s?`statut-${s}`:'';
+    const s=S.userCards[card.id]||null;
+    const sc=s?'statut-'+s:'';
     const badge=s?`<div class="card-statut-badge csb-${s}">${s==='double'?'×2':s==='manquante'?'?':'✓'}</div>`:'';
     const rc=rm[card.rarete]||'r-commune';
-    const nom=card.nom||`Carte #${card.numero}`;
-    if(STATE.mcListView){
-      return`<div class="card-item ${sc}" data-id="${card.id}" onclick="handleCardTap('${card.id}')">${badge}<div class="card-num">#${card.numero}</div><div style="flex:1;min-width:0"><div class="card-nom" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${nom}</div>${card.sous_groupe?`<div class="card-sg">${card.sous_groupe}</div>`:''}</div></div>`;
-    }
-    return`<div class="card-item ${sc}" data-id="${card.id}" onclick="handleCardTap('${card.id}')">
-      ${badge}
-      <div class="card-num">#${card.numero}</div>
-      <div class="card-nom">${nom}</div>
-      ${card.sous_groupe?`<div class="card-sg">${card.sous_groupe}</div>`:''}
-      <div style="margin-top:auto"><span class="rarete-dot ${rc}"></span></div>
-    </div>`;
+    const nom=card.nom||'Carte #'+card.numero;
+    if(S.mcListView)return`<div class="card-item ${sc}" data-id="${card.id}" onclick="handleCardTap('${card.id}')">${badge}<div class="card-num">#${card.numero}</div><div style="flex:1;min-width:0"><div class="card-nom" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${nom}</div>${card.sous_groupe?'<div class="card-sg">'+card.sous_groupe+'</div>':''}</div></div>`;
+    return`<div class="card-item ${sc}" data-id="${card.id}" onclick="handleCardTap('${card.id}')">${badge}<div class="card-num">#${card.numero}</div><div class="card-nom">${nom}</div>${card.sous_groupe?'<div class="card-sg">'+card.sous_groupe+'</div>':''}<div style="margin-top:auto"><span class="rarete-dot ${rc}"></span></div></div>`;
   }).join('');
 }
 
 function handleCardTap(id){
-  if(STATE.mcSelected.size>0){
-    STATE.mcSelected.has(id)?STATE.mcSelected.delete(id):STATE.mcSelected.add(id);
-    updateMcSelection();renderMcCards();return;
-  }
-  const cur=STATE.userCards[id]||null;
+  if(S.mcSelected.size>0){S.mcSelected.has(id)?S.mcSelected.delete(id):S.mcSelected.add(id);updateMcSelection();renderMcCards();return;}
+  const cur=S.userCards[id]||null;
   const next=cur===null?'possedee':cur==='possedee'?'double':cur==='double'?'manquante':null;
   updateCardStatut(id,next);
 }
 
 async function updateCardStatut(id,statut){
-  // Optimistic update
-  if(statut===null) delete STATE.userCards[id]; else STATE.userCards[id]=statut;
-  renderMcCards();
-  // Mettre à jour la progression dans activeColls
-  updateActiveColls();
-  if(!STATE.user){
-    showToast((statut==='double'?'🟠 Double':statut==='manquante'?'🔴 Manquante':statut==='possedee'?'🟢 Possédée':'⬜ Effacé')+' — Connecte-toi pour sauvegarder');
-    return;
-  }
-  if(statut===null){
-    await sb.from('user_cards').delete().eq('user_id',STATE.user.id).eq('card_id',id);
-  } else {
-    await sb.from('user_cards').upsert({user_id:STATE.user.id,card_id:id,statut},{onConflict:'user_id,card_id'});
-  }
+  if(statut===null)delete S.userCards[id];else S.userCards[id]=statut;
+  renderMcCards();updateActiveColls();
+  if(!S.user){showToast((statut==='double'?'🟠 Double':statut==='manquante'?'🔴 Manquante':statut==='possedee'?'🟢 Possédée':'⬜ Effacé')+' — Connecte-toi pour sauvegarder');return;}
+  if(statut===null)await sb.from('user_cards').delete().eq('user_id',S.user.id).eq('card_id',id);
+  else await sb.from('user_cards').upsert({user_id:S.user.id,card_id:id,statut},{onConflict:'user_id,card_id'});
 }
 
 async function bulkUpdate(statut){
-  const ids=[...STATE.mcSelected];
-  ids.forEach(id=>STATE.userCards[id]=statut);
+  const ids=[...S.mcSelected];
+  ids.forEach(id=>S.userCards[id]=statut);
   clearSelection();renderMcCards();updateActiveColls();
-  showToast(`✓ ${ids.length} carte${ids.length>1?'s':''} marquée${ids.length>1?'s':''}`);
-  if(STATE.user){
-    const rows=ids.map(id=>({user_id:STATE.user.id,card_id:id,statut}));
-    await sb.from('user_cards').upsert(rows,{onConflict:'user_id,card_id'});
-  }
+  showToast('✓ '+ids.length+' carte'+(ids.length>1?'s':'')+' marquée'+(ids.length>1?'s':''));
+  if(S.user){await sb.from('user_cards').upsert(ids.map(id=>({user_id:S.user.id,card_id:id,statut})),{onConflict:'user_id,card_id'});}
 }
 
-function clearSelection(){STATE.mcSelected.clear();updateMcSelection();renderMcCards();}
-
+function clearSelection(){S.mcSelected.clear();updateMcSelection();renderMcCards();}
 function updateMcSelection(){
-  const qa=document.getElementById('mc-quick-actions');
-  const n=STATE.mcSelected.size;
-  document.getElementById('mc-qa-count').textContent=n+' sél.';
+  const qa=$('mc-quick-actions'),n=S.mcSelected.size;
+  $('mc-qa-count').textContent=n+' sél.';
   qa.classList.toggle('show',n>0);
 }
-
 function updateMcStats(){
-  const d=Object.values(STATE.userCards).filter(s=>s==='double').length;
-  const m=Object.values(STATE.userCards).filter(s=>s==='manquante').length;
-  const p=Object.values(STATE.userCards).filter(s=>s==='possedee').length;
-  const total=STATE.allCards.length;
-  const none=total-d-m-p;
-  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  const d=Object.values(S.userCards).filter(s=>s==='double').length;
+  const m=Object.values(S.userCards).filter(s=>s==='manquante').length;
+  const p=Object.values(S.userCards).filter(s=>s==='possedee').length;
+  const total=S.allCards.length,none=total-d-m-p;
   set('mc-count-double',d);set('mc-count-manquante',m);set('mc-count-possedee',p);
-  const pct=total>0?Math.round((d+p)/total*100):0;
-  const fill=document.getElementById('mc-progress');
-  if(fill) fill.style.width=pct+'%';
-  set('mc-tab-all',total);set('mc-tab-none',none);
-  set('mc-tab-double',d);set('mc-tab-manquante',m);set('mc-tab-possedee',p);
+  const fill=$('mc-progress');if(fill)fill.style.width=(total>0?Math.round((d+p)/total*100):0)+'%';
+  set('mc-tab-all',total);set('mc-tab-none',none);set('mc-tab-double',d);set('mc-tab-manquante',m);set('mc-tab-possedee',p);
 }
-
 function updateActiveColls(){
-  if(!STATE.currentCollId) return;
-  const d=Object.values(STATE.userCards).filter(s=>s==='double').length;
-  const p=Object.values(STATE.userCards).filter(s=>s==='possedee').length;
-  const pct=STATE.allCards.length>0?Math.round((d+p)/STATE.allCards.length*100):0;
-  STATE.activeColls[STATE.currentCollId]=pct;
+  if(!S.currentCollId)return;
+  const d=Object.values(S.userCards).filter(s=>s==='double').length;
+  const p=Object.values(S.userCards).filter(s=>s==='possedee').length;
+  const coll=S.collections.find(c=>c.id===S.currentCollId);
+  const total=coll?.nb_cartes||S.allCards.length;
+  S.activeColls[S.currentCollId]=total>0?Math.round((d+p)/total*100):0;
+  // Mettre à jour le nb affiché dans la grille accueil si visible
+  if(coll){const nbEl=$('nb-'+coll.id);if(nbEl)nbEl.textContent=coll.nb_cartes;}
 }
-
 function setStatutFilter(s,el){
-  STATE.mcStatut=s;
+  S.mcStatut=s;
   document.querySelectorAll('.statut-tab').forEach(t=>{
     const ds=t.dataset.s||'all';
-    t.className='statut-tab '+(ds==='all'||ds==='none'?'st-all':ds==='double'?'st-double':ds==='manquante'?'st-manquante':'st-possedee');
+    t.className='statut-tab '+(ds==='double'?'st-double':ds==='manquante'?'st-manquante':ds==='possedee'?'st-possedee':'st-all');
   });
-  const cls=s==='all'||s==='none'?'st-all':s==='double'?'st-double':s==='manquante'?'st-manquante':'st-possedee';
-  el.className='statut-tab '+cls+' active';
+  el.className='statut-tab '+(s==='double'?'st-double':s==='manquante'?'st-manquante':s==='possedee'?'st-possedee':'st-all')+' active';
   renderMcCards();
 }
-
-function filterMcCards(){STATE.mcSearch=document.getElementById('mc-search').value;renderMcCards();}
+function filterMcCards(){S.mcSearch=$('mc-search').value;renderMcCards();}
 function toggleCardView(){
-  STATE.mcListView=!STATE.mcListView;
-  const btn=document.getElementById('mc-view-btn');
-  if(btn) btn.innerHTML=STATE.mcListView
+  S.mcListView=!S.mcListView;
+  const btn=$('mc-view-btn');
+  if(btn)btn.innerHTML=S.mcListView
     ?'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>'
     :'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>';
   renderMcCards();
 }
-
-// Long press → sélection multiple
 let pressTimer;
-document.addEventListener('pointerdown',e=>{
-  const c=e.target.closest('.card-item');if(!c)return;
-  pressTimer=setTimeout(()=>{
-    STATE.mcSelected.add(c.dataset.id);
-    updateMcSelection();renderMcCards();
-    if(navigator.vibrate)navigator.vibrate(30);
-  },500);
-});
+document.addEventListener('pointerdown',e=>{const c=e.target.closest('.card-item');if(!c)return;pressTimer=setTimeout(()=>{S.mcSelected.add(c.dataset.id);updateMcSelection();renderMcCards();if(navigator.vibrate)navigator.vibrate(30);},500);});
 document.addEventListener('pointerup',()=>clearTimeout(pressTimer));
 document.addEventListener('pointermove',()=>clearTimeout(pressTimer));
 
 // ══ MES CARTES ══
-function renderMesCartes(){
-  const list=document.getElementById('mes-cartes-list');
-  const count=document.getElementById('mes-cartes-count');
-  // Collecter les collections actives depuis activeColls
-  const activeIds=Object.keys(STATE.activeColls);
-  const activeColls=STATE.collections.filter(c=>activeIds.includes(c.id));
+async function loadMesCartes(){
+  const list=$('mes-cartes-list'),count=$('mes-cartes-count');
+  if(S.user&&S.collections.length){
+    // Recharger les stats depuis Supabase
+    const{data}=await sb.from('user_cards').select('card_id,statut,cards(collection_id)').eq('user_id',S.user.id);
+    if(data){
+      const byCol={};
+      data.forEach(uc=>{
+        const cid=uc.cards?.collection_id;if(!cid)return;
+        if(!byCol[cid]){byCol[cid]={d:0,p:0,total:0};}
+        if(uc.statut==='double')byCol[cid].d++;
+        else if(uc.statut==='possedee')byCol[cid].p++;
+        byCol[cid].total++;
+      });
+      Object.entries(byCol).forEach(([cid,counts])=>{
+        const coll=S.collections.find(c=>c.id===cid);
+        const total=coll?.nb_cartes||counts.total;
+        S.activeColls[cid]=total>0?Math.round((counts.d+counts.p)/total*100):0;
+      });
+    }
+  }
+  const activeIds=Object.keys(S.activeColls);
+  const activeColls=S.collections.filter(c=>activeIds.includes(c.id));
   count.textContent=activeColls.length+' collection'+(activeColls.length>1?'s':'');
   if(!activeColls.length){
     list.innerHTML='<div class="empty-state"><div class="e-emoji">📋</div><h3>Pas encore de cartes</h3><p>Va dans l\'Accueil et sélectionne<br>une collection pour commencer.</p></div>';
@@ -1462,14 +1622,10 @@ function renderMesCartes(){
   }
   list.innerHTML=activeColls.map(c=>{
     const colors=CAT_COLORS[c.categorie]||['#1e1e28','#23232f'];
-    const emoji=CAT_EMOJI[c.categorie]||'🃏';
-    const pct=STATE.activeColls[c.id]||0;
-    return`<div class="coll-row" onclick="openCollection('${c.slug}','${c.nom.split("'").join("\\'")}','${c.id}')">
-      <div class="coll-row-emoji" style="background:linear-gradient(135deg,${colors[0]},${colors[1]})">${emoji}</div>
-      <div class="coll-row-info">
-        <div class="coll-row-nom">${c.nom}</div>
-        <div class="coll-row-bar"><div class="coll-row-fill" style="width:${pct}%"></div></div>
-      </div>
+    const pct=S.activeColls[c.id]||0;
+    return`<div class="coll-row" onclick="openCollection('${c.slug}','${c.nom.split("'").join("\'")}','${c.id}')">
+      <div class="coll-row-emoji" style="background:linear-gradient(135deg,${colors[0]},${colors[1]})">${CAT_EMOJI[c.categorie]||'🃏'}</div>
+      <div class="coll-row-info"><div class="coll-row-nom">${c.nom}</div><div class="coll-row-bar"><div class="coll-row-fill" style="width:${pct}%"></div></div></div>
       <div class="coll-row-pct">${pct}%</div>
       <div style="color:var(--muted);font-size:14px">›</div>
     </div>`;
@@ -1477,208 +1633,396 @@ function renderMesCartes(){
 }
 
 // ══ MATCHING ══
-function renderMatches(){
-  // Cacher le bandeau démo si connecté
-  const banner=document.getElementById('demo-banner-matchs');
-  if(banner) banner.style.display=STATE.user?'none':'flex';
+async function renderMatches(){
+  const banner=$('demo-banner-matchs');
+  // Si connecté : charger vrais matchs depuis vue SQL
+  if(S.user){
+    if(banner)banner.style.display='none';
+    await loadRealMatches();
+  } else {
+    if(banner)banner.style.display='flex';
+    renderDemoMatches();
+  }
+}
 
-  let filtered=DEMO_MATCHES;
-  if(STATE.matchFilter==='proche') filtered=filtered.filter(m=>parseInt(m.user.distance)<20);
-  else if(STATE.matchFilter!=='all') filtered=filtered.filter(m=>m.collection.categorie===STATE.matchFilter);
-  filtered.sort((a,b)=>b.score-a.score);
-
-  const badge=document.getElementById('match-total-badge');
-  const sub=document.getElementById('match-sub');
-  if(badge) badge.textContent=filtered.length+' match'+(filtered.length>1?'s':'');
-  if(sub) sub.textContent=filtered.length+' échange'+(filtered.length>1?'s':'')+' possible'+(filtered.length>1?'s':'');
-
-  const list=document.getElementById('matches-list');
-  const empty=document.getElementById('matches-empty');
-  if(!filtered.length){list.innerHTML='';empty.style.display='block';return;}
+async function loadRealMatches(){
+  const list=$('matches-list'),empty=$('matches-empty'),badge=$('match-total-badge'),sub=$('match-sub');
+  list.innerHTML='<div style="padding:20px 16px;display:flex;flex-direction:column;gap:10px"><div class="skeleton" style="height:160px"></div><div class="skeleton" style="height:160px"></div></div>';
+  // Requête sur la vue matches
+  let q=sb.from('matches').select('user_b,card_nom,card_numero,collection_nom,collection_slug').eq('user_a',S.user.id);
+  if(S.matchFilter!=='all'&&S.matchFilter!=='proche') q=q.eq('categorie',S.matchFilter);
+  const{data:matchData,error}=await q.limit(50);
+  if(error){console.error(error);renderDemoMatches();return;}
+  if(!matchData?.length){list.innerHTML='';empty.style.display='block';if(badge)badge.textContent='0 match';if(sub)sub.textContent='Aucun échange possible pour le moment';return;}
+  // Grouper par user_b
+  const byUser={};
+  matchData.forEach(m=>{
+    if(!byUser[m.user_b])byUser[m.user_b]={cards:[]};
+    byUser[m.user_b].cards.push({nom:m.card_nom,numero:m.card_numero,coll:m.collection_nom,slug:m.collection_slug});
+  });
+  // Charger les profils des users matchés
+  const userIds=Object.keys(byUser);
+  const{data:profiles}=await sb.from('profiles').select('id,nom,ville,reputation,nb_echanges').in('id',userIds);
+  const profMap={};(profiles||[]).forEach(p=>profMap[p.id]=p);
+  // Construire les match cards
+  const matchCards=userIds.map(uid=>{
+    const p=profMap[uid]||{};
+    const cards=byUser[uid].cards;
+    return{id:uid,user:{nom:p.nom||'Collectionneur',initiales:(p.nom||'CC').substring(0,2).toUpperCase(),ville:p.ville||'—',reputation:p.reputation||5.0,nb_echanges:p.nb_echanges||0,distance:'—',color:['#1a3a6e','#2a5cad']},collection:{nom:cards[0]?.coll||'—',emoji:'🃏',categorie:''},score:cards.length,je_donne:cards.slice(0,5).map(c=>c.nom||'#'+c.numero),je_recois:[]};
+  });
+  if(badge)badge.textContent=matchCards.length+' match'+(matchCards.length>1?'s':'');
+  if(sub)sub.textContent=matchCards.length+' échange'+(matchCards.length>1?'s':'')+' possible'+(matchCards.length>1?'s':'');
   empty.style.display='none';
+  renderMatchCards(matchCards);
+}
 
+function renderDemoMatches(){
+  const DEMO=[
+    {id:'d1',user:{nom:'Thomas R.',initiales:'TR',ville:'Paris 11e',reputation:4.9,nb_echanges:23,distance:'2 km',color:['#1a3a6e','#2a5cad']},collection:{nom:'Pokémon 151',emoji:'🃏',categorie:'pokemon'},score:8,je_donne:['Pikachu #25','Mewtwo #150'],je_recois:['Evoli #133','Mew #151','Alakazam #65']},
+    {id:'d2',user:{nom:'Léa M.',initiales:'LM',ville:'Lyon 6e',reputation:5.0,nb_echanges:47,distance:'12 km',color:['#6e1a1a','#ad2a2a']},collection:{nom:'Panini Ligue 1',emoji:'⚽',categorie:'foot'},score:5,je_donne:['Mbappé #L1-009'],je_recois:['Donnarumma #L1-001','Zaire-Emery #L1-007']},
+    {id:'d3',user:{nom:'Marc D.',initiales:'MD',ville:'Bordeaux',reputation:4.7,nb_echanges:12,distance:'38 km',color:['#1a5c3a','#2aad5c']},collection:{nom:'One Piece OP-01',emoji:'⚔️',categorie:'manga'},score:6,je_donne:['Shanks #OP01-012'],je_recois:['Luffy #OP01-001','Zoro #OP01-003']},
+  ];
+  let filtered=DEMO;
+  if(S.matchFilter!=='all'&&S.matchFilter!=='proche') filtered=DEMO.filter(m=>m.collection.categorie===S.matchFilter);
+  const badge=$('match-total-badge'),sub=$('match-sub'),empty=$('matches-empty');
+  if(badge)badge.textContent=filtered.length+' match'+(filtered.length>1?'s':'');
+  if(sub)sub.textContent=filtered.length+' échange'+(filtered.length>1?'s':'')+' possible'+(filtered.length>1?'s':'');
+  empty.style.display=filtered.length?'none':'block';
+  renderMatchCards(filtered);
+}
+
+function renderMatchCards(list){
+  const container=$('matches-list');
+  if(!list.length){container.innerHTML='';return;}
   const sc=s=>s>=7?'var(--green)':s>=4?'var(--yellow)':'var(--orange)';
-  list.innerHTML=filtered.map((m,i)=>{
-    const dp=m.je_donne.slice(0,3).map(c=>`<div class="ex-pill give">${c}</div>`).join('');
-    const dm=m.je_donne.length>3?`<div class="ex-more">+${m.je_donne.length-3}</div>`:'';
-    const rp=m.je_recois.slice(0,3).map(c=>`<div class="ex-pill get">${c}</div>`).join('');
-    const rm2=m.je_recois.length>3?`<div class="ex-more">+${m.je_recois.length-3}</div>`:'';
-    return`<div class="match-card reveal" style="animation-delay:${i*50}ms" onclick="proposeEchange(${m.id})">
+  container.innerHTML=list.map((m,i)=>{
+    const dp=m.je_donne.slice(0,3).map(c=>'<div class="ex-pill give">'+c+'</div>').join('');
+    const dm=m.je_donne.length>3?'<div class="ex-more">+'+(m.je_donne.length-3)+'</div>':'';
+    const rp=m.je_recois.slice(0,3).map(c=>'<div class="ex-pill get">'+c+'</div>').join('');
+    const rm=m.je_recois.length>3?'<div class="ex-more">+'+(m.je_recois.length-3)+'</div>':'';
+    const userId=typeof m.id==='string'&&!m.id.startsWith('d')?m.id:'';
+    return`<div class="match-card reveal" style="animation-delay:${i*50}ms" onclick="proposeEchange('${userId}','${m.user.nom.split("'").join("\'")}')">
       <div class="match-user">
         <div class="user-avatar" style="background:linear-gradient(135deg,${m.user.color[0]},${m.user.color[1]})">${m.user.initiales}</div>
         <div class="user-info">
           <div class="user-nom">${m.user.nom}</div>
-          <div class="user-meta"><span class="user-ville">📍 ${m.user.ville}</span><span class="dist-badge">🚗 ${m.user.distance}</span></div>
+          <div class="user-meta"><span class="user-ville">📍 ${m.user.ville}</span>${m.user.distance!=='—'?'<span class="dist-badge">🚗 '+m.user.distance+'</span>':''}</div>
           <div class="user-meta"><span class="user-rep">⭐ ${m.user.reputation}</span><span class="user-echanges">${m.user.nb_echanges} échanges</span></div>
         </div>
         <div class="match-score-wrap"><div class="match-score" style="color:${sc(m.score)}">${m.score}</div><div class="match-score-lbl">cartes</div></div>
       </div>
       <div class="match-body">
         <div class="ex-row"><div class="ex-label give">Je donne</div><div class="ex-pills">${dp}${dm}</div></div>
-        <div class="ex-row"><div class="ex-label get">Je reçois</div><div class="ex-pills">${rp}${rm2}</div></div>
+        ${rp?'<div class="ex-row"><div class="ex-label get">Je reçois</div><div class="ex-pills">'+rp+rm+'</div></div>':''}
       </div>
       <div class="match-footer">
         <div class="match-coll"><span style="font-size:16px">${m.collection.emoji}</span><span class="match-coll-nom">${m.collection.nom}</span></div>
-        <button class="propose-btn" onclick="event.stopPropagation();proposeEchange(${m.id})">🤝 Proposer</button>
+        <button class="propose-btn" onclick="event.stopPropagation();proposeEchange('${userId}','${m.user.nom.split("'").join("\'")}')">🤝 Proposer</button>
       </div>
     </div>`;
   }).join('');
   setTimeout(()=>document.querySelectorAll('.match-card.reveal').forEach((el,i)=>setTimeout(()=>el.classList.add('visible'),i*50)),50);
 }
 
-function setMatchFilter(f,el){
-  STATE.matchFilter=f;
-  document.querySelectorAll('#match-filters .chip').forEach(c=>c.classList.remove('active'));
-  el.classList.add('active');
-  renderMatches();
+async function proposeEchange(receiverId,receiverNom){
+  if(!S.user){showToast('Connecte-toi pour proposer un échange');return;}
+  if(!receiverId){showToast('Mode démo — connecte-toi pour de vrais échanges');return;}
+  // Créer le trade en base
+  const{data,error}=await sb.from('trades').insert({
+    proposer_id:S.user.id,receiver_id:receiverId,
+    statut:'en_attente',message_init:'Salut ! Je voudrais qu\'on fasse un échange.'
+  }).select().single();
+  if(error){showToast('Erreur : '+error.message);return;}
+  showToast('🤝 Proposition envoyée à '+receiverNom+' !');
+  goTo('echanges');
 }
-function proposeEchange(id){showToast('🤝 Proposition envoyée (bientôt disponible)');}
 
-// ══ ÉCHANGES / MESSAGERIE ══
-function renderConvList(){
-  const list=document.getElementById('conv-list');
-  let filtered=DEMO_TRADES;
-  if(STATE.tradeTab!=='tous') filtered=filtered.filter(t=>t.statut===STATE.tradeTab);
-  const sl={en_attente:'En attente',accepte:'Accepté',refuse:'Refusé',complete:'Terminé'};
-  const sc={en_attente:'tag-en_attente',accepte:'tag-accepte',refuse:'tag-refuse',complete:'tag-complete'};
-  if(!filtered.length){
+function setMatchFilter(f,el){S.matchFilter=f;document.querySelectorAll('#match-filters .chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');renderMatches();}
+
+// ══ ÉCHANGES ══
+async function loadTrades(){
+  if(!S.user){renderDemoTrades();return;}
+  let q=sb.from('trades').select('*,proposer:profiles!proposer_id(id,nom),receiver:profiles!receiver_id(id,nom)').or('proposer_id.eq.'+S.user.id+',receiver_id.eq.'+S.user.id).order('updated_at',{ascending:false});
+  if(S.tradeTab!=='tous') q=q.eq('statut',S.tradeTab);
+  const{data,error}=await q;
+  if(error){renderDemoTrades();return;}
+  S.trades=data||[];
+  // Compter non lus
+  const unread=S.trades.filter(t=>t.receiver_id===S.user.id&&t.statut==='en_attente').length;
+  S.unreadCount=unread;
+  const notif=$('nav-notif-msg');
+  if(notif)notif.style.display=unread>0?'block':'none';
+  renderTradesList();
+}
+
+function renderTradesList(){
+  const list=$('conv-list');
+  if(!S.trades.length){
     list.innerHTML='<div class="empty-state"><div class="e-emoji">🤝</div><h3>Aucun échange</h3><p>Trouve des matchs et propose des échanges !</p></div>';
     return;
   }
-  list.innerHTML=filtered.map(t=>`
-    <div class="conv-item" onclick="openChat(${t.id})">
-      <div class="conv-avatar" style="background:linear-gradient(135deg,${t.user.color[0]},${t.user.color[1]})">${t.user.initiales}${t.unread?'<div class="conv-unread-dot"></div>':''}</div>
+  const sl={en_attente:'En attente',accepte:'Accepté',refuse:'Refusé',complete:'Terminé',annule:'Annulé'};
+  const sc_cls={en_attente:'tag-en_attente',accepte:'tag-accepte',refuse:'tag-refuse',complete:'tag-complete',annule:'tag-complete'};
+  list.innerHTML=S.trades.map(t=>{
+    const isProposer=t.proposer_id===S.user?.id;
+    const other=isProposer?t.receiver:t.proposer;
+    const nom=other?.nom||'Collectionneur';
+    const ini=nom.substring(0,2).toUpperCase();
+    const isNew=!isProposer&&t.statut==='en_attente';
+    const colors=['#1a3a6e','#2a5cad'];
+    const heure=new Date(t.updated_at).toLocaleDateString('fr-FR',{day:'numeric',month:'short'});
+    return`<div class="conv-item${isNew?' unread':''}" onclick="openChatReal('${t.id}')">
+      <div class="conv-avatar" style="background:linear-gradient(135deg,${colors[0]},${colors[1]})">${ini}${isNew?'<div class="conv-unread-dot"></div>':''}</div>
       <div class="conv-body">
-        <div class="conv-top"><div class="conv-nom">${t.user.nom}</div><div class="conv-time">${t.heure}</div></div>
-        <div class="conv-msg ${t.unread?'unread-msg':''}">${t.dernier_msg}</div>
-        <div class="conv-tags"><div class="conv-tag ${sc[t.statut]}">${sl[t.statut]}</div><div class="conv-tag tag-coll">${t.collection_emoji} ${t.collection}</div></div>
+        <div class="conv-top"><div class="conv-nom">${nom}</div><div class="conv-time">${heure}</div></div>
+        <div class="conv-msg${isNew?' unread-msg':''}">${isProposer?'Proposition envoyée':'Nouvelle proposition reçue'}</div>
+        <div class="conv-tags"><div class="conv-tag ${sc_cls[t.statut]||'tag-complete'}">${sl[t.statut]||t.statut}</div></div>
       </div>
-    </div>`).join('');
-}
-
-function setTradeTab(tab,el){
-  STATE.tradeTab=tab;
-  document.querySelectorAll('.trade-tab').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active');
-  renderConvList();
-}
-
-function openChat(id){
-  STATE.currentTrade=DEMO_TRADES.find(t=>t.id===id);
-  if(!STATE.currentTrade) return;
-  STATE.localMessages=[...STATE.currentTrade.messages];
-  document.getElementById('echanges-list-view').style.display='none';
-  document.getElementById('echanges-chat-view').style.display='flex';
-  document.getElementById('chat-nom').textContent=STATE.currentTrade.user.nom;
-  document.getElementById('chat-sub').textContent=STATE.currentTrade.collection_emoji+' '+STATE.currentTrade.collection;
-  renderTradeBanner();renderChatMessages();
-  setTimeout(()=>{const w=document.getElementById('messages-wrap');if(w)w.scrollTop=w.scrollHeight;},100);
-}
-
-function closeChatView(){
-  document.getElementById('echanges-chat-view').style.display='none';
-  document.getElementById('echanges-list-view').style.display='flex';
-}
-
-function renderTradeBanner(){
-  const t=STATE.currentTrade;if(!t)return;
-  const dp=t.je_donne.map(c=>`<div class="trade-pill give">${c}</div>`).join('');
-  const rp=t.je_recois.map(c=>`<div class="trade-pill get">${c}</div>`).join('');
-  let actions='';
-  if(t.statut==='en_attente') actions=`<div class="trade-action-btns"><button class="trade-action-btn tab-accept" onclick="updateTrade('accepte')">✓ Accepter</button><button class="trade-action-btn tab-refuse" onclick="updateTrade('refuse')">✕ Refuser</button></div>`;
-  else if(t.statut==='accepte') actions=`<div class="trade-action-btns"><button class="trade-action-btn tab-complete" onclick="updateTrade('complete')">🎉 Marquer comme reçu</button></div>`;
-  else if(t.statut==='complete') actions=`<div class="trade-action-btns"><button class="trade-action-btn tab-complete" onclick="showToast('Laisser un avis')">⭐ Laisser un avis</button></div>`;
-  const banner=document.getElementById('trade-banner');
-  if(banner) banner.innerHTML=`
-    <div class="trade-banner-title">🔄 Détail de l'échange</div>
-    <div class="trade-cards-row">
-      <div class="trade-side"><div class="trade-side-lbl give">Je donne</div><div class="trade-pills">${dp}</div></div>
-      <div class="trade-arrow-icon">⇄</div>
-      <div class="trade-side"><div class="trade-side-lbl get">Je reçois</div><div class="trade-pills">${rp}</div></div>
-    </div>${actions}`;
-}
-
-function renderChatMessages(){
-  const wrap=document.getElementById('messages-wrap');if(!wrap)return;
-  wrap.innerHTML=STATE.localMessages.map(msg=>{
-    if(msg.role==='system') return`<div class="msg-system"><span>${msg.texte}</span></div>`;
-    return`<div class="msg-group"><div class="msg-bubble ${msg.role}">${msg.texte}</div>${msg.time?`<div class="msg-time ${msg.role}">${msg.time}</div>`:''}</div>`;
+    </div>`;
   }).join('');
 }
 
-function sendMsg(){
-  const input=document.getElementById('chat-input');
+function renderDemoTrades(){
+  const list=$('conv-list');
+  const DEMO=[
+    {_id:1,nom:'Thomas R.',ini:'TR',colors:['#1a3a6e','#2a5cad'],statut:'en_attente',msg:'Salut ! Dispo ce weekend 🎴',heure:'14:32',unread:true,collection:'Pokémon 151',emoji:'🃏',je_donne:['Pikachu #25'],je_recois:['Evoli #133'],messages:[{role:'other',texte:'Salut ! On échange sur Pokémon 151 ?',time:'14:20'},{role:'me',texte:'Oui parfait ! Tu es où ?',time:'14:28'},{role:'other',texte:'Salut ! Dispo ce weekend 🎴',time:'14:32'}]},
+    {_id:2,nom:'Léa M.',ini:'LM',colors:['#6e1a1a','#ad2a2a'],statut:'accepte',msg:'J\'envoie mes stickers demain 📬',heure:'Hier',unread:false,collection:'Panini Ligue 1',emoji:'⚽',je_donne:['Mbappé'],je_recois:['Donnarumma'],messages:[{role:'other',texte:'Hello ! Tu as Mbappé en double ?',time:'10:00'},{role:'me',texte:'Oui ! Et toi Donnarumma ?',time:'10:05'},{role:'system',texte:'Échange accepté'},{role:'other',texte:'J\'envoie mes stickers demain 📬',time:'10:08'}]},
+  ];
+  const sl={en_attente:'En attente',accepte:'Accepté',refuse:'Refusé',complete:'Terminé'};
+  const sc_cls={en_attente:'tag-en_attente',accepte:'tag-accepte',refuse:'tag-refuse',complete:'tag-complete'};
+  list.innerHTML=DEMO.map(t=>`
+    <div class="conv-item${t.unread?' unread':''}" onclick="openChatDemo(${t._id})">
+      <div class="conv-avatar" style="background:linear-gradient(135deg,${t.colors[0]},${t.colors[1]})">${t.ini}${t.unread?'<div class="conv-unread-dot"></div>':''}</div>
+      <div class="conv-body">
+        <div class="conv-top"><div class="conv-nom">${t.nom}</div><div class="conv-time">${t.heure}</div></div>
+        <div class="conv-msg${t.unread?' unread-msg':''}">${t.msg}</div>
+        <div class="conv-tags"><div class="conv-tag ${sc_cls[t.statut]}">${sl[t.statut]}</div><div class="conv-tag tag-coll">${t.emoji} ${t.collection}</div></div>
+      </div>
+    </div>`).join('');
+  S._demoTrades=DEMO;
+}
+
+function setTradeTab(tab,el){S.tradeTab=tab;document.querySelectorAll('.trade-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');loadTrades();}
+
+// Chat réel (Supabase)
+let realtimeSub=null;
+async function openChatReal(tradeId){
+  const trade=S.trades.find(t=>t.id===tradeId);if(!trade)return;
+  S.currentTrade={...trade,isReal:true};
+  S.localMessages=[];
+  showChatView();
+  const other=trade.proposer_id===S.user.id?trade.receiver:trade.proposer;
+  $('chat-nom').textContent=other?.nom||'Collectionneur';
+  $('chat-sub').textContent='Échange · '+({en_attente:'En attente',accepte:'Accepté ✓',complete:'Terminé',refuse:'Refusé'}[trade.statut]||trade.statut);
+  renderTradeBannerReal(trade);
+  // Charger messages
+  const{data:msgs}=await sb.from('messages').select('*,sender:profiles(nom)').eq('trade_id',tradeId).order('created_at');
+  S.localMessages=(msgs||[]).map(m=>({id:m.id,role:m.sender_id===S.user.id?'me':'other',texte:m.contenu,time:new Date(m.created_at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}));
+  renderChatMessages();scrollChat();
+  // Realtime
+  if(realtimeSub)sb.removeChannel(realtimeSub);
+  realtimeSub=sb.channel('trade-'+tradeId)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'trade_id=eq.'+tradeId},payload=>{
+      const m=payload.new;
+      if(m.sender_id===S.user.id)return;
+      S.localMessages.push({id:m.id,role:'other',texte:m.contenu,time:new Date(m.created_at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})});
+      renderChatMessages();scrollChat();
+    }).subscribe();
+}
+
+function renderTradeBannerReal(trade){
+  const isProposer=trade.proposer_id===S.user?.id;
+  let actions='';
+  if(trade.statut==='en_attente'&&!isProposer){
+    actions=`<div class="trade-action-btns"><button class="trade-action-btn tab-accept" onclick="updateTradeReal('accepte')">✓ Accepter</button><button class="trade-action-btn tab-refuse" onclick="updateTradeReal('refuse')">✕ Refuser</button></div>`;
+  } else if(trade.statut==='en_attente'&&isProposer){
+    actions=`<div class="trade-action-btns"><button class="trade-action-btn tab-refuse" onclick="updateTradeReal('annule')">✕ Annuler</button></div>`;
+  } else if(trade.statut==='accepte'){
+    actions=`<div class="trade-action-btns"><button class="trade-action-btn tab-complete" onclick="updateTradeReal('complete')">🎉 Marquer comme reçu</button></div>`;
+  } else if(trade.statut==='complete'){
+    actions=`<div class="trade-action-btns"><button class="trade-action-btn tab-complete" onclick="openAvisModal()">⭐ Laisser un avis</button></div>`;
+  }
+  const banner=$('trade-banner');
+  if(banner)banner.innerHTML=`<div class="trade-banner-title">🔄 ${trade.statut==='en_attente'?'Proposition en attente':trade.statut==='accepte'?'Échange accepté ✓':trade.statut==='complete'?'Échange terminé 🎉':'Échange '+ trade.statut}</div>${trade.message_init?'<div style="font-size:12px;color:var(--muted);font-weight:700;margin-bottom:8px">'+trade.message_init+'</div>':''}${actions}`;
+}
+
+async function updateTradeReal(statut){
+  if(!S.currentTrade?.id)return;
+  const{error}=await sb.from('trades').update({statut,updated_at:new Date().toISOString()}).eq('id',S.currentTrade.id);
+  if(error){showToast('Erreur : '+error.message);return;}
+  S.currentTrade.statut=statut;
+  const labels={accepte:'✓ Échange accepté !',refuse:'Échange refusé',annule:'Échange annulé',complete:'🎉 Échange terminé !'};
+  S.localMessages.push({id:Date.now(),role:'system',texte:labels[statut]||statut,time:''});
+  // Envoyer message système
+  await sb.from('messages').insert({trade_id:S.currentTrade.id,sender_id:S.user.id,contenu:labels[statut]||statut});
+  renderTradeBannerReal(S.currentTrade);renderChatMessages();scrollChat();
+  showToast(labels[statut]||statut);
+  loadTrades();
+}
+
+// Chat démo
+function openChatDemo(id){
+  const t=S._demoTrades?.find(d=>d._id===id);if(!t)return;
+  S.currentTrade={...t,isReal:false};
+  S.localMessages=t.messages||[];
+  showChatView();
+  $('chat-nom').textContent=t.nom;
+  $('chat-sub').textContent=t.emoji+' '+t.collection;
+  const banner=$('trade-banner');
+  if(banner){
+    const dp=t.je_donne.map(c=>'<div class="trade-pill give">'+c+'</div>').join('');
+    const rp=t.je_recois.map(c=>'<div class="trade-pill get">'+c+'</div>').join('');
+    let actions='';
+    if(t.statut==='en_attente'){
+      actions='<div class="trade-action-btns">'
+        +'<button class="trade-action-btn tab-accept" onclick="updateTradeDemo(this)" data-s="accepte">✓ Accepter</button>'
+        +'<button class="trade-action-btn tab-refuse" onclick="updateTradeDemo(this)" data-s="refuse">✕ Refuser</button>'
+        +'</div>';
+    } else if(t.statut==='accepte'){
+      actions='<div class="trade-action-btns">'
+        +'<button class="trade-action-btn tab-complete" onclick="updateTradeDemo(this)" data-s="complete">🎉 Marquer comme reçu</button>'
+        +'</div>';
+    } else if(t.statut==='complete'){
+      actions='<div class="trade-action-btns">'
+        +'<button class="trade-action-btn tab-complete" onclick="openAvisModal()">⭐ Laisser un avis</button>'
+        +'</div>';
+    }
+    banner.innerHTML=`<div class="trade-banner-title">🔄 Détail de l'échange</div>`
+      +`<div class="trade-cards-row">`
+      +`<div class="trade-side"><div class="trade-side-lbl give">Je donne</div><div class="trade-pills">${dp}</div></div>`
+      +`<div class="trade-arrow-icon">⇄</div>`
+      +`<div class="trade-side"><div class="trade-side-lbl get">Je reçois</div><div class="trade-pills">${rp}</div></div>`
+      +`</div>`+actions;
+  }
+  renderChatMessages();scrollChat();
+}
+
+function updateTradeDemo(btn){
+  const statut=btn?.dataset?.s||btn;
+  if(!S.currentTrade)return;
+  S.currentTrade.statut=statut;
+  const labels={accepte:'✓ Échange accepté !',refuse:'Échange refusé',complete:'🎉 Échange terminé !'};
+  S.localMessages.push({role:'system',texte:labels[statut]||statut});
+  openChatDemo(S.currentTrade._id);
+  renderChatMessages();scrollChat();showToast(labels[statut]);
+}
+
+function showChatView(){
+  $('echanges-list-view').style.display='none';
+  $('echanges-chat-view').style.display='flex';
+}
+function closeChatView(){
+  $('echanges-chat-view').style.display='none';
+  $('echanges-list-view').style.display='flex';
+  if(realtimeSub){sb.removeChannel(realtimeSub);realtimeSub=null;}
+}
+
+function renderChatMessages(){
+  const wrap=$('messages-wrap');if(!wrap)return;
+  wrap.innerHTML=S.localMessages.map(msg=>{
+    if(msg.role==='system')return'<div class="msg-system"><span>'+msg.texte+'</span></div>';
+    return'<div class="msg-group"><div class="msg-bubble '+msg.role+'">'+msg.texte+'</div>'+(msg.time?'<div class="msg-time '+msg.role+'">'+msg.time+'</div>':'')+'</div>';
+  }).join('');
+}
+function scrollChat(){setTimeout(()=>{const w=$('messages-wrap');if(w)w.scrollTop=w.scrollHeight;},60);}
+
+async function sendMsg(){
+  const input=$('chat-input');
   const texte=input.value.trim();if(!texte)return;
   const now=new Date();
   const time=now.getHours()+':'+String(now.getMinutes()).padStart(2,'0');
-  STATE.localMessages.push({id:Date.now(),role:'me',texte,time});
+  S.localMessages.push({id:Date.now(),role:'me',texte,time});
   input.value='';input.style.height='';
-  renderChatMessages();
-  setTimeout(()=>{const w=document.getElementById('messages-wrap');if(w)w.scrollTop=w.scrollHeight;},50);
+  renderChatMessages();scrollChat();
+  if(S.currentTrade?.isReal&&S.user){
+    await sb.from('messages').insert({trade_id:S.currentTrade.id,sender_id:S.user.id,contenu:texte});
+  }
 }
-
-function updateTrade(statut){
-  if(!STATE.currentTrade)return;
-  STATE.currentTrade.statut=statut;
-  const labels={accepte:'✓ Échange accepté !',refuse:'Échange refusé',complete:'🎉 Échange terminé !'};
-  STATE.localMessages.push({id:Date.now(),role:'system',texte:labels[statut],time:''});
-  renderTradeBanner();renderChatMessages();showToast(labels[statut]);
-}
-
 function autoResize(el){el.style.height='';el.style.height=Math.min(el.scrollHeight,100)+'px';}
+
+// ══ AVIS ══
+function openAvisModal(){
+  if(!S.currentTrade)return;
+  const other=S.currentTrade.isReal?(S.currentTrade.proposer_id===S.user?.id?S.currentTrade.receiver:S.currentTrade.proposer):S.currentTrade;
+  $('avis-user-nom').textContent=other?.nom||other?.nom||'ce collectionneur';
+  S.avisNote=0;S.avisTradeId=S.currentTrade?.id||null;
+  document.querySelectorAll('.star-btn').forEach(s=>s.classList.remove('active'));
+  $('avis-commentaire').value='';
+  openModal('modal-avis');
+}
+function setAvisNote(n){
+  S.avisNote=n;
+  document.querySelectorAll('.star-btn').forEach((s,i)=>s.classList.toggle('active',i<n));
+}
+async function submitAvis(){
+  if(!S.avisNote){showToast('Choisis une note');return;}
+  if(!S.user){showToast('Connecte-toi pour laisser un avis');return;}
+  const commentaire=$('avis-commentaire').value.trim();
+  const trade=S.trades.find(t=>t.id===S.avisTradeId);
+  const reviewedId=trade?(trade.proposer_id===S.user.id?trade.receiver_id:trade.proposer_id):null;
+  if(!reviewedId){showToast('Échange non trouvé');return;}
+  const btn=$('btn-submit-avis');btn.disabled=true;
+  const{error}=await sb.from('reviews').insert({reviewer_id:S.user.id,reviewed_id:reviewedId,trade_id:S.avisTradeId,note:S.avisNote,commentaire:commentaire||null});
+  btn.disabled=false;
+  if(error){showToast(error.code==='23505'?'Tu as déjà laissé un avis pour cet échange':'Erreur : '+error.message);return;}
+  closeModal('modal-avis');showToast('⭐ Avis envoyé ! Merci');
+}
 
 // ══ PROFIL ══
 async function loadProfile(){
-  if(!STATE.user)return;
-  const{data:p}=await sb.from('profiles').select('*').eq('id',STATE.user.id).single();
+  if(!S.user)return;
+  const{data:p}=await sb.from('profiles').select('*').eq('id',S.user.id).single();
   if(!p)return;
-  const initials=(p.nom||STATE.user.email||'U').substring(0,2).toUpperCase();
-  updateProfileUI(p,initials);
-
-  // Stats cartes
-  const{count:nc}=await sb.from('user_cards').select('*',{count:'exact',head:true}).eq('user_id',STATE.user.id);
-  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  const ini=(p.nom||S.user.email||'U').substring(0,2).toUpperCase();
+  updateProfileUI(p,ini);
+  const[{count:nc},{count:ne}]=await Promise.all([
+    sb.from('user_cards').select('*',{count:'exact',head:true}).eq('user_id',S.user.id),
+    sb.from('trades').select('*',{count:'exact',head:true}).or('proposer_id.eq.'+S.user.id+',receiver_id.eq.'+S.user.id),
+  ]);
   set('profil-stat-cartes',nc||0);
-  set('profil-stat-colls',Object.keys(STATE.activeColls).length);
-  set('profil-stat-echanges',p.nb_echanges||0);
-
-  // Collections actives dans le profil
-  const activeIds=Object.keys(STATE.activeColls);
-  const colls=STATE.collections.filter(c=>activeIds.includes(c.id));
-  const collsList=document.getElementById('profil-colls-list');
+  set('profil-stat-colls',Object.keys(S.activeColls).length);
+  set('profil-stat-echanges',ne||0);
+  // Badges dynamiques
+  const badges=[];
+  if(nc>0)badges.push({label:'🎴 Collectionneur',earned:true});
+  if(p.reputation>=4)badges.push({label:'⭐ Bonne réputation',earned:true});
+  if(ne>=1)badges.push({label:'🤝 Premier échange',earned:true});
+  if(ne>=10)badges.push({label:'🔥 10 échanges',earned:ne>=10});
+  else badges.push({label:'🔥 10 échanges',earned:false});
+  if(ne>=50)badges.push({label:'💎 50 échanges',earned:ne>=50});
+  else badges.push({label:'💎 50 échanges',earned:false});
+  badges.push({label:'👑 Légende',earned:ne>=100});
+  const bRow=document.querySelector('.badges-row');
+  if(bRow)bRow.innerHTML=badges.map(b=>'<div class="badge-item '+(b.earned?'earned':'locked')+'">'+b.label+'</div>').join('');
+  // Mes collections
+  await loadMesCartes();
+  const collsList=$('profil-colls-list');
   if(collsList){
+    const activeIds=Object.keys(S.activeColls);
+    const colls=S.collections.filter(c=>activeIds.includes(c.id));
     if(!colls.length){collsList.innerHTML='<div style="color:var(--muted);font-size:13px;font-weight:700">Aucune collection active</div>';return;}
     collsList.innerHTML=colls.map(c=>{
       const colors=CAT_COLORS[c.categorie]||['#1e1e28','#23232f'];
-      const pct=STATE.activeColls[c.id]||0;
-      return`<div class="coll-row" onclick="openCollection('${c.slug}','${c.nom.split("'").join("\\'")}','${c.id}')">
-        <div class="coll-row-emoji" style="background:linear-gradient(135deg,${colors[0]},${colors[1]})">${CAT_EMOJI[c.categorie]||'🃏'}</div>
-        <div class="coll-row-info">
-          <div class="coll-row-nom">${c.nom}</div>
-          <div class="coll-row-bar"><div class="coll-row-fill" style="width:${pct}%"></div></div>
-        </div>
-        <div class="coll-row-pct">${pct}%</div>
-        <div style="color:var(--muted);font-size:14px">›</div>
-      </div>`;
+      const pct=S.activeColls[c.id]||0;
+      return `<div class="coll-row" onclick="collClick('${c.id}','${c.slug}')"><div class="coll-row-emoji" style="background:linear-gradient(135deg,${colors[0]},${colors[1]})">${CAT_EMOJI[c.categorie]||'🃏'}</div><div class="coll-row-info"><div class="coll-row-nom">${c.nom}</div><div class="coll-row-bar"><div class="coll-row-fill" style="width:${pct}%"></div></div></div><div class="coll-row-pct">${pct}%</div><div style="color:var(--muted);font-size:14px">›</div></div>`;
     }).join('');
   }
 }
 
 // ══ TOAST ══
-let toastTimer;
-function showToast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>t.classList.remove('show'),2500);
-}
+// (déjà dans showToast via S.user shortcut)
 
-// ══ INIT ══
+// ══ KEYBOARD ══
 document.addEventListener('keydown',e=>{
   if(e.key!=='Enter')return;
-  if(!document.getElementById('view-auth')?.classList.contains('active'))return;
-  const loginVisible=document.getElementById('form-login').style.display!=='none';
+  if(!$('view-auth')?.classList.contains('active'))return;
+  const loginVisible=$('form-login').style.display!=='none';
   if(loginVisible)doLogin();else doRegister();
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&document.activeElement===$('chat-input')&&!e.shiftKey){
+    e.preventDefault();sendMsg();
+  }
 });
 
 
@@ -1928,7 +2272,14 @@ async function adminExportWaitlist() {
   showToast(`📥 ${data.length} emails exportés`);
 }
 
+// Helper navigation collection
+function collClick(id,slug){
+  const coll=S.collections.find(c=>c.id===id||c.slug===slug);
+  if(coll) openCollection(coll.slug,coll.nom,coll.id);
+}
+
 initAuth();
 </script>
+
 </body>
 </html>
