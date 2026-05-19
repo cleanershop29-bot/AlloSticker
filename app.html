@@ -906,12 +906,12 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
     </div>
     <div class="settings-section reveal">
       <div class="section-title" style="margin-bottom:4px">⚙️ Paramètres</div>
-      <div class="settings-item" onclick="showToast('Notifications')"><div class="settings-icon">🔔</div><div class="settings-label">Notifications</div><div class="settings-value">Activées</div><div class="settings-arrow">›</div></div>
+      <div class="settings-item" onclick="openModal('modal-notifs')"><div class="settings-icon">🔔</div><div class="settings-label">Notifications</div><div class="settings-value" id="notif-status-label">Activées</div><div class="settings-arrow">›</div></div>
       <div class="settings-item" onclick="openEditVille()"><div class="settings-icon">📍</div><div class="settings-label">Ma localisation</div><div class="settings-value" id="settings-ville">—</div><div class="settings-arrow">›</div></div>
       <div class="settings-item" onclick="openEditRayon()"><div class="settings-icon">🗺️</div><div class="settings-label">Rayon d'échange</div><div class="settings-value">50 km</div><div class="settings-arrow">›</div></div>
       <div class="settings-item" onclick="showToast('Confidentialité')"><div class="settings-icon">🔒</div><div class="settings-label">Confidentialité</div><div class="settings-arrow">›</div></div>
-      <div class="settings-item" onclick="showToast('Aide & contact')"><div class="settings-icon">❓</div><div class="settings-label">Aide & contact</div><div class="settings-arrow">›</div></div>
-      <div class="settings-item" onclick="showToast('CGU')"><div class="settings-icon">📄</div><div class="settings-label">CGU & mentions légales</div><div class="settings-arrow">›</div></div>
+      <div class="settings-item" onclick="openModal('modal-aide')"><div class="settings-icon">❓</div><div class="settings-label">Aide & contact</div><div class="settings-arrow">›</div></div>
+      <div class="settings-item" onclick="openModal('modal-cgu')"><div class="settings-icon">📄</div><div class="settings-label">CGU & mentions légales</div><div class="settings-arrow">›</div></div>
     </div>
     <button class="logout-btn" onclick="doLogout()">🚪 Se déconnecter</button>
   </div>
@@ -1027,6 +1027,122 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
 <div class="global-loader" id="global-loader">
   <img src="/allosticker-icon-512.png" alt="Allosticker">
   <p>Chargement…</p>
+</div>
+
+
+<!-- ════════ MODAL CGU ════════ -->
+<div class="modal-overlay" id="modal-cgu" onclick="if(event.target===this)closeModal('modal-cgu')">
+  <div class="modal-sheet">
+    <div class="modal-drag"></div>
+    <div class="modal-header">
+      <h3>📄 CGU & Mentions légales</h3>
+      <div class="modal-close" onclick="closeModal('modal-cgu')">✕</div>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:13px;color:var(--muted);font-weight:700;line-height:1.7;display:flex;flex-direction:column;gap:14px">
+        <div>
+          <div style="font-weight:900;color:var(--text);margin-bottom:4px">Éditeur</div>
+          Axion App Studio — Jérémy Fortin<br>
+          SIRET : 914 511 639 00025<br>
+          Saint-Ségal, Finistère, France<br>
+          Contact : <span style="color:var(--yellow)">contact@allosticker.fr</span>
+        </div>
+        <div>
+          <div style="font-weight:900;color:var(--text);margin-bottom:4px">Hébergement</div>
+          Netlify Inc. — San Francisco, CA<br>
+          Supabase Inc. — San Francisco, CA
+        </div>
+        <div>
+          <div style="font-weight:900;color:var(--text);margin-bottom:4px">Utilisation</div>
+          Allosticker est une plateforme d'échange de stickers et cartes de collection entre particuliers. L'utilisation est gratuite. Aucune transaction financière n'est réalisée sur la plateforme.
+        </div>
+        <div>
+          <div style="font-weight:900;color:var(--text);margin-bottom:4px">Données personnelles (RGPD)</div>
+          Les données collectées (email, nom, ville) sont utilisées uniquement pour le fonctionnement de l'application. Elles ne sont pas revendues. Vous pouvez demander la suppression de votre compte en contactant contact@allosticker.fr.
+        </div>
+        <div>
+          <div style="font-weight:900;color:var(--text);margin-bottom:4px">Responsabilité</div>
+          Allosticker ne peut être tenu responsable des échanges réalisés entre utilisateurs. Les utilisateurs s'engagent à respecter les règles de courtoisie et la législation en vigueur.
+        </div>
+        <div style="font-size:11px;color:var(--muted)">Dernière mise à jour : mai 2026</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-primary btn-full" onclick="closeModal('modal-cgu')">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ MODAL AIDE ════════ -->
+<div class="modal-overlay" id="modal-aide" onclick="if(event.target===this)closeModal('modal-aide')">
+  <div class="modal-sheet">
+    <div class="modal-drag"></div>
+    <div class="modal-header">
+      <h3>❓ Aide & Contact</h3>
+      <div class="modal-close" onclick="closeModal('modal-aide')">✕</div>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:13px;padding:14px">
+          <div style="font-size:13px;font-weight:900;margin-bottom:8px">🎴 Comment marquer mes cartes ?</div>
+          <div style="font-size:12px;color:var(--muted);font-weight:700;line-height:1.6">Sélectionne une collection → tape sur une carte pour cycler entre Possédée → Double → Manquante → Effacé.</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:13px;padding:14px">
+          <div style="font-size:13px;font-weight:900;margin-bottom:8px">🤝 Comment proposer un échange ?</div>
+          <div style="font-size:12px;color:var(--muted);font-weight:700;line-height:1.6">Marque d'abord tes doubles et manquants → va dans l'onglet Matchs → clique sur "Proposer".</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:13px;padding:14px">
+          <div style="font-size:13px;font-weight:900;margin-bottom:8px">📧 Nous contacter</div>
+          <div style="font-size:12px;color:var(--muted);font-weight:700;line-height:1.6">Pour tout problème ou suggestion, écris-nous à :<br><span style="color:var(--yellow)">contact@allosticker.fr</span></div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:13px;padding:14px">
+          <div style="font-size:13px;font-weight:900;margin-bottom:8px">🐛 Signaler un bug</div>
+          <div style="font-size:12px;color:var(--muted);font-weight:700;line-height:1.6">Décris le problème rencontré et envoie-le à <span style="color:var(--yellow)">bugs@allosticker.fr</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-primary btn-full" onclick="closeModal('modal-aide')">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ MODAL NOTIFICATIONS ════════ -->
+<div class="modal-overlay" id="modal-notifs" onclick="if(event.target===this)closeModal('modal-notifs')">
+  <div class="modal-sheet">
+    <div class="modal-drag"></div>
+    <div class="modal-header">
+      <h3>🔔 Notifications</h3>
+      <div class="modal-close" onclick="closeModal('modal-notifs')">✕</div>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div id="notif-perm-banner" style="display:none;background:rgba(255,217,61,.08);border:1px solid rgba(255,217,61,.2);border-radius:13px;padding:13px;font-size:12px;font-weight:700;color:var(--yellow)">
+          ⚠️ Les notifications ne sont pas encore autorisées dans ton navigateur.
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:13px;overflow:hidden">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border)">
+            <div><div style="font-size:13px;font-weight:900">Nouveaux échanges</div><div style="font-size:11px;color:var(--muted);font-weight:700">Quand quelqu'un te propose un échange</div></div>
+            <div class="notif-toggle" id="nt-echanges" onclick="toggleNotif(this)" data-active="true" style="width:44px;height:26px;border-radius:13px;background:var(--yellow);cursor:pointer;transition:background .2s;position:relative;flex-shrink:0"><div style="position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;background:white;transition:right .2s"></div></div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border)">
+            <div><div style="font-size:13px;font-weight:900">Messages reçus</div><div style="font-size:11px;color:var(--muted);font-weight:700">Nouveaux messages dans tes échanges</div></div>
+            <div class="notif-toggle" id="nt-messages" onclick="toggleNotif(this)" data-active="true" style="width:44px;height:26px;border-radius:13px;background:var(--yellow);cursor:pointer;transition:background .2s;position:relative;flex-shrink:0"><div style="position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;background:white;transition:right .2s"></div></div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px">
+            <div><div style="font-size:13px;font-weight:900">Avis reçus</div><div style="font-size:11px;color:var(--muted);font-weight:700">Après un échange terminé</div></div>
+            <div class="notif-toggle" id="nt-avis" onclick="toggleNotif(this)" data-active="true" style="width:44px;height:26px;border-radius:13px;background:var(--yellow);cursor:pointer;transition:background .2s;position:relative;flex-shrink:0"><div style="position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;background:white;transition:right .2s"></div></div>
+          </div>
+        </div>
+        <button class="btn-primary btn-full" onclick="requestNotifPermission()" id="btn-enable-notifs" style="display:none">
+          🔔 Activer les notifications
+        </button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-primary btn-full" onclick="closeModal('modal-notifs')">Fermer</button>
+    </div>
+  </div>
 </div>
 
 <!-- ════════ ADMIN PANEL ════════ -->
@@ -1305,10 +1421,11 @@ async function initAuth(){
     const{data:p}=await sb.from('profiles').select('nom,ville').eq('id',S.user.id).single();
     if(loader) loader.style.display='none';
     if(p&&!p.nom&&!p.ville) showOnboarding();
-    else goTo('accueil');
+    else {goTo('accueil');initNotifUI();}
   } else {
     if(loader) loader.style.display='none';
   }
+  registerSW();
   sb.auth.onAuthStateChange(async(_,session)=>{
     if(session&&!S.user){
       S.user=session.user;
@@ -1518,13 +1635,15 @@ async function updateHeroStats(){
   }
   const nbColls=Object.keys(S.activeColls).length;
   set('hero-stat-colls',nbColls||'0');
-  // Compter les cartes marquées
-  const{count:nbCartes}=await sb.from('user_cards').select('*',{count:'exact',head:true}).eq('user_id',S.user.id);
+  // Tout en parallèle
+  const[{count:nbCartes},{count:nbEchanges},{count:nbMatchs}]=await Promise.all([
+    sb.from('user_cards').select('*',{count:'exact',head:true}).eq('user_id',S.user.id),
+    sb.from('trades').select('*',{count:'exact',head:true}).or('proposer_id.eq.'+S.user.id+',receiver_id.eq.'+S.user.id),
+    sb.from('matches').select('*',{count:'exact',head:true}).eq('user_a',S.user.id),
+  ]);
   set('hero-stat-cartes',nbCartes||'0');
-  // Compter les échanges
-  const{count:nbEchanges}=await sb.from('trades').select('*',{count:'exact',head:true}).or('proposer_id.eq.'+S.user.id+',receiver_id.eq.'+S.user.id);
   set('hero-stat-echanges',nbEchanges||'0');
-  set('hero-stat-matchs','—');
+  set('hero-stat-matchs',nbMatchs||'0');
 }
 
 function renderColls(){
@@ -2074,13 +2193,15 @@ async function loadProfile(){
   if(!p)return;
   const ini=(p.nom||S.user.email||'U').substring(0,2).toUpperCase();
   updateProfileUI(p,ini);
-  const[{count:nc},{count:ne}]=await Promise.all([
+  const[{count:nc},{count:ne},{count:nm}]=await Promise.all([
     sb.from('user_cards').select('*',{count:'exact',head:true}).eq('user_id',S.user.id),
     sb.from('trades').select('*',{count:'exact',head:true}).or('proposer_id.eq.'+S.user.id+',receiver_id.eq.'+S.user.id),
+    sb.from('matches').select('*',{count:'exact',head:true}).eq('user_a',S.user.id),
   ]);
   set('profil-stat-cartes',nc||0);
   set('profil-stat-colls',Object.keys(S.activeColls).length);
   set('profil-stat-echanges',ne||0);
+  set('profil-stat-matchs',nm||0);
   // Badges dynamiques
   const badges=[];
   if(nc>0)badges.push({label:'🎴 Collectionneur',earned:true});
@@ -2110,6 +2231,62 @@ async function loadProfile(){
 
 // ══ TOAST ══
 // (déjà dans showToast via S.user shortcut)
+
+// ══ NOTIFICATIONS ══
+function toggleNotif(el){
+  const active=el.dataset.active==='true';
+  el.dataset.active=active?'false':'true';
+  el.style.background=active?'var(--muted)':'var(--yellow)';
+  const dot=el.querySelector('div');
+  if(dot) dot.style.right=active?'21px':'3px';
+  const prefs=JSON.parse(localStorage.getItem('notif_prefs')||'{}');
+  prefs[el.id]=!active;
+  localStorage.setItem('notif_prefs',JSON.stringify(prefs));
+}
+
+async function requestNotifPermission(){
+  if(!('Notification' in window)){showToast('Notifications non supportées dans ce navigateur');return;}
+  const perm=await Notification.requestPermission();
+  if(perm==='granted'){
+    $('btn-enable-notifs').style.display='none';
+    $('notif-perm-banner').style.display='none';
+    $('notif-status-label').textContent='Activées';
+    showToast('🔔 Notifications activées !');
+  } else {
+    showToast('Notifications refusées — active-les dans les paramètres du navigateur');
+  }
+}
+
+function initNotifUI(){
+  if(!('Notification' in window)) return;
+  const banner=$('notif-perm-banner');
+  const btn=$('btn-enable-notifs');
+  if(Notification.permission!=='granted'){
+    if(banner)banner.style.display='block';
+    if(btn)btn.style.display='flex';
+    set('notif-status-label','Désactivées');
+  }
+  // Restaurer prefs
+  const prefs=JSON.parse(localStorage.getItem('notif_prefs')||'{}');
+  Object.entries(prefs).forEach(([id,active])=>{
+    const el=$(id);if(!el)return;
+    el.dataset.active=active?'true':'false';
+    el.style.background=active?'var(--yellow)':'var(--muted)';
+    const dot=el.querySelector('div');
+    if(dot)dot.style.right=active?'3px':'21px';
+  });
+}
+
+// ══ SERVICE WORKER / PWA ══
+async function registerSW(){
+  if(!('serviceWorker' in navigator)) return;
+  try{
+    const reg=await navigator.serviceWorker.register('/sw.js');
+    console.log('SW enregistré:',reg.scope);
+  } catch(e){
+    console.log('SW non disponible (normal en dev)');
+  }
+}
 
 // ══ KEYBOARD ══
 document.addEventListener('keydown',e=>{
