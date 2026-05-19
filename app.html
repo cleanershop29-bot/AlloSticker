@@ -493,6 +493,17 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
 .settings-arrow{color:var(--muted);font-size:14px}
 .logout-btn{margin:18px 16px 8px;width:calc(100% - 32px);background:rgba(255,61,127,.1);border:1px solid rgba(255,61,127,.25);color:var(--pink);font-family:'Nunito',sans-serif;font-size:14px;font-weight:900;padding:13px;border-radius:13px;cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent}
 .logout-btn:active{background:rgba(255,61,127,.2)}
+
+/* ════ BANNIÈRE PWA ════ */
+.pwa-banner{position:fixed;bottom:0;left:0;right:0;z-index:200;background:linear-gradient(135deg,#1e1e28,#23232f);border-top:1px solid rgba(255,217,61,.25);padding:12px 16px calc(12px + var(--safe-bottom));display:flex;align-items:center;gap:12px;transform:translateY(100%);transition:transform .4s cubic-bezier(.34,1.56,.64,1);box-shadow:0 -8px 32px rgba(0,0,0,.4)}
+.pwa-banner.show{transform:translateY(0)}
+.pwa-banner-icon{width:44px;height:44px;border-radius:11px;flex-shrink:0;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.pwa-banner-text{flex:1;min-width:0}
+.pwa-banner-title{font-size:13px;font-weight:900;color:var(--text);margin-bottom:2px}
+.pwa-banner-sub{font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pwa-banner-btn{background:var(--yellow);color:#0f0f14;font-family:"Nunito",sans-serif;font-size:12px;font-weight:900;padding:9px 16px;border-radius:100px;border:none;cursor:pointer;flex-shrink:0;white-space:nowrap;-webkit-tap-highlight-color:transparent;transition:transform .15s}
+.pwa-banner-btn:active{transform:scale(.95)}
+.pwa-banner-close{width:28px;height:28px;border-radius:50%;background:var(--card2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);font-size:12px;flex-shrink:0;-webkit-tap-highlight-color:transparent}
 </style>
 </head>
 <body>
@@ -1145,6 +1156,47 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
   </div>
 </div>
 
+
+<!-- ════════ MODAL PWA iOS ════════ -->
+<div class="modal-overlay" id="modal-pwa-ios" onclick="if(event.target===this)closeModal('modal-pwa-ios')">
+  <div class="modal-sheet">
+    <div class="modal-drag"></div>
+    <div class="modal-header">
+      <h3>📱 Installer Allosticker</h3>
+      <div class="modal-close" onclick="closeModal('modal-pwa-ios')">✕</div>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--muted);font-weight:700;text-align:center;margin-bottom:16px">Ajoute Allosticker à ton écran d'accueil pour un accès rapide, même sans internet.</p>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:13px;padding:14px;display:flex;align-items:center;gap:12px">
+          <div style="font-size:24px;flex-shrink:0">1️⃣</div>
+          <div>
+            <div style="font-size:13px;font-weight:900">Sur Safari (iPhone)</div>
+            <div style="font-size:12px;color:var(--muted);font-weight:700">Appuie sur le bouton <strong style="color:var(--text)">Partager</strong> (carré avec flèche ↑) en bas</div>
+          </div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:13px;padding:14px;display:flex;align-items:center;gap:12px">
+          <div style="font-size:24px;flex-shrink:0">2️⃣</div>
+          <div>
+            <div style="font-size:13px;font-weight:900">Sélectionne</div>
+            <div style="font-size:12px;color:var(--muted);font-weight:700">«&nbsp;<strong style="color:var(--text)">Sur l'écran d'accueil</strong>&nbsp;» dans le menu</div>
+          </div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:13px;padding:14px;display:flex;align-items:center;gap:12px">
+          <div style="font-size:24px;flex-shrink:0">3️⃣</div>
+          <div>
+            <div style="font-size:13px;font-weight:900">Sur Android (Chrome)</div>
+            <div style="font-size:12px;color:var(--muted);font-weight:700">Menu ⋮ → <strong style="color:var(--text)">Ajouter à l'écran d'accueil</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-primary btn-full" onclick="closeModal('modal-pwa-ios')">Compris !</button>
+    </div>
+  </div>
+</div>
+
 <!-- ════════ ADMIN PANEL ════════ -->
 <div class="admin-overlay" id="admin-overlay" onclick="adminOverlayClick(event)">
   <div class="admin-panel" id="admin-panel">
@@ -1330,6 +1382,18 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
       </div>
     </div>
   </div>
+</div>
+
+
+<!-- ════════ BANNIÈRE PWA ════════ -->
+<div class="pwa-banner" id="pwa-banner">
+  <img src="/allosticker-icon-512.png" class="pwa-banner-icon" alt="Allosticker">
+  <div class="pwa-banner-text">
+    <div class="pwa-banner-title">Installer Allosticker</div>
+    <div class="pwa-banner-sub">Ajoute l'app à ton écran d'accueil</div>
+  </div>
+  <button class="pwa-banner-btn" onclick="installPWA()">Installer</button>
+  <div class="pwa-banner-close" onclick="dismissPWA()">✕</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -2235,6 +2299,51 @@ async function loadProfile(){
 
 // ══ TOAST ══
 // (déjà dans showToast via S.user shortcut)
+
+// ══ PWA INSTALL ══
+let _pwaPrompt = null;
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  _pwaPrompt = e;
+  // Ne pas afficher si déjà installé ou si l'user a refusé récemment
+  if(localStorage.getItem('pwa_dismissed')) return;
+  if(window.matchMedia('(display-mode: standalone)').matches) return;
+  setTimeout(() => {
+    const banner = $('pwa-banner');
+    if(banner) banner.classList.add('show');
+  }, 3000);
+});
+
+async function installPWA() {
+  const banner = $('pwa-banner');
+  if(_pwaPrompt) {
+    _pwaPrompt.prompt();
+    const { outcome } = await _pwaPrompt.userChoice;
+    _pwaPrompt = null;
+    if(outcome === 'accepted') {
+      showToast('🎉 Allosticker installé !');
+      if(banner) banner.classList.remove('show');
+    }
+  } else {
+    // iOS / navigateur sans prompt → instructions
+    openModal('modal-pwa-ios');
+  }
+}
+
+function dismissPWA() {
+  const banner = $('pwa-banner');
+  if(banner) banner.classList.remove('show');
+  // Ne pas reafficher pendant 7 jours
+  localStorage.setItem('pwa_dismissed', Date.now() + 7*24*60*60*1000);
+}
+
+// Vérifier si le dismiss a expiré
+function checkPWADismiss() {
+  const exp = parseInt(localStorage.getItem('pwa_dismissed') || '0');
+  if(Date.now() > exp) localStorage.removeItem('pwa_dismissed');
+}
+checkPWADismiss();
 
 // ══ NOTIFICATIONS ══
 function toggleNotif(el){

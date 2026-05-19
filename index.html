@@ -208,6 +208,16 @@ footer{border-top:1px solid var(--border);padding:40px;display:flex;align-items:
   .faq-item{padding:16px}
   section h2{font-size:clamp(24px,7vw,36px)}
 }
+
+/* ════ BANNIÈRE PWA ════ */
+.pwa-banner{position:fixed;bottom:0;left:0;right:0;z-index:999;background:linear-gradient(135deg,#1a1a24,#0f0f18);border-top:1px solid rgba(255,217,61,.3);padding:14px 20px;display:flex;align-items:center;gap:12px;transform:translateY(100%);transition:transform .4s cubic-bezier(.34,1.56,.64,1);box-shadow:0 -8px 32px rgba(0,0,0,.5)}
+.pwa-banner.show{transform:translateY(0)}
+.pwa-banner img{width:42px;height:42px;border-radius:10px;flex-shrink:0}
+.pwa-banner-text{flex:1;min-width:0}
+.pwa-banner-title{font-size:13px;font-weight:900;color:#F0EFF6}
+.pwa-banner-sub{font-size:11px;color:#8585a0;font-weight:700}
+.pwa-banner-btn{background:#FFD93D;color:#0f0f14;font-size:12px;font-weight:900;padding:9px 18px;border-radius:100px;border:none;cursor:pointer;flex-shrink:0;white-space:nowrap}
+.pwa-banner-close{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.08);border:none;color:#8585a0;cursor:pointer;font-size:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 </style>
 </head>
 <body>
@@ -454,5 +464,45 @@ document.querySelectorAll('.step-card,.feature-item,.testi-card,.faq-item').forE
   el.style.opacity='0';el.style.transform='translateY(30px)';el.style.transition='opacity .5s ease,transform .5s ease';obs.observe(el);
 });
 </script>
+
+<!-- PWA Banner -->
+<div class="pwa-banner" id="pwa-banner-landing">
+  <img src="/allosticker-icon-512.png" alt="Allosticker">
+  <div class="pwa-banner-text">
+    <div class="pwa-banner-title">Installer Allosticker</div>
+    <div class="pwa-banner-sub">Accès rapide depuis ton écran d'accueil</div>
+  </div>
+  <button class="pwa-banner-btn" onclick="installPWALanding()">Installer</button>
+  <button class="pwa-banner-close" onclick="dismissPWALanding()">✕</button>
+</div>
+
+
+<script>
+let _prompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault(); _prompt = e;
+  if(localStorage.getItem('pwa_dismissed_landing')) return;
+  if(window.matchMedia('(display-mode: standalone)').matches) return;
+  setTimeout(() => document.getElementById('pwa-banner-landing')?.classList.add('show'), 2000);
+});
+async function installPWALanding() {
+  if(_prompt) {
+    _prompt.prompt();
+    const { outcome } = await _prompt.userChoice;
+    _prompt = null;
+    if(outcome === 'accepted') document.getElementById('pwa-banner-landing')?.classList.remove('show');
+  } else {
+    alert("Sur iPhone Safari :\nAppuie sur Partager puis \"Sur l'\xe9cran d'accueil\"\n\nSur Android Chrome :\nMenu puis \"Ajouter \xe0 l'\xe9cran d'accueil\"");
+  }
+}
+function dismissPWALanding() {
+  document.getElementById('pwa-banner-landing')?.classList.remove('show');
+  localStorage.setItem('pwa_dismissed_landing', Date.now() + 7*24*60*60*1000);
+}
+// Expiration
+const exp = parseInt(localStorage.getItem('pwa_dismissed_landing')||'0');
+if(Date.now() > exp) localStorage.removeItem('pwa_dismissed_landing');
+</script>
+
 </body>
 </html>
