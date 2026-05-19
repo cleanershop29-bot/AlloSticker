@@ -152,6 +152,10 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
 .admin-progress-fill{height:100%;background:linear-gradient(90deg,var(--yellow),var(--orange));border-radius:100px;transition:width .3s;width:0%}
 .admin-log{background:var(--card2);border-radius:10px;padding:10px;font-size:11px;color:var(--muted);font-weight:700;max-height:120px;overflow-y:auto;font-family:monospace;line-height:1.6}
 .admin-log .log-ok{color:var(--green)}.admin-log .log-err{color:var(--pink)}.admin-log .log-info{color:var(--yellow)}
+
+/* ════ ADMIN TABS ════ */
+.admin-tab{flex:1;text-align:center;padding:7px 4px;border-radius:9px;font-size:10px;font-weight:800;color:var(--muted);cursor:pointer;transition:all .2s;white-space:nowrap}
+.admin-tab.active{background:var(--card2);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.3)}
 /* Stats admin */
 .admin-stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 .admin-stat-card{background:var(--card2);border-radius:10px;padding:12px;text-align:center}
@@ -1030,10 +1034,11 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
   <div class="admin-panel" id="admin-panel">
     <div class="admin-drag"></div>
     <div class="admin-header">
-      <h2 id="admin-panel-title">🔧 Administration</h2>
+      <h2>🔧 Administration</h2>
       <div class="admin-close" onclick="closeAdmin()">✕</div>
     </div>
     <div class="admin-body" id="admin-body">
+
       <!-- AUTH -->
       <div id="admin-auth-section">
         <div class="admin-auth">
@@ -1048,66 +1053,161 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
         </div>
       </div>
 
-      <!-- DASHBOARD (après auth) -->
-      <div id="admin-dashboard" style="display:none;flex-direction:column;gap:16px">
+      <!-- DASHBOARD -->
+      <div id="admin-dashboard" style="display:none;flex-direction:column;gap:14px">
 
-        <!-- Stats -->
-        <div class="admin-section">
-          <div class="admin-section-title">📊 Statistiques</div>
-          <div class="admin-section-body">
-            <div class="admin-stats-grid">
-              <div class="admin-stat-card"><div class="admin-stat-val" id="adm-stat-colls">—</div><div class="admin-stat-lbl">Collections</div></div>
-              <div class="admin-stat-card"><div class="admin-stat-val" id="adm-stat-cards">—</div><div class="admin-stat-lbl">Cartes</div></div>
-              <div class="admin-stat-card"><div class="admin-stat-val" id="adm-stat-users">—</div><div class="admin-stat-lbl">Utilisateurs</div></div>
-              <div class="admin-stat-card"><div class="admin-stat-val" id="adm-stat-waitlist">—</div><div class="admin-stat-lbl">Waitlist</div></div>
+        <!-- Onglets navigation admin -->
+        <div style="display:flex;gap:0;background:var(--card);border-radius:12px;padding:3px;border:1px solid var(--border)">
+          <div class="admin-tab active" id="adm-tab-stats" onclick="adminSwitchTab('stats')">📊 Stats</div>
+          <div class="admin-tab" id="adm-tab-colls" onclick="adminSwitchTab('colls')">🎴 Collections</div>
+          <div class="admin-tab" id="adm-tab-users" onclick="adminSwitchTab('users')">👥 Users</div>
+          <div class="admin-tab" id="adm-tab-waitlist" onclick="adminSwitchTab('waitlist')">📧 Waitlist</div>
+          <div class="admin-tab" id="adm-tab-more" onclick="adminSwitchTab('more')">⚙️ Plus</div>
+        </div>
+
+        <!-- ── ONGLET STATS ── -->
+        <div id="adm-panel-stats">
+          <div class="admin-section">
+            <div class="admin-section-title">📊 Vue d'ensemble</div>
+            <div class="admin-section-body">
+              <div class="admin-stats-grid">
+                <div class="admin-stat-card"><div class="admin-stat-val" id="adm-stat-colls">—</div><div class="admin-stat-lbl">Collections</div></div>
+                <div class="admin-stat-card"><div class="admin-stat-val" id="adm-stat-cards">—</div><div class="admin-stat-lbl">Cartes</div></div>
+                <div class="admin-stat-card"><div class="admin-stat-val" id="adm-stat-users">—</div><div class="admin-stat-lbl">Utilisateurs</div></div>
+                <div class="admin-stat-card"><div class="admin-stat-val" id="adm-stat-waitlist">—</div><div class="admin-stat-lbl">Waitlist</div></div>
+                <div class="admin-stat-card"><div class="admin-stat-val" id="adm-stat-trades">—</div><div class="admin-stat-lbl">Échanges</div></div>
+                <div class="admin-stat-card"><div class="admin-stat-val" id="adm-stat-ucards">—</div><div class="admin-stat-lbl">Cartes marquées</div></div>
+                <div class="admin-stat-card"><div class="admin-stat-val" id="adm-stat-doubles">—</div><div class="admin-stat-lbl">Doubles</div></div>
+                <div class="admin-stat-card"><div class="admin-stat-val" id="adm-stat-manquantes">—</div><div class="admin-stat-lbl">Manquantes</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="admin-section">
+            <div class="admin-section-title">🔥 Top collections actives</div>
+            <div class="admin-section-body" id="adm-top-colls"><div style="color:var(--muted);font-size:12px">Chargement…</div></div>
+          </div>
+        </div>
+
+        <!-- ── ONGLET COLLECTIONS ── -->
+        <div id="adm-panel-colls" style="display:none;flex-direction:column;gap:14px">
+          <div class="admin-section">
+            <div class="admin-section-title">🎴 Collections</div>
+            <div class="admin-section-body" id="admin-colls-section">
+              <div class="admin-search">
+                <span style="color:var(--muted);font-size:14px">🔍</span>
+                <input type="text" id="admin-search-coll" placeholder="Rechercher…" oninput="adminFilterColls()">
+              </div>
+              <div id="admin-colls-list" style="display:flex;flex-direction:column;gap:6px;max-height:260px;overflow-y:auto"></div>
+            </div>
+          </div>
+          <!-- Edition -->
+          <div class="admin-section" id="admin-edit-section" style="display:none">
+            <div class="admin-section-title">✏️ Modifier</div>
+            <div class="admin-section-body">
+              <div class="admin-edit-back" onclick="adminBackToList()">← Retour</div>
+              <div style="font-size:13px;font-weight:900;color:var(--text);margin-bottom:8px" id="admin-edit-nom"></div>
+              <div class="admin-field"><label>Nombre de stickers/cartes</label><input type="number" id="admin-edit-nb" placeholder="Ex: 980" min="1" max="9999"></div>
+              <div class="admin-field"><label>Nom</label><input type="text" id="admin-edit-name-input"></div>
+              <div class="admin-field"><label>Éditeur</label><input type="text" id="admin-edit-editeur"></div>
+              <div class="admin-field"><label>Année</label><input type="number" id="admin-edit-annee" min="1970" max="2030"></div>
+              <button class="admin-btn admin-btn-yellow" onclick="adminSaveCollection()" id="admin-save-btn">💾 Sauvegarder</button>
+              <div style="height:1px;background:var(--border);margin:4px 0"></div>
+              <div style="font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Régénération des cartes</div>
+              <button class="admin-btn admin-btn-muted" onclick="adminRegenCards()" id="admin-regen-btn">🔄 Régénérer les cartes manquantes</button>
+              <div class="admin-progress-bar"><div class="admin-progress-fill" id="admin-regen-progress"></div></div>
+              <div class="admin-log" id="admin-log" style="display:none"></div>
+            </div>
+          </div>
+          <!-- Ajouter collection -->
+          <div class="admin-section">
+            <div class="admin-section-title">➕ Ajouter une collection</div>
+            <div class="admin-section-body">
+              <div class="admin-field"><label>Nom</label><input type="text" id="new-coll-nom" placeholder="Ex: Panini Liga 2025-26"></div>
+              <div class="admin-field"><label>Éditeur</label><input type="text" id="new-coll-editeur" placeholder="Ex: Panini"></div>
+              <div class="admin-field"><label>Catégorie</label>
+                <select id="new-coll-cat" style="background:var(--card2);border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;font-family:Nunito,sans-serif;font-size:13px;font-weight:700;color:var(--text);outline:none;width:100%">
+                  <option value="foot">⚽ Football</option>
+                  <option value="pokemon">🃏 Pokémon</option>
+                  <option value="manga">⚔️ Manga</option>
+                  <option value="basketball">🏀 Basketball</option>
+                  <option value="f1">🏎️ Formule 1</option>
+                  <option value="rugby">🏉 Rugby</option>
+                  <option value="jeu_cartes">🎴 Jeux de cartes</option>
+                  <option value="football_americain">🏈 NFL</option>
+                  <option value="baseball">⚾ Baseball</option>
+                  <option value="comics">💥 Comics</option>
+                  <option value="disney">✨ Disney</option>
+                  <option value="catch">🥊 Catch</option>
+                </select>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <div class="admin-field"><label>Année</label><input type="number" id="new-coll-annee" placeholder="2025" min="1970" max="2030"></div>
+                <div class="admin-field"><label>Nb cartes</label><input type="number" id="new-coll-nb" placeholder="540" min="1"></div>
+              </div>
+              <div class="admin-field"><label>Type</label>
+                <select id="new-coll-type" style="background:var(--card2);border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;font-family:Nunito,sans-serif;font-size:13px;font-weight:700;color:var(--text);outline:none;width:100%">
+                  <option value="stickers">Stickers</option>
+                  <option value="cartes">Cartes</option>
+                </select>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button class="admin-btn admin-btn-yellow" style="flex:1" onclick="adminAddCollection()">➕ Créer la collection</button>
+                <button class="admin-btn admin-btn-muted" onclick="adminAddAndGenerate()">➕🔄 Créer + générer cartes</button>
+              </div>
+              <div class="admin-progress-bar"><div class="admin-progress-fill" id="admin-newcoll-progress"></div></div>
+              <div class="admin-log" id="admin-newcoll-log" style="display:none"></div>
             </div>
           </div>
         </div>
 
-        <!-- Gestion collections -->
-        <div class="admin-section">
-          <div class="admin-section-title">🎴 Gestion des collections</div>
-          <div class="admin-section-body" id="admin-colls-section">
-            <div class="admin-search">
-              <span style="color:var(--muted);font-size:14px">🔍</span>
-              <input type="text" id="admin-search-coll" placeholder="Rechercher une collection…" oninput="adminFilterColls()">
+        <!-- ── ONGLET USERS ── -->
+        <div id="adm-panel-users" style="display:none;flex-direction:column;gap:14px">
+          <div class="admin-section">
+            <div class="admin-section-title">👥 Derniers inscrits</div>
+            <div class="admin-section-body">
+              <div id="adm-users-list" style="display:flex;flex-direction:column;gap:6px;max-height:400px;overflow-y:auto"><div style="color:var(--muted);font-size:12px">Chargement…</div></div>
             </div>
-            <div id="admin-colls-list" style="display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto"></div>
           </div>
         </div>
 
-        <!-- Edition collection (masqué par défaut) -->
-        <div class="admin-section" id="admin-edit-section" style="display:none">
-          <div class="admin-section-title">✏️ Modifier la collection</div>
-          <div class="admin-section-body">
-            <div class="admin-edit-back" onclick="adminBackToList()">← Retour à la liste</div>
-            <div style="font-size:13px;font-weight:900;color:var(--text);margin-bottom:4px" id="admin-edit-nom"></div>
-            <div class="admin-field">
-              <label>Nombre de stickers/cartes</label>
-              <input type="number" id="admin-edit-nb" placeholder="Ex: 680" min="1" max="9999">
+        <!-- ── ONGLET WAITLIST ── -->
+        <div id="adm-panel-waitlist" style="display:none;flex-direction:column;gap:14px">
+          <div class="admin-section">
+            <div class="admin-section-title">📧 Waitlist</div>
+            <div class="admin-section-body">
+              <div style="font-size:13px;color:var(--muted);font-weight:700;margin-bottom:4px" id="admin-waitlist-count">Chargement…</div>
+              <button class="admin-btn admin-btn-muted" onclick="adminExportWaitlist()">⬇️ Exporter CSV</button>
             </div>
-            <div class="admin-field">
-              <label>Nom de la collection</label>
-              <input type="text" id="admin-edit-name-input">
+          </div>
+          <div class="admin-section">
+            <div class="admin-section-title">📨 Email groupé à la waitlist</div>
+            <div class="admin-section-body">
+              <div class="admin-field"><label>Sujet</label><input type="text" id="adm-email-subject" placeholder="Ex: Allosticker est en ligne !"></div>
+              <div class="admin-field"><label>Message</label><textarea id="adm-email-body" placeholder="Bonjour ! Bonne nouvelle…" style="background:var(--card2);border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;font-family:Nunito,sans-serif;font-size:13px;font-weight:700;color:var(--text);outline:none;width:100%;height:100px;resize:none"></textarea></div>
+              <div style="font-size:11px;color:var(--pink);font-weight:700">⚠️ Envoie un email à TOUS les inscrits — irréversible</div>
+              <button class="admin-btn admin-btn-yellow" onclick="adminSendEmailWaitlist()" id="adm-send-email-btn">📨 Envoyer à la waitlist</button>
             </div>
-            <div class="admin-field">
-              <label>Année</label>
-              <input type="number" id="admin-edit-annee" min="1970" max="2030">
-            </div>
-            <button class="admin-btn admin-btn-yellow" onclick="adminSaveCollection()" id="admin-save-btn">💾 Sauvegarder</button>
-            <div style="margin-top:4px;font-size:12px;font-weight:700;color:var(--muted)">Regénérer les cartes manquantes :</div>
-            <button class="admin-btn admin-btn-muted" onclick="adminRegenCards()" id="admin-regen-btn">🔄 Regénérer les cartes</button>
-            <div class="admin-progress-bar"><div class="admin-progress-fill" id="admin-regen-progress"></div></div>
-            <div class="admin-log" id="admin-log" style="display:none"></div>
           </div>
         </div>
 
-        <!-- Export waitlist -->
-        <div class="admin-section">
-          <div class="admin-section-title">📧 Waitlist</div>
-          <div class="admin-section-body">
-            <div style="font-size:13px;color:var(--muted);font-weight:700" id="admin-waitlist-count">Chargement…</div>
-            <button class="admin-btn admin-btn-muted" onclick="adminExportWaitlist()">⬇️ Exporter CSV</button>
+        <!-- ── ONGLET PLUS ── -->
+        <div id="adm-panel-more" style="display:none;flex-direction:column;gap:14px">
+          <div class="admin-section">
+            <div class="admin-section-title">🔄 Maintenance</div>
+            <div class="admin-section-body">
+              <button class="admin-btn admin-btn-muted" onclick="adminClearCache()">🗑️ Vider le cache collections</button>
+              <button class="admin-btn admin-btn-muted" onclick="adminRegenAllCards()" id="adm-regen-all-btn">🔄 Régénérer toutes les collections</button>
+              <div class="admin-progress-bar"><div class="admin-progress-fill" id="adm-regen-all-progress"></div></div>
+              <div class="admin-log" id="adm-regen-all-log" style="display:none"></div>
+            </div>
+          </div>
+          <div class="admin-section">
+            <div class="admin-section-title">⚡ Accès rapide</div>
+            <div class="admin-section-body">
+              <button class="admin-btn admin-btn-muted" onclick="closeAdmin();goTo('accueil')">🏠 Accueil app</button>
+              <button class="admin-btn admin-btn-muted" onclick="closeAdmin();goTo('profil')">👤 Mon profil</button>
+              <button class="admin-btn admin-btn-red" onclick="adminConfirmLogout()">🚪 Se déconnecter</button>
+            </div>
           </div>
         </div>
 
@@ -1440,18 +1540,17 @@ function renderColls(){
   const LABELS={all:'Toutes les collections',foot:'Football',pokemon:'Pokémon',manga:'Manga & Anime',basketball:'Basketball',f1:'Formule 1',rugby:'Rugby',jeu_cartes:'Jeux de cartes',football_americain:'NFL',baseball:'Baseball',comics:'Comics',disney:'Disney',catch:'Catch'};
   $('accueil-section-title').textContent=LABELS[S.currentCat]||'Collections';
   grid.innerHTML=filtered.map((c,i)=>{
-    const emoji=CAT_EMOJI[c.categorie]||'🃏';
-    const colors=CAT_COLORS[c.categorie]||['#1e1e28','#23232f'];
     const bc=c.type==='stickers'?'badge-stickers':'badge-cartes';
     const bl=c.type==='stickers'?'Stickers':'Cartes';
     const nomSafe=c.nom.split("'").join("\'");
     const pct=S.activeColls[c.id]!=null?
       `<div style="margin-top:4px;height:3px;border-radius:100px;background:var(--card2);overflow:hidden"><div style="height:100%;width:${S.activeColls[c.id]}%;background:linear-gradient(90deg,var(--yellow),var(--orange));border-radius:100px"></div></div>`
       :'';
+    const iconSvg=getCollIconLarge(c);
     return`<div class="coll-card reveal" style="animation-delay:${i*20}ms" onclick="openCollection('${c.slug}','${nomSafe}','${c.id}')">
       <div class="coll-annee">${c.annee||''}</div>
       <div class="coll-card-top">
-        <div class="coll-emoji-wrap" style="background:linear-gradient(135deg,${colors[0]},${colors[1]})">${emoji}</div>
+        <div class="coll-emoji-wrap" style="background:none;width:44px;height:44px;padding:0">${iconSvg}</div>
         <div class="coll-type-badge ${bc}">${bl}</div>
       </div>
       <div><div class="coll-nom">${c.nom}</div><div class="coll-editeur">${c.editeur}</div></div>
@@ -2030,252 +2129,383 @@ document.addEventListener('keydown',e=>{
 // ADMIN PANEL
 // ══════════════════════════════
 const ADMIN_PWD = 'Jj0624988240@';
-let adminTapCount = 0;
-let adminTapTimer = null;
+let adminTapCount = 0, adminTapTimer = null;
 let adminAuthenticated = false;
-let adminCurrentColl = null;
-let adminAllColls = [];
+let adminCurrentColl = null, adminAllColls = [];
 
-// Détecter les tapotements multiples sur le logo
+// Icônes SVG par collection (slug-based)
+const COLL_ICONS = {
+  // FOOT
+  'panini-fifa-wc-2026': {bg:['#1a4a1a','#2a7a2a'], icon:'🏆', label:'WC 2026'},
+  'panini-ligue1': {bg:['#0a1a4a','#1a2a8a'], icon:'⚡', label:'L1'},
+  'panini-premier-league': {bg:['#3a0a1a','#8a1a3a'], icon:'🦁', label:'PL'},
+  'panini-laliga': {bg:['#4a1a0a','#aa2a0a'], icon:'🌟', label:'LaLiga'},
+  'panini-champions-league': {bg:['#0a0a3a','#1a1a6a'], icon:'⭐', label:'UCL'},
+  'adrenalyn-xl': {bg:['#2a0a4a','#5a1a8a'], icon:'⚡', label:'ADR'},
+  // POKEMON
+  'pokemon-151': {bg:['#c8a800','#f5c000'], icon:'🔴', label:'151'},
+  'pokemon-ecarlate': {bg:['#8a1a0a','#c82a1a'], icon:'🔥', label:'SV'},
+  'pokemon-stellar-crown': {bg:['#0a1a4a','#1a3a8a'], icon:'👑', label:'SC'},
+  'pokemon-obsidian-flames': {bg:['#1a0a0a','#4a1a0a'], icon:'🌑', label:'OBF'},
+  // MANGA / ANIME
+  'one-piece': {bg:['#0a2a4a','#0a4a8a'], icon:'☠️', label:'OP'},
+  'dragon-ball': {bg:['#4a2a0a','#8a4a0a'], icon:'🐉', label:'DB'},
+  'naruto': {bg:['#4a2a0a','#8a4a0a'], icon:'🍃', label:'NAR'},
+  // BASKET
+  'topps-nba': {bg:['#4a1a0a','#8a2a0a'], icon:'🏀', label:'NBA'},
+  'panini-nba': {bg:['#0a1a4a','#0a2a8a'], icon:'🏀', label:'NBA'},
+  // F1
+  'topps-f1': {bg:['#1a0a0a','#4a0a0a'], icon:'🏁', label:'F1'},
+  'panini-f1': {bg:['#1a0a0a','#4a0a0a'], icon:'🏎️', label:'F1'},
+  // RUGBY
+  'panini-rugby': {bg:['#1a3a1a','#2a6a2a'], icon:'🏉', label:'RWC'},
+  // NFL
+  'panini-nfl': {bg:['#0a1a4a','#1a3a8a'], icon:'🏈', label:'NFL'},
+  // WWE / CATCH
+  'panini-wwe': {bg:['#2a0a2a','#5a0a5a'], icon:'🥊', label:'WWE'},
+  // DISNEY
+  'topps-disney': {bg:['#0a1a4a','#1a3a8a'], icon:'✨', label:'DIS'},
+};
+
+// Générer icône SVG pour une collection
+function getCollIcon(coll) {
+  const slug = coll.slug || '';
+  // Chercher dans COLL_ICONS
+  const icon = Object.entries(COLL_ICONS).find(([k]) => slug.includes(k))?.[1];
+  if(icon) {
+    return `<svg width="44" height="44" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
+      <rect width="44" height="44" rx="10" fill="url(#g-${slug.substring(0,8)})"/>
+      <defs><linearGradient id="g-${slug.substring(0,8)}" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="${icon.bg[0]}"/>
+        <stop offset="100%" stop-color="${icon.bg[1]}"/>
+      </linearGradient></defs>
+      <text x="22" y="28" font-size="20" text-anchor="middle">${icon.icon}</text>
+    </svg>`;
+  }
+  // Fallback: couleurs catégorie + emoji
+  const colors = CAT_COLORS[coll.categorie] || ['#1e1e28','#23232f'];
+  const emoji = CAT_EMOJI[coll.categorie] || '🎴';
+  const id = 'gc'+Math.random().toString(36).substring(2,7);
+  return `<svg width="44" height="44" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
+    <rect width="44" height="44" rx="10" fill="url(#${id})"/>
+    <defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="${colors[0]}"/>
+      <stop offset="100%" stop-color="${colors[1]}"/>
+    </linearGradient></defs>
+    <text x="22" y="28" font-size="20" text-anchor="middle">${emoji}</text>
+  </svg>`;
+}
+
+// Icône grande (pour les cards accueil)
+function getCollIconLarge(coll) {
+  const slug = coll.slug || '';
+  const icon = Object.entries(COLL_ICONS).find(([k]) => slug.includes(k))?.[1];
+  const colors = icon ? icon.bg : (CAT_COLORS[coll.categorie] || ['#1e1e28','#23232f']);
+  const emoji = icon ? icon.icon : (CAT_EMOJI[coll.categorie] || '🎴');
+  const id = 'gl'+slug.substring(0,6).replace(/[^a-z0-9]/g,'');
+  return `<svg width="44" height="44" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
+    <rect width="44" height="44" rx="11" fill="url(#${id})"/>
+    <defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="${colors[0]}"/>
+      <stop offset="100%" stop-color="${colors[1]}"/>
+    </linearGradient></defs>
+    <text x="22" y="29" font-size="22" text-anchor="middle">${emoji}</text>
+  </svg>`;
+}
+
+// Tapotements logo
 document.addEventListener('DOMContentLoaded', () => {
-  // Attacher sur tous les logos
-  document.querySelectorAll('.appbar-logo').forEach(logo => {
-    logo.addEventListener('click', handleAdminTap);
-  });
+  document.querySelectorAll('.appbar-logo').forEach(logo => logo.addEventListener('click', handleAdminTap));
 });
-
-function handleAdminTap() {
+function handleAdminTap(){
   adminTapCount++;
   clearTimeout(adminTapTimer);
-  if(adminTapCount >= 7) {
-    adminTapCount = 0;
-    openAdminPanel();
-    return;
-  }
-  adminTapTimer = setTimeout(() => { adminTapCount = 0; }, 800);
+  if(adminTapCount >= 7){adminTapCount=0;openAdminPanel();return;}
+  adminTapTimer=setTimeout(()=>{adminTapCount=0;},800);
 }
-
-function openAdminPanel() {
-  const overlay = document.getElementById('admin-overlay');
-  overlay.classList.add('open');
-  if(adminAuthenticated) {
-    showAdminDashboard();
-  } else {
-    document.getElementById('admin-auth-section').style.display = 'block';
-    document.getElementById('admin-dashboard').style.display = 'none';
-    setTimeout(() => document.getElementById('admin-pwd-input')?.focus(), 300);
+function openAdminPanel(){
+  $('admin-overlay').classList.add('open');
+  if(adminAuthenticated) showAdminDashboard();
+  else{
+    $('admin-auth-section').style.display='block';
+    $('admin-dashboard').style.display='none';
+    setTimeout(()=>$('admin-pwd-input')?.focus(),300);
   }
 }
-
-function closeAdmin() {
-  document.getElementById('admin-overlay').classList.remove('open');
+function closeAdmin(){$('admin-overlay').classList.remove('open');}
+function adminOverlayClick(e){if(e.target===$('admin-overlay'))closeAdmin();}
+function toggleAdminPwd(){const i=$('admin-pwd-input');i.type=i.type==='password'?'text':'password';}
+function checkAdminPwd(){
+  const val=$('admin-pwd-input').value;
+  const err=$('admin-error-msg');
+  if(val===ADMIN_PWD){adminAuthenticated=true;$('admin-pwd-input').value='';err.textContent='';showAdminDashboard();}
+  else{err.textContent='Mot de passe incorrect';$('admin-pwd-input').value='';setTimeout(()=>err.textContent='',2000);}
 }
 
-function adminOverlayClick(e) {
-  if(e.target === document.getElementById('admin-overlay')) closeAdmin();
+function adminSwitchTab(tab){
+  ['stats','colls','users','waitlist','more'].forEach(t=>{
+    $('adm-tab-'+t).classList.toggle('active',t===tab);
+    const p=$('adm-panel-'+t);
+    if(p)p.style.display=t===tab?'flex':'none';
+  });
+  if(tab==='users') adminLoadUsers();
+  if(tab==='colls') adminRenderCollsList(adminAllColls);
 }
 
-function toggleAdminPwd() {
-  const i = document.getElementById('admin-pwd-input');
-  i.type = i.type === 'password' ? 'text' : 'password';
-}
-
-function checkAdminPwd() {
-  const val = document.getElementById('admin-pwd-input').value;
-  const errEl = document.getElementById('admin-error-msg');
-  if(val === ADMIN_PWD) {
-    adminAuthenticated = true;
-    document.getElementById('admin-pwd-input').value = '';
-    errEl.textContent = '';
-    showAdminDashboard();
-  } else {
-    errEl.textContent = 'Mot de passe incorrect';
-    document.getElementById('admin-pwd-input').value = '';
-    setTimeout(() => errEl.textContent = '', 2000);
-  }
-}
-
-async function showAdminDashboard() {
-  document.getElementById('admin-auth-section').style.display = 'none';
-  const dash = document.getElementById('admin-dashboard');
-  dash.style.display = 'flex';
-
+async function showAdminDashboard(){
+  $('admin-auth-section').style.display='none';
+  const dash=$('admin-dashboard');dash.style.display='flex';
+  adminSwitchTab('stats');
   // Stats
-  const [{count:nbColls},{count:nbCards},{count:nbUsers},{count:nbWait}] = await Promise.all([
+  const[{count:nbColls},{count:nbCards},{count:nbUsers},{count:nbWait},{count:nbTrades},{count:nbUC},{count:nbD},{count:nbM}]=await Promise.all([
     sb.from('collections').select('*',{count:'exact',head:true}),
     sb.from('cards').select('*',{count:'exact',head:true}),
     sb.from('profiles').select('*',{count:'exact',head:true}),
     sb.from('waitlist_allosticker').select('*',{count:'exact',head:true}),
+    sb.from('trades').select('*',{count:'exact',head:true}),
+    sb.from('user_cards').select('*',{count:'exact',head:true}),
+    sb.from('user_cards').select('*',{count:'exact',head:true}).eq('statut','double'),
+    sb.from('user_cards').select('*',{count:'exact',head:true}).eq('statut','manquante'),
   ]);
-  const sv = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v??'—'; };
-  sv('adm-stat-colls', nbColls);
-  sv('adm-stat-cards', nbCards ? (nbCards>999 ? (nbCards/1000).toFixed(1)+'k' : nbCards) : '—');
-  sv('adm-stat-users', nbUsers);
-  sv('adm-stat-waitlist', nbWait);
-  const wEl = document.getElementById('admin-waitlist-count');
-  if(wEl) wEl.textContent = (nbWait||0)+' personne'+(nbWait>1?'s':'')+' inscrite'+(nbWait>1?'s':'');
-
-  // Charger les collections
-  const {data} = await sb.from('collections').select('id,slug,nom,editeur,categorie,annee,nb_cartes,type').order('nom');
-  adminAllColls = data || [];
-  adminRenderCollsList(adminAllColls);
+  const sv=(id,v)=>{const el=$(id);if(el)el.textContent=v??'—';};
+  sv('adm-stat-colls',nbColls);
+  sv('adm-stat-cards',nbCards?(nbCards>999?(nbCards/1000).toFixed(1)+'k':nbCards):'—');
+  sv('adm-stat-users',nbUsers);
+  sv('adm-stat-waitlist',nbWait);
+  sv('adm-stat-trades',nbTrades||0);
+  sv('adm-stat-ucards',nbUC?(nbUC>999?(nbUC/1000).toFixed(1)+'k':nbUC):0);
+  sv('adm-stat-doubles',nbD||0);
+  sv('adm-stat-manquantes',nbM||0);
+  const wEl=$('admin-waitlist-count');
+  if(wEl)wEl.textContent=(nbWait||0)+' personne'+(nbWait>1?'s':'')+' inscrite'+(nbWait>1?'s':'');
+  // Top collections
+  const{data:topRaw}=await sb.from('user_cards').select('cards(collection_id)').limit(500);
+  if(topRaw){
+    const counts={};
+    topRaw.forEach(r=>{const cid=r.cards?.collection_id;if(cid)counts[cid]=(counts[cid]||0)+1;});
+    const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    const topEl=$('adm-top-colls');
+    if(topEl&&sorted.length){
+      topEl.innerHTML=sorted.map(([cid,cnt])=>{
+        const c=S.collections.find(x=>x.id===cid)||adminAllColls.find(x=>x.id===cid)||{nom:cid,categorie:'foot'};
+        return`<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border)">
+          <div>${getCollIcon(c)}</div>
+          <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.nom||'—'}</div></div>
+          <div style="font-size:12px;font-weight:900;color:var(--yellow)">${cnt} cartes</div>
+        </div>`;
+      }).join('');
+    } else if(topEl) topEl.innerHTML='<div style="color:var(--muted);font-size:12px">Aucune donnée</div>';
+  }
+  // Charger les collections pour l'onglet
+  const{data}=await sb.from('collections').select('id,slug,nom,editeur,categorie,annee,nb_cartes,type').order('nom');
+  adminAllColls=data||[];
 }
 
-function adminRenderCollsList(list) {
-  const container = document.getElementById('admin-colls-list');
-  if(!container) return;
-  if(!list.length) { container.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:16px">Aucune collection trouvée</div>'; return; }
-  container.innerHTML = list.map(c => {
-    const emoji = CAT_EMOJI[c.categorie] || '🃏';
-    return `<div class="admin-coll-item" onclick="adminOpenEdit('${c.id}')">
-      <div class="admin-coll-emoji">${emoji}</div>
+function adminRenderCollsList(list){
+  const container=$('admin-colls-list');if(!container)return;
+  if(!list.length){container.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:16px">Aucune collection</div>';return;}
+  container.innerHTML=list.map(c=>`
+    <div class="admin-coll-item" onclick="adminOpenEdit('${c.id}')">
+      <div class="admin-coll-emoji">${getCollIcon(c)}</div>
       <div class="admin-coll-info">
         <div class="admin-coll-nom">${c.nom}</div>
         <div class="admin-coll-meta">${c.editeur} · ${c.nb_cartes} ${c.type} · ${c.annee||''}</div>
       </div>
       <div class="admin-coll-arrow">›</div>
+    </div>`).join('');
+}
+
+function adminFilterColls(){
+  const q=($('admin-search-coll')?.value||'').toLowerCase();
+  adminRenderCollsList(q?adminAllColls.filter(c=>c.nom.toLowerCase().includes(q)||c.editeur.toLowerCase().includes(q)):adminAllColls);
+}
+
+function adminOpenEdit(id){
+  adminCurrentColl=adminAllColls.find(c=>c.id===id);if(!adminCurrentColl)return;
+  $('admin-colls-section').style.display='none';
+  $('admin-edit-section').style.display='block';
+  $('admin-edit-nom').textContent=adminCurrentColl.nom;
+  $('admin-edit-nb').value=adminCurrentColl.nb_cartes||'';
+  $('admin-edit-name-input').value=adminCurrentColl.nom||'';
+  $('admin-edit-editeur').value=adminCurrentColl.editeur||'';
+  $('admin-edit-annee').value=adminCurrentColl.annee||'';
+  $('admin-log').style.display='none';
+  $('admin-log').innerHTML='';
+  $('admin-regen-progress').style.width='0%';
+}
+
+function adminBackToList(){
+  $('admin-edit-section').style.display='none';
+  $('admin-colls-section').style.display='block';
+  adminCurrentColl=null;
+}
+
+async function adminSaveCollection(){
+  if(!adminCurrentColl)return;
+  const nb=parseInt($('admin-edit-nb').value);
+  const nom=$('admin-edit-name-input').value.trim();
+  const editeur=$('admin-edit-editeur').value.trim();
+  const annee=parseInt($('admin-edit-annee').value);
+  if(!nb||nb<1){showToast('Nombre de cartes invalide');return;}
+  const btn=$('admin-save-btn');
+  btn.disabled=true;btn.textContent='⏳ Sauvegarde…';
+  const updates={};
+  if(nb)updates.nb_cartes=nb;
+  if(nom)updates.nom=nom;
+  if(editeur)updates.editeur=editeur;
+  if(annee)updates.annee=annee;
+  const{error}=await sb.from('collections').update(updates).eq('id',adminCurrentColl.id);
+  btn.disabled=false;btn.textContent='💾 Sauvegarder';
+  if(error){showToast('Erreur : '+error.message);return;}
+  adminCurrentColl={...adminCurrentColl,...updates};
+  const idx=adminAllColls.findIndex(c=>c.id===adminCurrentColl.id);
+  if(idx!==-1)adminAllColls[idx]=adminCurrentColl;
+  $('admin-edit-nom').textContent=adminCurrentColl.nom;
+  // ✅ FIX: Mettre à jour STATE.collections ET la card dans le DOM
+  S.collections=S.collections.map(c=>c.id===adminCurrentColl.id?{...c,...updates}:c);
+  const nbEl=$('nb-'+adminCurrentColl.id);
+  if(nbEl)nbEl.textContent=nb;
+  showToast('✓ Collection mise à jour !');
+}
+
+async function adminRegenCards(){
+  if(!adminCurrentColl)return;
+  const nb=parseInt($('admin-edit-nb').value);
+  if(!nb||nb<1){showToast('Renseigne le nombre de cartes');return;}
+  await _doRegenCards(adminCurrentColl.id,adminCurrentColl.nom,nb,$('admin-regen-btn'),$('admin-log'),$('admin-regen-progress'));
+}
+
+async function _doRegenCards(collId,collNom,nb,btn,log,progress){
+  btn.disabled=true;
+  log.style.display='block';log.innerHTML='';
+  progress.style.width='0%';
+  const addLog=(msg,type='info')=>{log.innerHTML+=`<div class="log-${type}">${msg}</div>`;log.scrollTop=log.scrollHeight;};
+  addLog('📋 '+collNom,'info');
+  addLog('🎯 Objectif : '+nb+' cartes','info');
+  const{data:existing}=await sb.from('cards').select('numero').eq('collection_id',collId);
+  const existingNums=new Set((existing||[]).map(c=>c.numero));
+  addLog('✓ '+existingNums.size+' cartes déjà en base','ok');
+  const toInsert=[];
+  for(let i=1;i<=nb;i++){if(!existingNums.has(String(i)))toInsert.push({collection_id:collId,numero:String(i),nom:'Carte #'+i,rarete:'commune'});}
+  if(!toInsert.length){addLog('✅ Toutes les cartes sont présentes !','ok');btn.disabled=false;progress.style.width='100%';return;}
+  addLog('🔄 '+toInsert.length+' cartes à insérer…','info');
+  let inserted=0;
+  for(let i=0;i<toInsert.length;i+=100){
+    const chunk=toInsert.slice(i,i+100);
+    const{error}=await sb.from('cards').upsert(chunk,{onConflict:'collection_id,numero',ignoreDuplicates:true});
+    if(error){addLog('✗ Erreur : '+error.message,'err');break;}
+    inserted+=chunk.length;
+    progress.style.width=Math.round(inserted/toInsert.length*100)+'%';
+  }
+  addLog('🎉 Terminé ! '+inserted+' cartes ajoutées','ok');
+  btn.disabled=false;
+  showToast('✓ '+inserted+' cartes générées');
+}
+
+async function adminAddCollection(){
+  const nom=$('new-coll-nom').value.trim();
+  const editeur=$('new-coll-editeur').value.trim();
+  const cat=$('new-coll-cat').value;
+  const annee=parseInt($('new-coll-annee').value)||new Date().getFullYear();
+  const nb=parseInt($('new-coll-nb').value)||0;
+  const type=$('new-coll-type').value;
+  if(!nom||!editeur){showToast('Nom et éditeur requis');return;}
+  const slug=nom.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  const{data,error}=await sb.from('collections').insert({slug,nom,editeur,categorie:cat,annee,nb_cartes:nb,type}).select().single();
+  if(error){showToast('Erreur : '+error.message);return;}
+  showToast('✓ Collection créée !');
+  adminAllColls.push(data);
+  S.collections.push(data);
+  S.collections=[...S.collections];
+  ['new-coll-nom','new-coll-editeur','new-coll-annee','new-coll-nb'].forEach(id=>{const el=$(id);if(el)el.value='';});
+  adminRenderCollsList(adminAllColls);
+  return data;
+}
+
+async function adminAddAndGenerate(){
+  const data=await adminAddCollection();
+  if(!data)return;
+  const nb=data.nb_cartes;
+  if(!nb||nb<1){showToast('Définis le nombre de cartes avant de générer');return;}
+  await _doRegenCards(data.id,data.nom,nb,$('adm-regen-all-btn'),$('admin-newcoll-log'),$('admin-newcoll-progress'));
+}
+
+async function adminLoadUsers(){
+  const container=$('adm-users-list');if(!container)return;
+  const{data}=await sb.from('profiles').select('id,nom,email,ville,nb_echanges,plan,created_at').order('created_at',{ascending:false}).limit(20);
+  if(!data?.length){container.innerHTML='<div style="color:var(--muted);font-size:12px">Aucun utilisateur</div>';return;}
+  container.innerHTML=data.map(u=>{
+    const ini=(u.nom||u.email||'U').substring(0,2).toUpperCase();
+    const date=new Date(u.created_at).toLocaleDateString('fr-FR');
+    return`<div style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--card2);border-radius:10px;border:1px solid var(--border)">
+      <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--yellow),var(--orange));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#0f0f14;flex-shrink:0">${ini}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${u.nom||u.email||'—'}</div>
+        <div style="font-size:10px;color:var(--muted);font-weight:700">${u.ville||'—'} · ${u.nb_echanges||0} échanges · ${date}</div>
+      </div>
+      <div style="font-size:10px;font-weight:900;padding:2px 7px;border-radius:100px;background:rgba(255,217,61,.1);color:var(--yellow)">${u.plan||'free'}</div>
     </div>`;
   }).join('');
 }
 
-function adminFilterColls() {
-  const q = (document.getElementById('admin-search-coll')?.value||'').toLowerCase();
-  const filtered = q ? adminAllColls.filter(c => c.nom.toLowerCase().includes(q) || c.editeur.toLowerCase().includes(q)) : adminAllColls;
-  adminRenderCollsList(filtered);
+async function adminExportWaitlist(){
+  const{data}=await sb.from('waitlist_allosticker').select('email,created_at').order('created_at');
+  if(!data?.length){showToast('Waitlist vide');return;}
+  const csv=['Email,Date inscription'].concat(data.map(r=>r.email+','+new Date(r.created_at).toLocaleDateString('fr-FR'))).join(String.fromCharCode(10));
+  const blob=new Blob([csv],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='waitlist_allosticker.csv';a.click();URL.revokeObjectURL(url);
+  showToast('📥 '+data.length+' emails exportés');
 }
 
-function adminOpenEdit(id) {
-  adminCurrentColl = adminAllColls.find(c => c.id === id);
-  if(!adminCurrentColl) return;
-  document.getElementById('admin-colls-section').style.display = 'none';
-  document.getElementById('admin-edit-section').style.display = 'block';
-  document.getElementById('admin-edit-nom').textContent = adminCurrentColl.nom;
-  document.getElementById('admin-edit-nb').value = adminCurrentColl.nb_cartes || '';
-  document.getElementById('admin-edit-name-input').value = adminCurrentColl.nom || '';
-  document.getElementById('admin-edit-annee').value = adminCurrentColl.annee || '';
-  document.getElementById('admin-log').style.display = 'none';
-  document.getElementById('admin-log').innerHTML = '';
-  document.getElementById('admin-regen-progress').style.width = '0%';
+async function adminSendEmailWaitlist(){
+  const subject=$('adm-email-subject')?.value.trim();
+  const body=$('adm-email-body')?.value.trim();
+  if(!subject||!body){showToast('Sujet et message requis');return;}
+  if(!confirm('Envoyer un email à TOUTE la waitlist ?'))return;
+  showToast('📨 Envoi en cours… (fonction à brancher sur Netlify)');
+  // TODO: appel à une Netlify function /api/send-waitlist-email
 }
 
-function adminBackToList() {
-  document.getElementById('admin-edit-section').style.display = 'none';
-  document.getElementById('admin-colls-section').style.display = 'block';
-  adminCurrentColl = null;
+function adminClearCache(){
+  S.collections=[];
+  showToast('🗑️ Cache vidé — rechargement à la prochaine visite');
 }
 
-async function adminSaveCollection() {
-  if(!adminCurrentColl) return;
-  const nb = parseInt(document.getElementById('admin-edit-nb').value);
-  const nom = document.getElementById('admin-edit-name-input').value.trim();
-  const annee = parseInt(document.getElementById('admin-edit-annee').value);
-  if(!nb || nb < 1) { showToast('Nombre de cartes invalide'); return; }
-
-  const btn = document.getElementById('admin-save-btn');
-  btn.disabled = true; btn.textContent = '⏳ Sauvegarde…';
-
-  const updates = {};
-  if(nb) updates.nb_cartes = nb;
-  if(nom) updates.nom = nom;
-  if(annee) updates.annee = annee;
-
-  const {error} = await sb.from('collections').update(updates).eq('id', adminCurrentColl.id);
-  btn.disabled = false; btn.textContent = '💾 Sauvegarder';
-
-  if(error) { showToast('Erreur : '+error.message); return; }
-
-  // Mettre à jour le state local
-  adminCurrentColl = {...adminCurrentColl, ...updates};
-  const idx = adminAllColls.findIndex(c => c.id === adminCurrentColl.id);
-  if(idx !== -1) adminAllColls[idx] = adminCurrentColl;
-  document.getElementById('admin-edit-nom').textContent = adminCurrentColl.nom;
-
-  // Rafraîchir collections dans l'app
-  STATE.collections = STATE.collections.map(c => c.id === adminCurrentColl.id ? {...c,...updates} : c);
-
-  showToast('✓ Collection mise à jour !');
-}
-
-async function adminRegenCards() {
-  if(!adminCurrentColl) return;
-  const nb = parseInt(document.getElementById('admin-edit-nb').value);
-  if(!nb || nb < 1) { showToast('Renseigne le nombre de cartes d\'abord'); return; }
-
-  const btn = document.getElementById('admin-regen-btn');
-  const log = document.getElementById('admin-log');
-  const progress = document.getElementById('admin-regen-progress');
-  btn.disabled = true;
-  log.style.display = 'block';
-  log.innerHTML = '';
-  progress.style.width = '0%';
-
-  const addLog = (msg, type='info') => {
-    log.innerHTML += `<div class="log-${type}">${msg}</div>`;
-    log.scrollTop = log.scrollHeight;
-  };
-
-  addLog(`📋 Collection : ${adminCurrentColl.nom}`, 'info');
-  addLog(`🎯 Objectif : ${nb} cartes`, 'info');
-
-  // Récupérer les cartes existantes
-  const {data: existing} = await sb.from('cards').select('numero').eq('collection_id', adminCurrentColl.id);
-  const existingNums = new Set((existing||[]).map(c => c.numero));
-  addLog(`✓ ${existingNums.size} cartes déjà en base`, 'ok');
-
-  // Générer les manquantes
-  const toInsert = [];
-  for(let i = 1; i <= nb; i++) {
-    if(!existingNums.has(String(i))) {
-      toInsert.push({collection_id: adminCurrentColl.id, numero: String(i), nom: `Carte #${i}`, rarete: 'commune'});
-    }
+async function adminRegenAllCards(){
+  const btn=$('adm-regen-all-btn');
+  const log=$('adm-regen-all-log');
+  const progress=$('adm-regen-all-progress');
+  if(!adminAllColls.length){showToast('Charge les collections d\'abord');return;}
+  if(!confirm('Régénérer les cartes manquantes pour TOUTES les '+adminAllColls.length+' collections ?'))return;
+  log.style.display='block';log.innerHTML='';progress.style.width='0%';
+  const addLog=(msg,type='info')=>{log.innerHTML+=`<div class="log-${type}">${msg}</div>`;log.scrollTop=log.scrollHeight;};
+  addLog('🚀 Début de la régénération globale','info');
+  let done=0;
+  for(const coll of adminAllColls){
+    if(!coll.nb_cartes){done++;continue;}
+    addLog('→ '+coll.nom+' ('+coll.nb_cartes+' cartes)','info');
+    const{data:existing}=await sb.from('cards').select('numero').eq('collection_id',coll.id);
+    const existingNums=new Set((existing||[]).map(c=>c.numero));
+    const toInsert=[];
+    for(let i=1;i<=coll.nb_cartes;i++){if(!existingNums.has(String(i)))toInsert.push({collection_id:coll.id,numero:String(i),nom:'Carte #'+i,rarete:'commune'});}
+    if(toInsert.length){
+      for(let i=0;i<toInsert.length;i+=100){
+        const chunk=toInsert.slice(i,i+100);
+        await sb.from('cards').upsert(chunk,{onConflict:'collection_id,numero',ignoreDuplicates:true});
+      }
+      addLog('  ✓ '+toInsert.length+' cartes insérées','ok');
+    } else addLog('  ✓ Déjà à jour','ok');
+    done++;
+    progress.style.width=Math.round(done/adminAllColls.length*100)+'%';
   }
-
-  if(!toInsert.length) {
-    addLog(`✅ Toutes les cartes sont déjà présentes !`, 'ok');
-    btn.disabled = false;
-    progress.style.width = '100%';
-    return;
-  }
-
-  addLog(`🔄 ${toInsert.length} cartes à insérer…`, 'info');
-
-  // Insérer par chunks de 100
-  const chunkSize = 100;
-  let inserted = 0;
-  for(let i = 0; i < toInsert.length; i += chunkSize) {
-    const chunk = toInsert.slice(i, i + chunkSize);
-    const {error} = await sb.from('cards').upsert(chunk, {onConflict:'collection_id,numero', ignoreDuplicates:true});
-    if(error) {
-      addLog(`✗ Erreur chunk ${i}: ${error.message}`, 'err');
-      break;
-    }
-    inserted += chunk.length;
-    const pct = Math.round(inserted / toInsert.length * 100);
-    progress.style.width = pct + '%';
-    addLog(`  ✓ ${inserted}/${toInsert.length} cartes insérées`, 'ok');
-  }
-
-  addLog(`🎉 Terminé ! ${inserted} cartes ajoutées`, 'ok');
-  btn.disabled = false;
-  showToast(`✓ ${inserted} cartes générées`);
+  addLog('🎉 Régénération terminée !','ok');
+  btn.disabled=false;
+  showToast('✓ Toutes les collections à jour !');
 }
 
-async function adminExportWaitlist() {
-  const {data} = await sb.from('waitlist_allosticker').select('email,created_at').order('created_at');
-  if(!data?.length) { showToast('Waitlist vide'); return; }
-  const csv = ['Email,Date inscription', ...data.map(r=>r.email+','+new Date(r.created_at).toLocaleDateString('fr-FR'))].join('\n');
-  const blob = new Blob([csv], {type:'text/csv'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = 'waitlist_allosticker.csv';
-  a.click(); URL.revokeObjectURL(url);
-  showToast(`📥 ${data.length} emails exportés`);
-}
-
-// Helper navigation collection
-function collClick(id,slug){
-  const coll=S.collections.find(c=>c.id===id||c.slug===slug);
-  if(coll) openCollection(coll.slug,coll.nom,coll.id);
+function adminConfirmLogout(){
+  if(confirm('Se déconnecter ?')){closeAdmin();doLogout();}
 }
 
 initAuth();
