@@ -159,6 +159,8 @@ footer{border-top:1px solid var(--border);padding:40px;display:flex;align-items:
 .footer-links a:hover{color:var(--yellow)}
 .footer-copy{color:var(--muted);font-size:13px;font-weight:600}
 @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes logoFloat{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-12px) scale(1.02)}}
+@keyframes floatS{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-10px) rotate(8deg)}}
 @media(max-width:900px){
 nav{padding:16px 20px}nav ul{display:none}
 .hero{padding:60px 20px 40px}.hero-inner{grid-template-columns:1fr;gap:48px}.hero-visual{height:320px;order:-1}
@@ -174,16 +176,19 @@ footer{flex-direction:column;gap:20px;text-align:center}
 <body>
 
 <nav>
-  <div class="logo">Allo<span>sticker</span></div>
+  <div class="logo" style="display:flex;align-items:center;gap:10px">
+    <img src="/allosticker-icon-512.png" style="width:32px;height:32px;border-radius:8px" alt="Allosticker">
+    Allo<span>sticker</span>
+  </div>
   <ul>
     <li><a href="#comment">Comment ça marche</a></li>
     <li><a href="#collections">Collections</a></li>
     <li><a href="#faq">FAQ</a></li>
-    <li><a href="#waitlist" class="nav-cta">Rejoindre la bêta</a></li>
+    <li><a href="/app.html" class="nav-cta" style="background:var(--yellow)!important;color:#0f0f14!important">🚀 Ouvrir l'app</a></li>
   </ul>
 </nav>
 
-<a href="#waitlist" class="sticky-cta" id="sticky-cta">🚀 Rejoindre la bêta gratuite</a>
+<a href="/app.html" class="sticky-cta" id="sticky-cta">🚀 Ouvrir l'app gratuitement</a>
 
 <div class="hero">
   <div class="blob blob-1"></div>
@@ -191,12 +196,12 @@ footer{flex-direction:column;gap:20px;text-align:center}
   <div class="blob blob-3"></div>
   <div class="hero-inner">
     <div>
-      <div class="hero-badge"><span class="dot"></span>Bêta bientôt disponible</div>
+      <div class="hero-badge"><span class="dot"></span>✨ Disponible maintenant !</div>
       <h1><span class="line-yellow">Échange</span><span>tes stickers</span><span class="line-outline">&amp; cartes !</span></h1>
       <p class="hero-desc">Fini les doubles qui traînent. Allosticker connecte les collectionneurs pour des échanges simples, rapides, et <strong>100% gratuits</strong> entre particuliers.</p>
       <div class="hero-actions">
-        <a href="#waitlist" class="btn-primary">🚀 Rejoindre la liste d'attente</a>
-        <a href="#comment" class="btn-secondary">Comment ça marche →</a>
+        <a href="/app.html" class="btn-primary" style="background:var(--yellow);color:#0f0f14">🚀 Accéder à l'app</a>
+        <a href="#waitlist" class="btn-secondary">Rejoindre la waitlist →</a>
       </div>
       <div class="hero-stats">
         <div><div class="stat-num" id="hero-counter">—</div><div class="stat-label">déjà inscrits</div></div>
@@ -204,14 +209,25 @@ footer{flex-direction:column;gap:20px;text-align:center}
         <div><div class="stat-num">0€</div><div class="stat-label">Pour commencer</div></div>
       </div>
     </div>
-    <div class="hero-visual">
-      <span class="float-sticker fs1">⭐</span><span class="float-sticker fs2">🔥</span><span class="float-sticker fs3">✨</span><span class="float-sticker fs4">💫</span>
-      <div class="card-stack">
-        <div class="swap-badge">SWAP !</div>
-        <div class="sticker-card card-c1"><span class="card-num">#47</span><span class="card-emoji">⚽</span><div class="card-label">Mbappé<br><small style="opacity:.7">Panini Liga 2025</small></div></div>
-        <div class="sticker-card card-c2"><span class="card-num">#124</span><span class="card-emoji">🃏</span><div class="card-label">Charizard EX<br><small style="opacity:.7">Pokémon Écarlate</small></div></div>
-        <div class="sticker-card card-c3"><span class="card-num">#8</span><span class="card-emoji">🏀</span><div class="card-label">LeBron James<br><small style="opacity:.7">Topps NBA 2025</small></div></div>
+    <div class="hero-visual" style="display:flex;align-items:center;justify-content:center;position:relative;height:420px">
+      <!-- Glow derrière le logo -->
+      <div style="position:absolute;width:280px;height:280px;background:radial-gradient(circle,rgba(255,217,61,.18),transparent 70%);border-radius:50%;animation:bfloat 6s ease-in-out infinite"></div>
+      <!-- Logo principal animé -->
+      <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:20px">
+        <img src="/allosticker-icon-512.png"
+          style="width:180px;height:180px;border-radius:36px;box-shadow:0 20px 60px rgba(255,217,61,.3),0 0 0 1px rgba(255,217,61,.15);animation:logoFloat 4s ease-in-out infinite"
+          alt="Allosticker">
+        <!-- Badge SWAP flottant -->
+        <div style="background:var(--yellow);color:#0f0f14;font-family:Bangers,cursive;font-size:22px;letter-spacing:1px;padding:10px 24px;border-radius:100px;box-shadow:0 8px 24px rgba(255,217,61,.4);animation:bounceBadge 2s ease-in-out infinite">
+          SWAP !
+        </div>
       </div>
+      <!-- Petites icônes flottantes autour -->
+      <span style="position:absolute;top:40px;left:30px;font-size:32px;animation:floatS 5s ease-in-out infinite">⚽</span>
+      <span style="position:absolute;top:60px;right:40px;font-size:28px;animation:floatS 6s ease-in-out infinite;animation-delay:-2s">🃏</span>
+      <span style="position:absolute;bottom:80px;left:20px;font-size:26px;animation:floatS 7s ease-in-out infinite;animation-delay:-4s">🏀</span>
+      <span style="position:absolute;bottom:60px;right:30px;font-size:28px;animation:floatS 5.5s ease-in-out infinite;animation-delay:-1s">⚔️</span>
+      <span style="position:absolute;top:160px;left:10px;font-size:22px;animation:floatS 8s ease-in-out infinite;animation-delay:-3s">🏎️</span>
     </div>
   </div>
 </div>
