@@ -2133,84 +2133,97 @@ let adminTapCount = 0, adminTapTimer = null;
 let adminAuthenticated = false;
 let adminCurrentColl = null, adminAllColls = [];
 
-// Icônes SVG par collection (slug-based)
-const COLL_ICONS = {
-  // FOOT
-  'panini-fifa-wc-2026': {bg:['#1a4a1a','#2a7a2a'], icon:'🏆', label:'WC 2026'},
-  'panini-ligue1': {bg:['#0a1a4a','#1a2a8a'], icon:'⚡', label:'L1'},
-  'panini-premier-league': {bg:['#3a0a1a','#8a1a3a'], icon:'🦁', label:'PL'},
-  'panini-laliga': {bg:['#4a1a0a','#aa2a0a'], icon:'🌟', label:'LaLiga'},
-  'panini-champions-league': {bg:['#0a0a3a','#1a1a6a'], icon:'⭐', label:'UCL'},
-  'adrenalyn-xl': {bg:['#2a0a4a','#5a1a8a'], icon:'⚡', label:'ADR'},
-  // POKEMON
-  'pokemon-151': {bg:['#c8a800','#f5c000'], icon:'🔴', label:'151'},
-  'pokemon-ecarlate': {bg:['#8a1a0a','#c82a1a'], icon:'🔥', label:'SV'},
-  'pokemon-stellar-crown': {bg:['#0a1a4a','#1a3a8a'], icon:'👑', label:'SC'},
-  'pokemon-obsidian-flames': {bg:['#1a0a0a','#4a1a0a'], icon:'🌑', label:'OBF'},
-  // MANGA / ANIME
-  'one-piece': {bg:['#0a2a4a','#0a4a8a'], icon:'☠️', label:'OP'},
-  'dragon-ball': {bg:['#4a2a0a','#8a4a0a'], icon:'🐉', label:'DB'},
-  'naruto': {bg:['#4a2a0a','#8a4a0a'], icon:'🍃', label:'NAR'},
-  // BASKET
-  'topps-nba': {bg:['#4a1a0a','#8a2a0a'], icon:'🏀', label:'NBA'},
-  'panini-nba': {bg:['#0a1a4a','#0a2a8a'], icon:'🏀', label:'NBA'},
-  // F1
-  'topps-f1': {bg:['#1a0a0a','#4a0a0a'], icon:'🏁', label:'F1'},
-  'panini-f1': {bg:['#1a0a0a','#4a0a0a'], icon:'🏎️', label:'F1'},
-  // RUGBY
-  'panini-rugby': {bg:['#1a3a1a','#2a6a2a'], icon:'🏉', label:'RWC'},
-  // NFL
-  'panini-nfl': {bg:['#0a1a4a','#1a3a8a'], icon:'🏈', label:'NFL'},
-  // WWE / CATCH
-  'panini-wwe': {bg:['#2a0a2a','#5a0a5a'], icon:'🥊', label:'WWE'},
-  // DISNEY
-  'topps-disney': {bg:['#0a1a4a','#1a3a8a'], icon:'✨', label:'DIS'},
+
+// ════ ICÔNES COLLECTIONS ════
+// URLs d'images Wikimedia Commons (domaine public / licence libre)
+const COLL_IMG = {
+  // ── FOOTBALL ──
+  'panini-fifa-wc-2026':       'https://upload.wikimedia.org/wikipedia/en/thumb/3/35/2026_FIFA_World_Cup.svg/240px-2026_FIFA_World_Cup.svg.png',
+  'fifa-wc-2026':              'https://upload.wikimedia.org/wikipedia/en/thumb/3/35/2026_FIFA_World_Cup.svg/240px-2026_FIFA_World_Cup.svg.png',
+  'panini-ligue-1':            'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Ligue1_Uber_Eats.png/240px-Ligue1_Uber_Eats.png',
+  'ligue-1':                   'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Ligue1_Uber_Eats.png/240px-Ligue1_Uber_Eats.png',
+  'panini-premier-league':     'https://upload.wikimedia.org/wikipedia/en/thumb/f/f2/Premier_League_Logo.svg/240px-Premier_League_Logo.svg.png',
+  'premier-league':            'https://upload.wikimedia.org/wikipedia/en/thumb/f/f2/Premier_League_Logo.svg/240px-Premier_League_Logo.svg.png',
+  'panini-laliga':             'https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/LaLiga.svg/240px-LaLiga.svg.png',
+  'laliga':                    'https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/LaLiga.svg/240px-LaLiga.svg.png',
+  'panini-champions-league':   'https://upload.wikimedia.org/wikipedia/en/thumb/b/bf/UEFA_Champions_League_logo_2.svg/240px-UEFA_Champions_League_logo_2.svg.png',
+  'champions-league':          'https://upload.wikimedia.org/wikipedia/en/thumb/b/bf/UEFA_Champions_League_logo_2.svg/240px-UEFA_Champions_League_logo_2.svg.png',
+  'panini-serie-a':            'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Serie_A_logo_2022.svg/240px-Serie_A_logo_2022.svg.png',
+  'serie-a':                   'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Serie_A_logo_2022.svg/240px-Serie_A_logo_2022.svg.png',
+  'panini-bundesliga':         'https://upload.wikimedia.org/wikipedia/en/thumb/d/df/Bundesliga_logo_%282017%29.svg/240px-Bundesliga_logo_%282017%29.svg.png',
+  'bundesliga':                'https://upload.wikimedia.org/wikipedia/en/thumb/d/df/Bundesliga_logo_%282017%29.svg/240px-Bundesliga_logo_%282017%29.svg.png',
+  'panini-euro':               'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/UEFA_Euro_2024_logo.svg/240px-UEFA_Euro_2024_logo.svg.png',
+  // ── POKÉMON ──
+  'pokemon-151':               'https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/International_Pok%C3%A9mon_logo.svg/240px-International_Pok%C3%A9mon_logo.svg.png',
+  'pokemon':                   'https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/International_Pok%C3%A9mon_logo.svg/240px-International_Pok%C3%A9mon_logo.svg.png',
+  // ── MANGA / TCG ──
+  'one-piece':                 'https://upload.wikimedia.org/wikipedia/en/thumb/9/90/One_Piece_Logo.svg/240px-One_Piece_Logo.svg.png',
+  'dragon-ball':               'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Dragon_Ball_Z_Logo.svg/240px-Dragon_Ball_Z_Logo.svg.png',
+  'naruto':                    'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Naruto_logo.png/240px-Naruto_logo.png',
+  'my-hero-academia':          'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/My_Hero_Academia_Logo.png/240px-My_Hero_Academia_Logo.png',
+  // ── BASKETBALL ──
+  'topps-nba':                 'https://upload.wikimedia.org/wikipedia/en/thumb/0/03/National_Basketball_Association_logo.svg/240px-National_Basketball_Association_logo.svg.png',
+  'panini-nba':                'https://upload.wikimedia.org/wikipedia/en/thumb/0/03/National_Basketball_Association_logo.svg/240px-National_Basketball_Association_logo.svg.png',
+  'nba':                       'https://upload.wikimedia.org/wikipedia/en/thumb/0/03/National_Basketball_Association_logo.svg/240px-National_Basketball_Association_logo.svg.png',
+  // ── F1 ──
+  'topps-f1':                  'https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/F1.svg/240px-F1.svg.png',
+  'panini-f1':                 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/F1.svg/240px-F1.svg.png',
+  'formula-1':                 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/F1.svg/240px-F1.svg.png',
+  // ── RUGBY ──
+  'panini-rugby-wc':           'https://upload.wikimedia.org/wikipedia/en/thumb/6/67/2023_Rugby_World_Cup_logo.svg/240px-2023_Rugby_World_Cup_logo.svg.png',
+  'rugby-world-cup':           'https://upload.wikimedia.org/wikipedia/en/thumb/6/67/2023_Rugby_World_Cup_logo.svg/240px-2023_Rugby_World_Cup_logo.svg.png',
+  // ── NFL ──
+  'panini-nfl':                'https://upload.wikimedia.org/wikipedia/en/thumb/a/a2/National_Football_League_logo.svg/240px-National_Football_League_logo.svg.png',
+  'nfl':                       'https://upload.wikimedia.org/wikipedia/en/thumb/a/a2/National_Football_League_logo.svg/240px-National_Football_League_logo.svg.png',
+  // ── BASEBALL ──
+  'topps-mlb':                 'https://upload.wikimedia.org/wikipedia/en/thumb/a/a6/Major_League_Baseball_logo.svg/240px-Major_League_Baseball_logo.svg.png',
+  'mlb':                       'https://upload.wikimedia.org/wikipedia/en/thumb/a/a6/Major_League_Baseball_logo.svg/240px-Major_League_Baseball_logo.svg.png',
+  // ── CATCH/WWE ──
+  'panini-wwe':                'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/WWE_Logo_2016.svg/240px-WWE_Logo_2016.svg.png',
+  'wwe':                       'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/WWE_Logo_2016.svg/240px-WWE_Logo_2016.svg.png',
 };
 
-// Générer icône SVG pour une collection
-function getCollIcon(coll) {
-  const slug = coll.slug || '';
-  // Chercher dans COLL_ICONS
-  const icon = Object.entries(COLL_ICONS).find(([k]) => slug.includes(k))?.[1];
-  if(icon) {
-    return `<svg width="44" height="44" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
-      <rect width="44" height="44" rx="10" fill="url(#g-${slug.substring(0,8)})"/>
-      <defs><linearGradient id="g-${slug.substring(0,8)}" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="${icon.bg[0]}"/>
-        <stop offset="100%" stop-color="${icon.bg[1]}"/>
-      </linearGradient></defs>
-      <text x="22" y="28" font-size="20" text-anchor="middle">${icon.icon}</text>
-    </svg>`;
+// Trouver l'image pour une collection (match sur le slug)
+function getCollImageUrl(coll) {
+  const slug = (coll.slug||'').toLowerCase();
+  // Match exact d'abord
+  if(COLL_IMG[slug]) return COLL_IMG[slug];
+  // Match partiel
+  for(const [key, url] of Object.entries(COLL_IMG)) {
+    if(slug.includes(key) || key.includes(slug.split('-').slice(0,2).join('-'))) return url;
   }
-  // Fallback: couleurs catégorie + emoji
+  return null;
+}
+
+// Icône card accueil : image réelle ou SVG fallback
+function getCollIconLarge(coll) {
+  const imgUrl = getCollImageUrl(coll);
   const colors = CAT_COLORS[coll.categorie] || ['#1e1e28','#23232f'];
   const emoji = CAT_EMOJI[coll.categorie] || '🎴';
-  const id = 'gc'+Math.random().toString(36).substring(2,7);
+  const id = 'gi'+( coll.slug||'x').replace(/[^a-z0-9]/g,'').substring(0,8);
+
+  if(imgUrl) {
+    // Image réelle avec fond coloré + fallback SVG si erreur de chargement
+    return `<div style="width:44px;height:44px;border-radius:11px;overflow:hidden;background:linear-gradient(135deg,${colors[0]},${colors[1]});display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <img src="${imgUrl}" style="width:40px;height:40px;object-fit:contain;border-radius:9px"
+        onerror="this.parentElement.innerHTML='<span style=\'font-size:22px\'>${emoji}</span>'" loading="lazy">
+    </div>`;
+  }
+  // Fallback SVG pur avec initiales stylisées
+  const initials = coll.nom.split(' ').map(w=>w[0]).join('').substring(0,3).toUpperCase();
   return `<svg width="44" height="44" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="10" fill="url(#${id})"/>
     <defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="${colors[0]}"/>
       <stop offset="100%" stop-color="${colors[1]}"/>
     </linearGradient></defs>
-    <text x="22" y="28" font-size="20" text-anchor="middle">${emoji}</text>
+    <rect width="44" height="44" rx="11" fill="url(#${id})"/>
+    <text x="22" y="29" font-size="${initials.length>2?11:13}" font-weight="900" text-anchor="middle" fill="rgba(255,255,255,0.9)" font-family="Arial,sans-serif">${initials}</text>
   </svg>`;
 }
 
-// Icône grande (pour les cards accueil)
-function getCollIconLarge(coll) {
-  const slug = coll.slug || '';
-  const icon = Object.entries(COLL_ICONS).find(([k]) => slug.includes(k))?.[1];
-  const colors = icon ? icon.bg : (CAT_COLORS[coll.categorie] || ['#1e1e28','#23232f']);
-  const emoji = icon ? icon.icon : (CAT_EMOJI[coll.categorie] || '🎴');
-  const id = 'gl'+slug.substring(0,6).replace(/[^a-z0-9]/g,'');
-  return `<svg width="44" height="44" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
-    <rect width="44" height="44" rx="11" fill="url(#${id})"/>
-    <defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="${colors[0]}"/>
-      <stop offset="100%" stop-color="${colors[1]}"/>
-    </linearGradient></defs>
-    <text x="22" y="29" font-size="22" text-anchor="middle">${emoji}</text>
-  </svg>`;
+// Icône admin panel
+function getCollIcon(coll) {
+  return getCollIconLarge(coll);
 }
 
 // Tapotements logo
