@@ -204,9 +204,10 @@ footer{flex-direction:column;gap:20px;text-align:center}
         <a href="#waitlist" class="btn-secondary">Rejoindre la waitlist →</a>
       </div>
       <div class="hero-stats">
-        <div><div class="stat-num" id="hero-counter">—</div><div class="stat-label">déjà inscrits</div></div>
-        <div><div class="stat-num">100+</div><div class="stat-label">Collections</div></div>
+        <div><div class="stat-num">91</div><div class="stat-label">Collections</div></div>
+        <div><div class="stat-num">15k+</div><div class="stat-label">Cartes référencées</div></div>
         <div><div class="stat-num">0€</div><div class="stat-label">Pour commencer</div></div>
+        <div><div class="stat-num">⚡</div><div class="stat-label">Matching auto</div></div>
       </div>
     </div>
     <div class="hero-visual" style="display:flex;align-items:center;justify-content:center;position:relative;height:420px">
@@ -365,8 +366,7 @@ async function loadCounter(){
   const{count}=await sb.from('waitlist_allosticker').select('*',{count:'exact',head:true});
   const n=count||0;
   document.getElementById('wl-counter-text').textContent=n<5?'Sois parmi les premiers inscrits !':n+' collectionneurs déjà inscrits';
-  const hc=document.getElementById('hero-counter');
-  if(hc)hc.textContent=n<5?'0':n;
+
 }
 loadCounter();
 
