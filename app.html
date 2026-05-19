@@ -1989,12 +1989,16 @@ function renderTradesList(){
     const isNew=!isProposer&&t.statut==='en_attente';
     const colors=['#1a3a6e','#2a5cad'];
     const heure=new Date(t.updated_at).toLocaleDateString('fr-FR',{day:'numeric',month:'short'});
+    const trackUrl='https://allosticker.fr/.netlify/functions/trade-tracking?id='+t.id;
     return`<div class="conv-item${isNew?' unread':''}" onclick="openChatReal('${t.id}')">
       <div class="conv-avatar" style="background:linear-gradient(135deg,${colors[0]},${colors[1]})">${ini}${isNew?'<div class="conv-unread-dot"></div>':''}</div>
       <div class="conv-body">
         <div class="conv-top"><div class="conv-nom">${nom}</div><div class="conv-time">${heure}</div></div>
         <div class="conv-msg${isNew?' unread-msg':''}">${isProposer?'Proposition envoyée':'Nouvelle proposition reçue'}</div>
-        <div class="conv-tags"><div class="conv-tag ${sc_cls[t.statut]||'tag-complete'}">${sl[t.statut]||t.statut}</div></div>
+        <div class="conv-tags">
+          <div class="conv-tag ${sc_cls[t.statut]||'tag-complete'}">${sl[t.statut]||t.statut}</div>
+          <div class="conv-tag tag-coll" onclick="event.stopPropagation();copyTrackLink('${t.id}')" title="Copier le lien de suivi">🔗</div>
+        </div>
       </div>
     </div>`;
   }).join('');
@@ -2750,9 +2754,21 @@ async function adminSendEmailWaitlist(){
   const subject=$('adm-email-subject')?.value.trim();
   const body=$('adm-email-body')?.value.trim();
   if(!subject||!body){showToast('Sujet et message requis');return;}
-  if(!confirm('Envoyer un email à TOUTE la waitlist ?'))return;
-  showToast('📨 Envoi en cours… (fonction à brancher sur Netlify)');
-  // TODO: appel à une Netlify function /api/send-waitlist-email
+  const{count:nbWait}=await sb.from('waitlist_allosticker').select('*',{count:'exact',head:true});
+  if(!confirm('Envoyer à '+( nbWait||0)+' personne'+(nbWait>1?'s':'')+' de la waitlist ?'))return;
+  const btn=$('adm-send-email-btn');
+  btn.disabled=true;btn.textContent='⏳ Envoi…';
+  try{
+    const res=await fetch('/.netlify/functions/send-waitlist-email',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({subject,body,adminKey:'Jj0624988240@'})
+    });
+    const data=await res.json();
+    if(res.ok) showToast('📨 '+( data.sent||0)+' emails envoyés !');
+    else showToast('Erreur : '+(data.error||'inconnue'));
+  }catch(e){showToast('Erreur réseau : '+e.message);}
+  btn.disabled=false;btn.textContent='📨 Envoyer à la waitlist';
 }
 
 function adminClearCache(){
