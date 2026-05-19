@@ -630,7 +630,7 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
 <!-- ════════ ACCUEIL ════════ -->
 <div class="view" id="view-accueil">
   <div class="appbar">
-    <div class="appbar-logo" style="display:flex;align-items:center;gap:8px"><img src="/allosticker-icon-512.png" style="width:28px;height:28px;border-radius:7px" alt=""><span style="letter-spacing:1px">Allo<span style="color:var(--text)">sticker</span></span></div>
+    <div class="appbar-logo" style="display:flex;align-items:center;gap:7px"><img src="/allosticker-icon-512.png" style="width:28px;height:28px;border-radius:7px;flex-shrink:0" alt=""><span style="letter-spacing:1px;white-space:nowrap">Allo<span style="color:var(--text)">sticker</span></span></div>
     <div class="search-bar">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       <input type="text" id="accueil-search" placeholder="Rechercher une collection…" oninput="filterColls()">
@@ -754,7 +754,7 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
 <!-- ════════ MATCHS ════════ -->
 <div class="view" id="view-matchs">
   <div class="appbar">
-    <div class="appbar-logo" style="display:flex;align-items:center;gap:8px"><img src="/allosticker-icon-512.png" style="width:28px;height:28px;border-radius:7px" alt=""><span style="letter-spacing:1px">Allo<span style="color:var(--text)">sticker</span></span></div>
+    <div class="appbar-logo" style="display:flex;align-items:center;gap:7px"><img src="/allosticker-icon-512.png" style="width:28px;height:28px;border-radius:7px;flex-shrink:0" alt=""><span style="letter-spacing:1px;white-space:nowrap">Allo<span style="color:var(--text)">sticker</span></span></div>
     <div style="font-family:'Bangers',cursive;font-size:20px;letter-spacing:1px">Mes Matchs</div>
     <div class="match-badge-count" id="match-total-badge">0</div>
   </div>
@@ -786,7 +786,7 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
   <!-- Liste des échanges -->
   <div id="echanges-list-view" style="display:flex;flex-direction:column;flex:1">
     <div class="appbar">
-      <div class="appbar-logo" style="display:flex;align-items:center;gap:8px"><img src="/allosticker-icon-512.png" style="width:28px;height:28px;border-radius:7px" alt=""><span style="letter-spacing:1px">Allo<span style="color:var(--text)">sticker</span></span></div>
+      <div class="appbar-logo" style="display:flex;align-items:center;gap:7px"><img src="/allosticker-icon-512.png" style="width:28px;height:28px;border-radius:7px;flex-shrink:0" alt=""><span style="letter-spacing:1px;white-space:nowrap">Allo<span style="color:var(--text)">sticker</span></span></div>
       <div style="font-family:'Bangers',cursive;font-size:20px;letter-spacing:1px">Échanges</div>
       <div style="position:relative;cursor:pointer" onclick="showToast('Notifications')">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -836,7 +836,7 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
 <!-- ════════ MES CARTES (sélecteur de collections) ════════ -->
 <div class="view" id="view-mes-cartes">
   <div class="appbar">
-    <div class="appbar-logo" style="display:flex;align-items:center;gap:8px"><img src="/allosticker-icon-512.png" style="width:28px;height:28px;border-radius:7px" alt=""><span style="letter-spacing:1px">Allo<span style="color:var(--text)">sticker</span></span></div>
+    <div class="appbar-logo" style="display:flex;align-items:center;gap:7px"><img src="/allosticker-icon-512.png" style="width:28px;height:28px;border-radius:7px;flex-shrink:0" alt=""><span style="letter-spacing:1px;white-space:nowrap">Allo<span style="color:var(--text)">sticker</span></span></div>
     <div style="font-family:'Bangers',cursive;font-size:20px;letter-spacing:1px">Mes Cartes</div>
     <div style="font-size:12px;color:var(--muted);font-weight:700" id="mes-cartes-count">0 collection</div>
   </div>
@@ -864,7 +864,7 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
 <!-- ════════ PROFIL ════════ -->
 <div class="view" id="view-profil">
   <div class="appbar">
-    <div class="appbar-logo" style="display:flex;align-items:center;gap:8px"><img src="/allosticker-icon-512.png" style="width:28px;height:28px;border-radius:7px" alt=""><span style="letter-spacing:1px">Allo<span style="color:var(--text)">sticker</span></span></div>
+    <div class="appbar-logo" style="display:flex;align-items:center;gap:7px"><img src="/allosticker-icon-512.png" style="width:28px;height:28px;border-radius:7px;flex-shrink:0" alt=""><span style="letter-spacing:1px;white-space:nowrap">Allo<span style="color:var(--text)">sticker</span></span></div>
     <div style="font-family:'Bangers',cursive;font-size:20px;letter-spacing:1px">Mon Profil</div>
     <div class="icon-btn" onclick="openEditProfil()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
   </div>
@@ -2135,96 +2135,194 @@ let adminCurrentColl = null, adminAllColls = [];
 
 
 // ════ ICÔNES COLLECTIONS ════
-// URLs d'images Wikimedia Commons (domaine public / licence libre)
-const COLL_IMG = {
-  // ── FOOTBALL ──
-  'panini-fifa-wc-2026':       'https://upload.wikimedia.org/wikipedia/en/thumb/3/35/2026_FIFA_World_Cup.svg/240px-2026_FIFA_World_Cup.svg.png',
-  'fifa-wc-2026':              'https://upload.wikimedia.org/wikipedia/en/thumb/3/35/2026_FIFA_World_Cup.svg/240px-2026_FIFA_World_Cup.svg.png',
-  'panini-ligue-1':            'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Ligue1_Uber_Eats.png/240px-Ligue1_Uber_Eats.png',
-  'ligue-1':                   'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Ligue1_Uber_Eats.png/240px-Ligue1_Uber_Eats.png',
-  'panini-premier-league':     'https://upload.wikimedia.org/wikipedia/en/thumb/f/f2/Premier_League_Logo.svg/240px-Premier_League_Logo.svg.png',
-  'premier-league':            'https://upload.wikimedia.org/wikipedia/en/thumb/f/f2/Premier_League_Logo.svg/240px-Premier_League_Logo.svg.png',
-  'panini-laliga':             'https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/LaLiga.svg/240px-LaLiga.svg.png',
-  'laliga':                    'https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/LaLiga.svg/240px-LaLiga.svg.png',
-  'panini-champions-league':   'https://upload.wikimedia.org/wikipedia/en/thumb/b/bf/UEFA_Champions_League_logo_2.svg/240px-UEFA_Champions_League_logo_2.svg.png',
-  'champions-league':          'https://upload.wikimedia.org/wikipedia/en/thumb/b/bf/UEFA_Champions_League_logo_2.svg/240px-UEFA_Champions_League_logo_2.svg.png',
-  'panini-serie-a':            'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Serie_A_logo_2022.svg/240px-Serie_A_logo_2022.svg.png',
-  'serie-a':                   'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Serie_A_logo_2022.svg/240px-Serie_A_logo_2022.svg.png',
-  'panini-bundesliga':         'https://upload.wikimedia.org/wikipedia/en/thumb/d/df/Bundesliga_logo_%282017%29.svg/240px-Bundesliga_logo_%282017%29.svg.png',
-  'bundesliga':                'https://upload.wikimedia.org/wikipedia/en/thumb/d/df/Bundesliga_logo_%282017%29.svg/240px-Bundesliga_logo_%282017%29.svg.png',
-  'panini-euro':               'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/UEFA_Euro_2024_logo.svg/240px-UEFA_Euro_2024_logo.svg.png',
-  // ── POKÉMON ──
-  'pokemon-151':               'https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/International_Pok%C3%A9mon_logo.svg/240px-International_Pok%C3%A9mon_logo.svg.png',
-  'pokemon':                   'https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/International_Pok%C3%A9mon_logo.svg/240px-International_Pok%C3%A9mon_logo.svg.png',
-  // ── MANGA / TCG ──
-  'one-piece':                 'https://upload.wikimedia.org/wikipedia/en/thumb/9/90/One_Piece_Logo.svg/240px-One_Piece_Logo.svg.png',
-  'dragon-ball':               'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Dragon_Ball_Z_Logo.svg/240px-Dragon_Ball_Z_Logo.svg.png',
-  'naruto':                    'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Naruto_logo.png/240px-Naruto_logo.png',
-  'my-hero-academia':          'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/My_Hero_Academia_Logo.png/240px-My_Hero_Academia_Logo.png',
-  // ── BASKETBALL ──
-  'topps-nba':                 'https://upload.wikimedia.org/wikipedia/en/thumb/0/03/National_Basketball_Association_logo.svg/240px-National_Basketball_Association_logo.svg.png',
-  'panini-nba':                'https://upload.wikimedia.org/wikipedia/en/thumb/0/03/National_Basketball_Association_logo.svg/240px-National_Basketball_Association_logo.svg.png',
-  'nba':                       'https://upload.wikimedia.org/wikipedia/en/thumb/0/03/National_Basketball_Association_logo.svg/240px-National_Basketball_Association_logo.svg.png',
-  // ── F1 ──
-  'topps-f1':                  'https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/F1.svg/240px-F1.svg.png',
-  'panini-f1':                 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/F1.svg/240px-F1.svg.png',
-  'formula-1':                 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/F1.svg/240px-F1.svg.png',
-  // ── RUGBY ──
-  'panini-rugby-wc':           'https://upload.wikimedia.org/wikipedia/en/thumb/6/67/2023_Rugby_World_Cup_logo.svg/240px-2023_Rugby_World_Cup_logo.svg.png',
-  'rugby-world-cup':           'https://upload.wikimedia.org/wikipedia/en/thumb/6/67/2023_Rugby_World_Cup_logo.svg/240px-2023_Rugby_World_Cup_logo.svg.png',
-  // ── NFL ──
-  'panini-nfl':                'https://upload.wikimedia.org/wikipedia/en/thumb/a/a2/National_Football_League_logo.svg/240px-National_Football_League_logo.svg.png',
-  'nfl':                       'https://upload.wikimedia.org/wikipedia/en/thumb/a/a2/National_Football_League_logo.svg/240px-National_Football_League_logo.svg.png',
-  // ── BASEBALL ──
-  'topps-mlb':                 'https://upload.wikimedia.org/wikipedia/en/thumb/a/a6/Major_League_Baseball_logo.svg/240px-Major_League_Baseball_logo.svg.png',
-  'mlb':                       'https://upload.wikimedia.org/wikipedia/en/thumb/a/a6/Major_League_Baseball_logo.svg/240px-Major_League_Baseball_logo.svg.png',
-  // ── CATCH/WWE ──
-  'panini-wwe':                'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/WWE_Logo_2016.svg/240px-WWE_Logo_2016.svg.png',
-  'wwe':                       'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/WWE_Logo_2016.svg/240px-WWE_Logo_2016.svg.png',
-};
+// SVG custom dessinés par catégorie + slug pour être reconnaissables
 
-// Trouver l'image pour une collection (match sur le slug)
-function getCollImageUrl(coll) {
+function getCollIconLarge(coll) {
   const slug = (coll.slug||'').toLowerCase();
-  // Match exact d'abord
-  if(COLL_IMG[slug]) return COLL_IMG[slug];
-  // Match partiel
-  for(const [key, url] of Object.entries(COLL_IMG)) {
-    if(slug.includes(key) || key.includes(slug.split('-').slice(0,2).join('-'))) return url;
+  const nom  = (coll.nom||'').toLowerCase();
+  const cat  = coll.categorie||'';
+  const id   = 'ic'+(coll.id||slug).replace(/[^a-z0-9]/g,'').substring(0,8);
+
+  // ── FOOT ──
+  if(cat==='foot') {
+    // Champions League
+    if(slug.includes('champion')||nom.includes('champions')) return svgWrap(id,'#040c2a','#0a1855',
+      `<circle cx="22" cy="22" r="14" fill="none" stroke="#FFD700" stroke-width="2"/>
+       <polygon points="22,8 25,17 34,17 27,23 29,32 22,27 15,32 17,23 10,17 19,17" fill="#FFD700"/>
+       <text x="22" y="42" font-size="6" font-weight="900" text-anchor="middle" fill="#FFD700" font-family="Arial">UCL</text>`);
+    // World Cup
+    if(slug.includes('world-cup')||slug.includes('wc-')||nom.includes('world cup')) return svgWrap(id,'#1a4a1a','#0d2e0d',
+      `<circle cx="22" cy="21" r="13" fill="white"/>
+       <circle cx="22" cy="21" r="13" fill="none" stroke="#0d2e0d" stroke-width="1"/>
+       <path d="M22,8 L25,15 L32,15 L27,20 L29,27 L22,23 L15,27 L17,20 L12,15 L19,15Z" fill="#222"/>
+       <circle cx="22" cy="21" r="4" fill="#222"/>
+       <text x="22" y="42" font-size="5.5" font-weight="900" text-anchor="middle" fill="#FFD700" font-family="Arial">WORLD CUP</text>`);
+    // Ligue 1
+    if(slug.includes('ligue-1')||slug.includes('ligue1')||nom.includes('ligue 1')) return svgWrap(id,'#001e5a','#003090',
+      `<text x="22" y="28" font-size="20" text-anchor="middle">🦁</text>
+       <text x="22" y="41" font-size="6" font-weight="900" text-anchor="middle" fill="#FFD700" font-family="Arial">LIGUE 1</text>`);
+    // Premier League
+    if(slug.includes('premier')||nom.includes('premier')) return svgWrap(id,'#3d0040','#680068',
+      `<text x="22" y="27" font-size="20" text-anchor="middle">🦁</text>
+       <rect x="6" y="32" width="32" height="5" rx="2" fill="#00c0f0"/>
+       <text x="22" y="37.5" font-size="4.5" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">PREMIER LEAGUE</text>`);
+    // LaLiga
+    if(slug.includes('laliga')||slug.includes('la-liga')||nom.includes('laliga')||nom.includes('la liga')) return svgWrap(id,'#ee8700','#c45f00',
+      `<text x="22" y="30" font-size="26" text-anchor="middle" font-weight="900" fill="white" font-family="Arial" font-style="italic">L</text>
+       <text x="22" y="41" font-size="6" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">LaLiga</text>`);
+    // Serie A
+    if(slug.includes('serie-a')||nom.includes('serie a')) return svgWrap(id,'#0a1a4a','#00223a',
+      `<text x="22" y="30" font-size="22" text-anchor="middle" font-weight="900" fill="#008fd7" font-family="Arial" font-style="italic">A</text>
+       <text x="22" y="41" font-size="6" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">SERIE A</text>`);
+    // Bundesliga
+    if(slug.includes('bundesliga')||nom.includes('bundesliga')) return svgWrap(id,'#d30000','#a00000',
+      `<text x="22" y="30" font-size="22" text-anchor="middle" font-weight="900" fill="white" font-family="Arial">BL</text>
+       <text x="22" y="41" font-size="6" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">BUNDESLIGA</text>`);
+    // Générique foot
+    return svgWrap(id,'#1a3a6e','#2a5cad',
+      `<circle cx="22" cy="21" r="13" fill="white"/>
+       <path d="M22,8 L25,15 L32,15 L27,20 L29,27 L22,23 L15,27 L17,20 L12,15 L19,15Z" fill="#1a3a6e"/>
+       <circle cx="22" cy="21" r="4" fill="#1a3a6e"/>`);
   }
-  return null;
+
+  // ── POKÉMON ──
+  if(cat==='pokemon') {
+    if(nom.includes('151')||slug.includes('151')) return svgWrap(id,'#1a1040','#2a1860',
+      `<circle cx="22" cy="21" r="12" fill="#cc0000"/>
+       <path d="M10,21 A12,12 0 0,1 34,21 Z" fill="#cc0000"/>
+       <path d="M10,21 A12,12 0 0,0 34,21 Z" fill="white"/>
+       <rect x="10" y="19.5" width="24" height="3" fill="#111"/>
+       <circle cx="22" cy="21" r="5" fill="white" stroke="#111" stroke-width="2"/>
+       <circle cx="22" cy="21" r="2.5" fill="#111"/>
+       <text x="22" y="42" font-size="7.5" font-weight="900" text-anchor="middle" fill="#FFD700" font-family="Arial">151</text>`);
+    // Pokémon générique - Pokeball
+    return svgWrap(id,'#1a1a2e','#16213e',
+      `<circle cx="22" cy="21" r="13" fill="#cc0000"/>
+       <path d="M9,21 A13,13 0 0,1 35,21 Z" fill="#cc0000"/>
+       <path d="M9,21 A13,13 0 0,0 35,21 Z" fill="white"/>
+       <rect x="9" y="19.5" width="26" height="3" fill="#111"/>
+       <circle cx="22" cy="21" r="5.5" fill="white" stroke="#111" stroke-width="2"/>
+       <circle cx="22" cy="21" r="2.5" fill="#111"/>
+       <circle cx="20.5" cy="19.5" r="1" fill="white" opacity="0.5"/>`);
+  }
+
+  // ── MANGA / ANIME ──
+  if(cat==='manga') {
+    if(slug.includes('one-piece')||nom.includes('one piece')) return svgWrap(id,'#0a1e3a','#0a3060',
+      `<circle cx="22" cy="24" r="11" fill="white"/>
+       <circle cx="17" cy="22" r="3" fill="#0a1e3a"/>
+       <circle cx="27" cy="22" r="3" fill="#0a1e3a"/>
+       <path d="M18,28 L22,32 L26,28" fill="none" stroke="#0a1e3a" stroke-width="1.5" stroke-linecap="round"/>
+       <ellipse cx="22" cy="13" rx="13" ry="3.5" fill="#c8880a" stroke="#8a5f00" stroke-width="1"/>
+       <rect x="9" y="10" width="26" height="6" rx="3" fill="#c8880a" stroke="#8a5f00" stroke-width="1"/>
+       <rect x="9" y="14" width="26" height="2" fill="#cc2200" rx="1"/>`);
+    if(slug.includes('dragon-ball')||nom.includes('dragon ball')) return svgWrap(id,'#1a0a00','#2a1400',
+      `<radialGradient id="dball" cx="35%" cy="30%"><stop offset="0%" stop-color="#ffe066"/><stop offset="100%" stop-color="#ff8800"/></radialGradient>
+       <circle cx="22" cy="22" r="14" fill="url(#dball)"/>
+       <ellipse cx="18" cy="17" rx="5" ry="3.5" fill="white" opacity="0.3"/>
+       <text x="22" y="18" font-size="6" text-anchor="middle" fill="#cc0000">★ ★</text>
+       <text x="16" y="24" font-size="6" text-anchor="middle" fill="#cc0000">★</text>
+       <text x="28" y="24" font-size="6" text-anchor="middle" fill="#cc0000">★</text>
+       <text x="22" y="30" font-size="6" text-anchor="middle" fill="#cc0000">★ ★</text>
+       <text x="22" y="24" font-size="6" text-anchor="middle" fill="#cc0000">★</text>`);
+    if(slug.includes('naruto')||nom.includes('naruto')) return svgWrap(id,'#cc5500','#aa3300',
+      `<text x="22" y="30" font-size="24" text-anchor="middle">🍃</text>
+       <text x="22" y="42" font-size="6" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">NARUTO</text>`);
+    // Générique manga - effet manga
+    return svgWrap(id,'#6e1a1a','#ad2a2a',
+      `<text x="22" y="29" font-size="22" text-anchor="middle">⚔️</text>
+       <text x="22" y="42" font-size="6" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">MANGA</text>`);
+  }
+
+  // ── BASKETBALL / NBA ──
+  if(cat==='basketball') return svgWrap(id,'#0a0a0a','#1a1a1a',
+    `<circle cx="22" cy="21" r="13" fill="#e05a00"/>
+     <path d="M9,21 Q22,15 35,21" fill="none" stroke="#1a0a00" stroke-width="1.8"/>
+     <path d="M9,21 Q22,27 35,21" fill="none" stroke="#1a0a00" stroke-width="1.8"/>
+     <line x1="22" y1="8" x2="22" y2="34" stroke="#1a0a00" stroke-width="1.8"/>
+     <text x="22" y="42" font-size="7" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">NBA</text>`);
+
+  // ── F1 ──
+  if(cat==='f1') return svgWrap(id,'#0a0a0a','#1a0000',
+    `<rect x="4" y="6" width="8" height="8" fill="white" rx="1"/>
+     <rect x="12" y="6" width="8" height="8" fill="#cc0000" rx="1"/>
+     <rect x="20" y="6" width="8" height="8" fill="white" rx="1"/>
+     <rect x="28" y="6" width="8" height="8" fill="#cc0000" rx="1"/>
+     <rect x="4" y="14" width="8" height="8" fill="#cc0000" rx="1"/>
+     <rect x="12" y="14" width="8" height="8" fill="white" rx="1"/>
+     <rect x="20" y="14" width="8" height="8" fill="#cc0000" rx="1"/>
+     <rect x="28" y="14" width="8" height="8" fill="white" rx="1"/>
+     <text x="22" y="34" font-size="10" font-weight="900" text-anchor="middle" fill="#cc0000" font-family="Arial" font-style="italic">F1</text>
+     <text x="22" y="42" font-size="5.5" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">FORMULA ONE</text>`);
+
+  // ── RUGBY ──
+  if(cat==='rugby') return svgWrap(id,'#1a3a1a','#2a6a2a',
+    `<ellipse cx="22" cy="22" rx="11" ry="14" fill="#c8780a" stroke="#8a5000" stroke-width="1.5"/>
+     <line x1="11" y1="22" x2="33" y2="22" stroke="#8a5000" stroke-width="1.5"/>
+     <line x1="22" y1="8" x2="22" y2="36" stroke="#8a5000" stroke-width="1.5"/>
+     <line x1="15" y1="14" x2="29" y2="14" stroke="#8a5000" stroke-width="1"/>
+     <line x1="15" y1="30" x2="29" y2="30" stroke="#8a5000" stroke-width="1"/>
+     <text x="22" y="42" font-size="6" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">RUGBY</text>`);
+
+  // ── NFL ──
+  if(cat==='football_americain') return svgWrap(id,'#001357','#002299',
+    `<ellipse cx="22" cy="22" rx="12" ry="9" fill="#c84a00" stroke="#8a3000" stroke-width="1.5"/>
+     <line x1="10" y1="22" x2="34" y2="22" stroke="white" stroke-width="1.5"/>
+     <line x1="18" y1="15" x2="18" y2="29" stroke="white" stroke-width="1"/>
+     <line x1="22" y1="13" x2="22" y2="31" stroke="white" stroke-width="1"/>
+     <line x1="26" y1="15" x2="26" y2="29" stroke="white" stroke-width="1"/>
+     <text x="22" y="42" font-size="7" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">NFL</text>`);
+
+  // ── BASEBALL ──
+  if(cat==='baseball') return svgWrap(id,'#4a1a1a','#7a2a2a',
+    `<circle cx="22" cy="21" r="13" fill="white" stroke="#cc0000" stroke-width="1.5"/>
+     <path d="M15,10 Q13,21 15,32" fill="none" stroke="#cc0000" stroke-width="2"/>
+     <path d="M29,10 Q31,21 29,32" fill="none" stroke="#cc0000" stroke-width="2"/>
+     <line x1="15" y1="14" x2="20" y2="15" stroke="#cc0000" stroke-width="1"/>
+     <line x1="15" y1="17" x2="20" y2="18" stroke="#cc0000" stroke-width="1"/>
+     <line x1="15" y1="20" x2="20" y2="21" stroke="#cc0000" stroke-width="1"/>
+     <line x1="24" y1="15" x2="29" y2="14" stroke="#cc0000" stroke-width="1"/>
+     <line x1="24" y1="18" x2="29" y2="17" stroke="#cc0000" stroke-width="1"/>
+     <line x1="24" y1="21" x2="29" y2="20" stroke="#cc0000" stroke-width="1"/>
+     <text x="22" y="42" font-size="6" font-weight="900" text-anchor="middle" fill="#cc0000" font-family="Arial">MLB</text>`);
+
+  // ── WWE / CATCH ──
+  if(cat==='catch') return svgWrap(id,'#1a001a','#3a003a',
+    `<text x="22" y="29" font-size="22" text-anchor="middle">🥊</text>
+     <text x="22" y="42" font-size="7" font-weight="900" text-anchor="middle" fill="#FFD700" font-family="Arial">WWE</text>`);
+
+  // ── DISNEY ──
+  if(cat==='disney') return svgWrap(id,'#001035','#001a55',
+    `<text x="22" y="29" font-size="22" text-anchor="middle">✨</text>
+     <text x="22" y="42" font-size="6.5" font-weight="900" text-anchor="middle" fill="#FFD700" font-family="Arial">DISNEY</text>`);
+
+  // ── JEU DE CARTES générique ──
+  if(cat==='jeu_cartes') return svgWrap(id,'#1a5c3a','#2aad5c',
+    `<rect x="11" y="8" width="22" height="28" rx="3" fill="white" stroke="#ddd" stroke-width="1"/>
+     <text x="13" y="20" font-size="9" fill="#cc0000">♥</text>
+     <text x="13" y="32" font-size="9" fill="#cc0000">♥</text>
+     <text x="27" y="20" font-size="9" fill="#222">♠</text>
+     <text x="27" y="32" font-size="9" fill="#222">♠</text>
+     <text x="22" y="26" font-size="11" text-anchor="middle" fill="#cc0000">A</text>`);
+
+  // ── FALLBACK : initiales + couleur catégorie ──
+  const colors = CAT_COLORS[cat]||['#1e1e28','#23232f'];
+  const initials = coll.nom.split(' ').filter(w=>w.length>1).map(w=>w[0]).join('').substring(0,3).toUpperCase()||'?';
+  return svgWrap(id,colors[0],colors[1],
+    `<text x="22" y="27" font-size="${initials.length>2?11:14}" font-weight="900" text-anchor="middle" fill="white" font-family="Arial">${initials}</text>
+     <text x="22" y="38" font-size="5.5" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-family="Arial">${(coll.annee||'').toString()}</text>`);
 }
 
-// Icône card accueil : image réelle ou SVG fallback
-function getCollIconLarge(coll) {
-  const imgUrl = getCollImageUrl(coll);
-  const colors = CAT_COLORS[coll.categorie] || ['#1e1e28','#23232f'];
-  const emoji = CAT_EMOJI[coll.categorie] || '🎴';
-  const id = 'gi'+( coll.slug||'x').replace(/[^a-z0-9]/g,'').substring(0,8);
-
-  if(imgUrl) {
-    // Image réelle avec fond coloré + fallback SVG si erreur de chargement
-    return `<div style="width:44px;height:44px;border-radius:11px;overflow:hidden;background:linear-gradient(135deg,${colors[0]},${colors[1]});display:flex;align-items:center;justify-content:center;flex-shrink:0">
-      <img src="${imgUrl}" style="width:40px;height:40px;object-fit:contain;border-radius:9px"
-        onerror="this.parentElement.innerHTML='<span style=\'font-size:22px\'>${emoji}</span>'" loading="lazy">
-    </div>`;
-  }
-  // Fallback SVG pur avec initiales stylisées
-  const initials = coll.nom.split(' ').map(w=>w[0]).join('').substring(0,3).toUpperCase();
+function svgWrap(id,c1,c2,inner){
   return `<svg width="44" height="44" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
-    <defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="${colors[0]}"/>
-      <stop offset="100%" stop-color="${colors[1]}"/>
-    </linearGradient></defs>
+    <defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${c1}"/><stop offset="100%" stop-color="${c2}"/></linearGradient></defs>
     <rect width="44" height="44" rx="11" fill="url(#${id})"/>
-    <text x="22" y="29" font-size="${initials.length>2?11:13}" font-weight="900" text-anchor="middle" fill="rgba(255,255,255,0.9)" font-family="Arial,sans-serif">${initials}</text>
+    ${inner}
   </svg>`;
 }
 
-// Icône admin panel
-function getCollIcon(coll) {
-  return getCollIconLarge(coll);
-}
+function getCollIcon(coll){ return getCollIconLarge(coll); }
+
 
 // Tapotements logo
 document.addEventListener('DOMContentLoaded', () => {
