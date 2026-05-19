@@ -479,29 +479,43 @@ document.querySelectorAll('.step-card,.feature-item,.testi-card,.faq-item').forE
 
 <script>
 let _prompt = null;
+
 window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault(); _prompt = e;
-  if(localStorage.getItem('pwa_dismissed_landing')) return;
-  if(window.matchMedia('(display-mode: standalone)').matches) return;
-  setTimeout(() => document.getElementById('pwa-banner-landing')?.classList.add('show'), 2000);
+  e.preventDefault();
+  _prompt = e;
 });
+
+function initPWALanding() {
+  if(window.matchMedia('(display-mode: standalone)').matches) return;
+  if(navigator.standalone) return;
+  const exp = parseInt(localStorage.getItem('pwa_dismissed_landing')||'0');
+  if(Date.now() < exp) return;
+  setTimeout(() => {
+    const b = document.getElementById('pwa-banner-landing');
+    if(b) b.classList.add('show');
+  }, 1500);
+}
+
 async function installPWALanding() {
   if(_prompt) {
     _prompt.prompt();
     const { outcome } = await _prompt.userChoice;
     _prompt = null;
-    if(outcome === 'accepted') document.getElementById('pwa-banner-landing')?.classList.remove('show');
+    if(outcome === 'accepted') {
+      document.getElementById('pwa-banner-landing')?.classList.remove('show');
+    }
   } else {
-    alert("Sur iPhone Safari :\nAppuie sur Partager puis \"Sur l'\xe9cran d'accueil\"\n\nSur Android Chrome :\nMenu puis \"Ajouter \xe0 l'\xe9cran d'accueil\"");
+    document.getElementById('pwa-banner-landing')?.classList.remove('show');
+    window.location.href = '/app.html#install-help';
   }
 }
+
 function dismissPWALanding() {
   document.getElementById('pwa-banner-landing')?.classList.remove('show');
   localStorage.setItem('pwa_dismissed_landing', Date.now() + 7*24*60*60*1000);
 }
-// Expiration
-const exp = parseInt(localStorage.getItem('pwa_dismissed_landing')||'0');
-if(Date.now() > exp) localStorage.removeItem('pwa_dismissed_landing');
+
+window.addEventListener('load', initPWALanding);
 </script>
 
 </body>
