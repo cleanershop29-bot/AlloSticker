@@ -2653,10 +2653,27 @@ async function adminSaveCollection(){
   const idx=adminAllColls.findIndex(c=>c.id===adminCurrentColl.id);
   if(idx!==-1)adminAllColls[idx]=adminCurrentColl;
   $('admin-edit-nom').textContent=adminCurrentColl.nom;
-  // ✅ FIX: Mettre à jour STATE.collections ET la card dans le DOM
+
+  // ── Mettre à jour S.collections en mémoire ──
   S.collections=S.collections.map(c=>c.id===adminCurrentColl.id?{...c,...updates}:c);
-  const nbEl=$('nb-'+adminCurrentColl.id);
-  if(nbEl)nbEl.textContent=nb;
+
+  // ── Re-render la grille accueil si elle est visible ──
+  const collsGrid=$('colls-grid');
+  if(collsGrid&&collsGrid.style.display!=='none'){
+    // Grille visible : re-render pour mettre à jour le DOM
+    renderColls();
+  } else {
+    // Grille pas visible : mettre à jour directement le DOM si l'élément existe
+    const nbEl=$('nb-'+adminCurrentColl.id);
+    if(nbEl)nbEl.textContent=nb;
+  }
+
+  // ── Mettre à jour le sous-titre de Ma Collection si cette collection est ouverte ──
+  if(S.currentCollId===adminCurrentColl.id){
+    const mcSub=$('mc-sub');
+    if(mcSub)mcSub.textContent=(adminCurrentColl.editeur||'')+' · '+nb+' éléments';
+  }
+
   showToast('✓ Collection mise à jour !');
 }
 
