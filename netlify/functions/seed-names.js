@@ -208,6 +208,25 @@ exports.handler = async (event) => {
     const count = await upsertCards(col.id, cards);
 
     const nextIdx = idx + 1;
+    const done = nextIdx >= COLLECTIONS.length;
+    const nextUrl = `/.netlify/functions/seed-names?secret=${p.secret}&batch=${nextIdx}&html=1`;
+
+    // Mode HTML : page qui s'auto-recharge vers le batch suivant
+    if (p.html === '1') {
+      const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<meta http-equiv="refresh" content="2;url=${nextUrl}">
+<style>body{background:#0f0f10;color:#e8e8e8;font-family:sans-serif;padding:20px;max-width:600px;margin:0 auto}
+.ok{color:#3dffb0}.err{color:#ff9f27}.prog{font-size:13px;color:#888;margin-top:8px}
+h2{font-size:16px;margin-bottom:8px}</style></head><body>
+<h2>🤖 AlloSticker — Seed en cours...</h2>
+<p class="ok">✅ ${entry.nom}</p>
+<p>${cards.length} cartes générées et insérées</p>
+<p class="prog">${idx + 1}/${COLLECTIONS.length} — ${done ? 'TERMINÉ !' : 'Prochaine collection dans 2s...'}</p>
+${done ? '<p class="ok" style="margin-top:20px;font-size:18px">🎉 Toutes les collections ont été traitées !</p>' : ''}
+</body></html>`;
+      return { statusCode: 200, headers: { 'Content-Type': 'text/html', 'Access-Control-Allow-Origin': '*' }, body: html };
+    }
+
     return {
       statusCode: 200, headers,
       body: JSON.stringify({
@@ -226,6 +245,18 @@ exports.handler = async (event) => {
 
   } catch (e) {
     const nextIdx = idx + 1;
+    const nextUrl = `/.netlify/functions/seed-names?secret=${p.secret}&batch=${nextIdx}&html=1`;
+
+    if (p.html === '1') {
+      const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<meta http-equiv="refresh" content="3;url=${nextUrl}">
+<style>body{background:#0f0f10;color:#e8e8e8;font-family:sans-serif;padding:20px}</style></head><body>
+<p style="color:#ff9f27">⚠️ ${entry.slug} — ${e.message.slice(0, 100)}</p>
+<p style="color:#888">${idx + 1}/${COLLECTIONS.length} — Prochaine dans 3s...</p>
+</body></html>`;
+      return { statusCode: 200, headers: { 'Content-Type': 'text/html', 'Access-Control-Allow-Origin': '*' }, body: html };
+    }
+
     return {
       statusCode: 200, headers,
       body: JSON.stringify({
