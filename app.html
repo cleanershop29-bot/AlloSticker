@@ -524,6 +524,9 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
 .ville-option-nom{font-weight:800}
 .ville-option-cp{font-size:11px;color:var(--muted);font-weight:700;flex-shrink:0}
 .ville-loading{padding:11px 14px;font-size:12px;color:var(--muted);font-weight:700;text-align:center}
+.btn-gps{display:flex;align-items:center;gap:7px;background:rgba(61,155,255,.1);border:1.5px solid rgba(61,155,255,.3);border-radius:10px;padding:9px 14px;font-size:12px;font-weight:800;color:var(--blue);cursor:pointer;margin-top:8px;width:100%;transition:background .2s;-webkit-tap-highlight-color:transparent}
+.btn-gps:active{background:rgba(61,155,255,.2)}
+.btn-gps.loading{opacity:.6;pointer-events:none}
 </style>
 </head>
 <body>
@@ -628,11 +631,12 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
           <div class="field-input-wrap"><span class="field-icon">🏙️</span><input class="field-input" id="ob-ville" type="text" placeholder="Commence à taper ta ville…" autocomplete="off" oninput="villeAutocomplete(this,'ob-dropdown','ob-cp','ob-lat','ob-lng')" onblur="setTimeout(()=>closeVilleDropdown('ob-dropdown'),200)"></div>
           <div class="ville-dropdown" id="ob-dropdown"></div>
         </div>
+        <button class="btn-gps" id="btn-gps-ob" onclick="useGPS('ob-ville','ob-dropdown','ob-cp','ob-lat','ob-lng','ob-ville-confirm')">📡 Utiliser ma position GPS</button>
         <input type="hidden" id="ob-cp">
         <input type="hidden" id="ob-lat">
         <input type="hidden" id="ob-lng">
         <div style="font-size:11px;color:var(--muted);font-weight:700;margin-top:4px" id="ob-ville-confirm"></div>
-        <button class="btn-primary btn-full" onclick="obNext()">Continuer →</button>
+        <button class="btn-primary btn-full" onclick="obNextVille()">Continuer →</button>
       </div>
       <div class="onboard-step" id="os-1">
         <div class="onboard-title">🎴 Tes collections ?</div>
@@ -970,7 +974,7 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
       <div class="section-title" style="margin-bottom:4px">⚙️ Paramètres</div>
       <div class="settings-item" onclick="openModal('modal-notifs')"><div class="settings-icon">🔔</div><div class="settings-label">Notifications</div><div class="settings-value" id="notif-status-label">Activées</div><div class="settings-arrow">›</div></div>
       <div class="settings-item" onclick="openEditVille()"><div class="settings-icon">📍</div><div class="settings-label">Ma localisation</div><div class="settings-value" id="settings-ville">—</div><div class="settings-arrow">›</div></div>
-      <div class="settings-item" onclick="openEditRayon()"><div class="settings-icon">🗺️</div><div class="settings-label">Rayon d'échange</div><div class="settings-value">50 km</div><div class="settings-arrow">›</div></div>
+      <div class="settings-item" onclick="openEditRayon()"><div class="settings-icon">🗺️</div><div class="settings-label">Rayon d'échange</div><div class="settings-value" id="settings-rayon">50 km</div><div class="settings-arrow">›</div></div>
       <div class="settings-item" onclick="showToast('Confidentialité')"><div class="settings-icon">🔒</div><div class="settings-label">Confidentialité</div><div class="settings-arrow">›</div></div>
       <div class="settings-item" onclick="openModal('modal-aide')"><div class="settings-icon">❓</div><div class="settings-label">Aide & contact</div><div class="settings-arrow">›</div></div>
       <div class="settings-item" onclick="openModal('modal-cgu')"><div class="settings-icon">📄</div><div class="settings-label">CGU & mentions légales</div><div class="settings-arrow">›</div></div>
@@ -1007,6 +1011,7 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
           <div class="field-input-wrap"><span class="field-icon">📍</span><input class="field-input" id="edit-ville" type="text" placeholder="Commence à taper ta ville…" autocomplete="off" oninput="villeAutocomplete(this,'edit-dropdown','edit-cp','edit-lat','edit-lng')" onblur="setTimeout(()=>closeVilleDropdown('edit-dropdown'),200)"></div>
           <div class="ville-dropdown" id="edit-dropdown"></div>
         </div>
+        <button class="btn-gps" id="btn-gps-edit" onclick="useGPS('edit-ville','edit-dropdown','edit-cp','edit-lat','edit-lng','edit-ville-confirm')">📡 Utiliser ma position GPS</button>
         <input type="hidden" id="edit-cp">
         <input type="hidden" id="edit-lat">
         <input type="hidden" id="edit-lng">
@@ -1603,7 +1608,8 @@ function updateProfileUI(p,ini){
   set('profil-rep',(p.reputation||5.0).toFixed(1));
   set('profil-rep-count','('+( p.nb_echanges||0)+' avis)');
   set('profil-stat-echanges',p.nb_echanges||0);
-  set('settings-ville',p.ville||'—');
+  set('settings-ville',p.ville||(p.lat?'📍 Localisé':'—'));
+  set('settings-rayon',(p.rayon||50)+' km');
 }
 
 function switchAuthTab(tab){
@@ -1693,6 +1699,17 @@ function togglePwd(id,btn){const i=$(id);i.type=i.type==='password'?'text':'pass
 
 // Onboarding
 let obStep=0;
+function obNextVille(){
+  // Validation : coordonnées obligatoires pour le matching
+  const lat=$('ob-lat')?.value;
+  const ville=$('ob-ville')?.value.trim();
+  if(!lat||!ville){
+    const c=$('ob-ville-confirm');
+    if(c){c.textContent='⚠️ Sélectionne ta ville dans la liste ou utilise le GPS';c.style.color='var(--orange)';}
+    return;
+  }
+  obNext();
+}
 function obNext(){
   $('os-'+obStep)?.classList.remove('active');$('od-'+obStep)?.classList.remove('active');$('od-'+obStep)?.classList.add('done');
   obStep++;$('os-'+obStep)?.classList.add('active');$('od-'+obStep)?.classList.add('active');
@@ -2575,17 +2592,27 @@ async function subscribePush(reg){
   }catch(e){ console.log('Push subscribe:',e.message); }
 }
 
-// ══ AUTOCOMPLETE VILLE — données INSEE locales + fallback API ══
-const VILLES_FR=[["Agen", "47000", 44.2011, 0.6211], ["Aix-en-Provence", "13100", 43.5297, 5.4474], ["Ajaccio", "20090", 41.9192, 8.7386], ["Albi", "81000", 43.9285, 2.1478], ["Alfortville", "94140", 48.804, 2.4235], ["Alès", "30100", 44.1254, 4.0814], ["Ambert", "63600", 45.5507, 3.7384], ["Amiens", "80000", 49.8942, 2.2957], ["Angers", "49000", 47.4784, -0.5632], ["Anglet", "64600", 43.4857, -1.5199], ["Angoulême", "16000", 45.65, 0.156], ["Annecy", "74000", 45.8992, 6.1294], ["Annonay", "07100", 45.2395, 4.6704], ["Antibes", "06600", 43.5808, 7.1239], ["Antony", "92160", 48.7501, 2.2984], ["Argenteuil", "95100", 48.9472, 2.2467], ["Arles", "13200", 43.6767, 4.6278], ["Armentières", "59280", 50.6886, 2.8789], ["Arras", "62000", 50.2919, 2.7792], ["Asnières-sur-Seine", "92600", 48.9145, 2.2871], ["Aubagne", "13400", 43.2938, 5.5686], ["Aubervilliers", "93300", 48.9128, 2.382], ["Aulnay-sous-Bois", "93600", 48.9411, 2.4971], ["Auray", "56400", 47.6652, -2.9836], ["Aurillac", "15000", 44.9236, 2.4417], ["Auxerre", "89000", 47.7979, 3.5714], ["Avignon", "84000", 43.9493, 4.8055], ["Bagneux", "92220", 48.7968, 2.3122], ["Bagnolet", "93170", 48.8683, 2.4187], ["Bastia", "20200", 42.6976, 9.4503], ["Bayonne", "64100", 43.4929, -1.4748], ["Belfort", "90000", 47.639, 6.8631], ["Besançon", "25000", 47.238, 6.0243], ["Blois", "41000", 47.5939, 1.333], ["Bobigny", "93000", 48.9096, 2.4405], ["Bondy", "93140", 48.9035, 2.481], ["Bordeaux", "33000", 44.8378, -0.5792], ["Boulogne-Billancourt", "92100", 48.8352, 2.2408], ["Bourg-en-Bresse", "01000", 46.205, 5.2255], ["Bourges", "18000", 47.081, 2.3988], ["Bourget", "93350", 48.9326, 2.4373], ["Brest", "29200", 48.3904, -4.4861], ["Brioude", "43100", 45.2943, 3.389], ["Brive-la-Gaillarde", "19100", 45.1583, 1.5327], ["Béthune", "62400", 50.5306, 2.6404], ["Béziers", "34500", 43.3442, 3.2153], ["Caen", "14000", 49.1829, -0.3707], ["Cagnes-sur-Mer", "06800", 43.6648, 7.1484], ["Cahors", "46000", 44.4487, 1.4413], ["Calais", "62100", 50.9513, 1.8587], ["Caluire-et-Cuire", "69300", 45.7979, 4.8483], ["Cannes", "06400", 43.5528, 7.0174], ["Carcassonne", "11000", 43.2117, 2.3536], ["Carhaix-Plouguer", "29270", 48.2785, -3.573], ["Cayenne", "97300", 4.9224, -52.3135], ["Cergy", "95000", 49.0368, 2.063], ["Chalon-sur-Saône", "71100", 46.7803, 4.8534], ["Chambéry", "73000", 45.5646, 5.9178], ["Champigny-sur-Marne", "94500", 48.8163, 2.5157], ["Charleville-Mézières", "08000", 49.7724, 4.7183], ["Chartres", "28000", 48.456, 1.4887], ["Chelles", "77500", 48.8836, 2.5906], ["Cherbourg-en-Cotentin", "50100", 49.6331, -1.6221], ["Choisy-le-Roi", "94600", 48.7604, 2.4098], ["Cholet", "49300", 47.0593, -0.8808], ["Châlons-en-Champagne", "51000", 48.9576, 4.3665], ["Châteaulin", "29150", 48.1899, -4.0857], ["Châteauroux", "36000", 46.8138, 1.6908], ["Clamart", "92140", 48.8006, 2.2647], ["Clermont-Ferrand", "63000", 45.7772, 3.087], ["Clichy", "92110", 48.9044, 2.3051], ["Colmar", "68000", 48.08, 7.359], ["Colombes", "92700", 48.9231, 2.2567], ["Colomiers", "31770", 43.61, 1.3369], ["Compiègne", "60200", 49.4177, 2.8267], ["Concarneau", "29900", 47.8724, -3.9188], ["Corbeil-Essonnes", "91100", 48.6075, 2.4812], ["Créteil", "94000", 48.79, 2.455], ["Dax", "40100", 43.7099, -1.0511], ["Dijon", "21000", 47.322, 5.0415], ["Douai", "59500", 50.3714, 3.0803], ["Douarnenez", "29100", 48.0941, -4.3238], ["Draguignan", "83300", 43.535, 6.4655], ["Drancy", "93700", 48.9274, 2.4503], ["Dunkerque", "59140", 51.0343, 2.3752], ["Firminy", "42700", 45.3882, 4.2896], ["Fontenay-sous-Bois", "94120", 48.8473, 2.4765], ["Fort-de-France", "97200", 14.6004, -61.0793], ["Fréjus", "83600", 43.4328, 6.737], ["Gap", "05000", 44.5594, 6.0799], ["Grasse", "06130", 43.66, 6.9219], ["Grenoble", "38000", 45.1885, 5.7245], ["Guéret", "23000", 46.1686, 1.8701], ["Hyères", "83400", 43.12, 6.129], ["Issoire", "63500", 45.5441, 3.2493], ["Issy-les-Moulineaux", "92130", 48.8243, 2.2708], ["Ivry-sur-Seine", "94200", 48.8115, 2.3832], ["La Courneuve", "93120", 48.928, 2.3966], ["La Roche-sur-Yon", "85000", 46.6699, -1.4251], ["La Rochelle", "17000", 46.1603, -1.1511], ["La Seyne-sur-Mer", "83500", 43.1008, 5.8797], ["Landerneau", "29800", 48.454, -4.252], ["Laon", "02000", 49.5643, 3.6234], ["Laval", "53000", 48.0731, -0.768], ["Le Creusot", "71200", 46.8044, 4.4259], ["Le Havre", "76600", 49.4944, 0.1079], ["Le Mans", "72000", 48.0061, 0.1996], ["Le Puy-en-Velay", "43000", 45.0433, 3.8851], ["Lens", "62300", 50.4307, 2.8317], ["Levallois-Perret", "92300", 48.8953, 2.2874], ["Lille", "59000", 50.6292, 3.0573], ["Limoges", "87000", 45.8354, 1.2644], ["Liévin", "62800", 50.4211, 2.7782], ["Lons-le-Saunier", "39000", 46.676, 5.5536], ["Lorient", "56100", 47.7486, -3.3669], ["Lyon", "69001", 45.764, 4.8357], ["Marseille", "13001", 43.2965, 5.3698], ["Martigues", "13500", 43.406, 5.0475], ["Massy", "91300", 48.7247, 2.2714], ["Maubeuge", "59600", 50.2785, 3.9726], ["Meaux", "77100", 48.96, 2.8837], ["Mende", "48000", 44.5193, 3.4995], ["Metz", "57000", 49.1193, 6.1757], ["Meyzieu", "69330", 45.7659, 5.0026], ["Montauban", "82000", 44.0176, 1.3553], ["Montbrison", "42600", 45.6068, 4.0656], ["Montceau-les-Mines", "71300", 46.668, 4.3668], ["Montpellier", "34000", 43.6112, 3.8767], ["Montreuil", "93100", 48.8638, 2.4488], ["Montreuil", "62170", 50.4625, 1.7622], ["Montrouge", "92120", 48.8148, 2.3197], ["Montélimar", "26200", 44.5597, 4.7525], ["Morlaix", "29600", 48.578, -3.8317], ["Moulins", "03000", 46.5653, 3.3345], ["Mulhouse", "68100", 47.7508, 7.3359], ["Mâcon", "71000", 46.3076, 4.8313], ["Mérignac", "33700", 44.8378, -0.6436], ["Nancy", "54000", 48.6921, 6.1844], ["Nanterre", "92000", 48.8924, 2.207], ["Nantes", "44000", 47.2184, -1.5536], ["Narbonne", "11100", 43.1836, 3.0031], ["Neuilly-sur-Seine", "92200", 48.8848, 2.2667], ["Nevers", "58000", 46.9869, 3.1574], ["Nice", "06000", 43.7102, 7.262], ["Niort", "79000", 46.3238, -0.4663], ["Noisy-le-Grand", "93160", 48.8474, 2.5524], ["Noisy-le-Sec", "93130", 48.8913, 2.4528], ["Nîmes", "30000", 43.8367, 4.3601], ["Orléans", "45000", 47.9029, 1.9039], ["Pantin", "93500", 48.8985, 2.4032], ["Paris", "75001", 48.8566, 2.3522], ["Pau", "64000", 43.2951, -0.3708], ["Perpignan", "66000", 42.6887, 2.8948], ["Pessac", "33600", 44.806, -0.6314], ["Ploërmel", "56800", 47.932, -2.3969], ["Poissy", "78300", 48.9288, 2.0518], ["Poitiers", "86000", 46.5802, 0.3404], ["Pontault-Combault", "77340", 48.7975, 2.6155], ["Pontivy", "56300", 48.0692, -2.9756], ["Pontoise", "95300", 49.05, 2.0987], ["Privas", "07000", 44.7349, 4.5988], ["Périgueux", "24000", 45.185, 0.719], ["Quimper", "29000", 47.9973, -4.0975], ["Quimperlé", "29300", 47.8699, -3.5503], ["Reims", "51100", 49.2583, 4.0317], ["Rennes", "35000", 48.1173, -1.6778], ["Rezé", "44400", 47.1866, -1.5558], ["Riom", "63200", 45.8944, 3.1133], ["Rive-de-Gier", "42800", 45.5245, 4.6156], ["Roanne", "42300", 46.0343, 4.0666], ["Rodez", "12000", 44.3505, 2.575], ["Romans-sur-Isère", "26100", 45.0462, 5.054], ["Rosny-sous-Bois", "93110", 48.8649, 2.4876], ["Roubaix", "59100", 50.6942, 3.1746], ["Rouen", "76000", 49.4432, 1.0993], ["Rueil-Malmaison", "92500", 48.8768, 2.1843], ["Saint-Brieuc", "22000", 48.5146, -2.7654], ["Saint-Chamond", "42400", 45.4744, 4.5153], ["Saint-Denis", "93200", 48.9362, 2.357], ["Saint-Maur-des-Fossés", "94100", 48.8008, 2.4951], ["Saint-Nazaire", "44600", 47.2736, -2.2136], ["Saint-Paul", "97460", -21.0067, 55.2824], ["Saint-Quentin", "02100", 49.849, 3.2871], ["Saint-Ségal", "29590", 48.2156, -3.9987], ["Saint-Étienne", "42000", 45.4397, 4.3872], ["Saintes", "17100", 45.7459, -0.6325], ["Sartrouville", "78500", 48.9381, 2.1643], ["Sevran", "93270", 48.9387, 2.5318], ["Soissons", "02200", 49.3818, 3.3238], ["Strasbourg", "67000", 48.5734, 7.7521], ["Sète", "34200", 43.4013, 3.6951], ["Tarbes", "65000", 43.2328, 0.0781], ["Thiers", "63300", 45.8574, 3.544], ["Thionville", "57100", 49.3581, 6.1681], ["Thonon-les-Bains", "74200", 46.3736, 6.4778], ["Toulon", "83000", 43.1242, 5.928], ["Toulouse", "31000", 43.6047, 1.4442], ["Tourcoing", "59200", 50.7219, 3.1616], ["Tournon-sur-Rhône", "07300", 45.0659, 4.8267], ["Tours", "37000", 47.3941, 0.6848], ["Troyes", "10000", 48.2973, 4.0744], ["Tulle", "19000", 45.2692, 1.7726], ["Valence", "26000", 44.9334, 4.8924], ["Valenciennes", "59300", 50.3583, 3.5236], ["Vannes", "56000", 47.6559, -2.7603], ["Venissieux", "69200", 45.6983, 4.8879], ["Versailles", "78000", 48.8014, 2.1301], ["Vesoul", "70000", 47.6212, 6.1537], ["Vichy", "03200", 46.1224, 3.4244], ["Villefranche-sur-Saône", "69400", 45.9878, 4.7199], ["Villeneuve-d\'Ascq", "59650", 50.6156, 3.1394], ["Villepinte", "93420", 48.9664, 2.5532], ["Villeurbanne", "69100", 45.7676, 4.8797], ["Villiers-sur-Marne", "94350", 48.8264, 2.5413], ["Vincennes", "94300", 48.8484, 2.439], ["Vitrolles", "13127", 43.4598, 5.2423], ["Vitry-sur-Seine", "94400", 48.7875, 2.4024], ["Yssingeaux", "43200", 45.1432, 4.1248], ["Échirolles", "38130", 45.1418, 5.7142], ["Épinal", "88000", 48.1741, 6.4494], ["Épinay-sur-Seine", "93800", 48.9536, 2.3126], ["Évreux", "27000", 49.0228, 1.1502], ["Évry-Courcouronnes", "91000", 48.627, 2.4286]];
-
+// ══ AUTOCOMPLETE VILLE — API geo.api.gouv.fr (36 000 communes, gratuit, sans clé) ══
 let _villeTimer = null;
 
+function applyVilleResult(nom, cp, lat, lng, inputId, dropdownId, cpId, latId, lngId, confirmId) {
+  if($(inputId)) $(inputId).value = nom;
+  if($(cpId)) $(cpId).value = cp || '';
+  if(latId && $(latId)) $(latId).value = lat || '';
+  if(lngId && $(lngId)) $(lngId).value = lng || '';
+  $(dropdownId)?.classList.remove('open');
+  const confirm = $(confirmId);
+  if(confirm){
+    confirm.textContent = '\u{1F4CD} ' + nom + (cp ? ' (' + cp + ')' : '');
+    confirm.style.color = 'var(--green)';
+  }
+}
+
 function villeAutocomplete(input, dropdownId, cpId, latId, lngId) {
-  const q = (input.value || '').trim().toLowerCase();
+  const q = (input.value || '').trim();
   const dropdown = $(dropdownId);
   if(!dropdown) return;
 
-  // Reset les coordonnées si l'user retape
   if($(cpId)) $(cpId).value = '';
   if(latId && $(latId)) $(latId).value = '';
   if(lngId && $(lngId)) $(lngId).value = '';
@@ -2593,69 +2620,91 @@ function villeAutocomplete(input, dropdownId, cpId, latId, lngId) {
   if(q.length < 2) { dropdown.classList.remove('open'); return; }
 
   clearTimeout(_villeTimer);
-  _villeTimer = setTimeout(() => {
-    // Recherche locale sur les données embarquées
-    const normalize = s => s.toLowerCase()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-      .replace(/-/g,' ');
-
-    const qn = normalize(q);
-    const results = VILLES_FR.filter(v =>
-      normalize(v[0]).startsWith(qn)
-    ).slice(0, 8);
-
-    // Fallback : recherche "contient" si pas assez de résultats
-    if(results.length < 3) {
-      const extra = VILLES_FR.filter(v =>
-        !results.includes(v) && normalize(v[0]).includes(qn)
-      ).slice(0, 8 - results.length);
-      results.push(...extra);
-    }
-
-    if(!results.length) {
-      dropdown.innerHTML = '<div class="ville-loading">Aucune ville trouvée</div>';
-      dropdown.classList.add('open');
-      return;
-    }
-
-    dropdown.innerHTML = results.map(function(v) {
-      var nom=v[0],cp=v[1],lat=v[2],lng=v[3];
-      var safe=JSON.stringify({nom:nom,cp:cp,lat:lat,lng:lng}).replace(/"/g,'&quot;');
-      return '<div class="ville-option" onclick="selectVille(this,'+
-        JSON.stringify(input.id)+','+
-        JSON.stringify(dropdownId)+','+
-        JSON.stringify(cpId)+','+
-        JSON.stringify(latId||'')+','+
-        JSON.stringify(lngId||'')+
-        ')" data-v="'+safe+'">'+
-        '<span class="ville-option-nom">'+nom+'</span>'+
-        '<span class="ville-option-cp">'+cp+'</span>'+
-        '</div>';
-    }).join('');
+  _villeTimer = setTimeout(async () => {
+    dropdown.innerHTML = '<div class="ville-loading">Recherche…</div>';
     dropdown.classList.add('open');
-  }, 150);
+    try {
+      const url = 'https://geo.api.gouv.fr/communes?nom=' + encodeURIComponent(q) + '&fields=nom,codesPostaux,centre&boost=population&limit=8';
+      const res = await fetch(url);
+      const communes = await res.json();
+      if(!communes || !communes.length){
+        dropdown.innerHTML = '<div class="ville-loading">Aucune ville trouvée</div>';
+        return;
+      }
+      const confirmId = dropdownId.replace('dropdown','ville-confirm');
+      dropdown.innerHTML = communes.map(c => {
+        const cp = (c.codesPostaux && c.codesPostaux[0]) || '';
+        const lat = c.centre && c.centre.coordinates ? c.centre.coordinates[1] : '';
+        const lng = c.centre && c.centre.coordinates ? c.centre.coordinates[0] : '';
+        const safe = JSON.stringify({nom:c.nom,cp,lat,lng,inputId:input.id,dropdownId,cpId,latId:latId||'',lngId:lngId||'',confirmId}).replace(/"/g,'&quot;');
+        return '<div class="ville-option" onclick="selectVilleApi(this)" data-v="'+safe+'">' +
+          '<span class="ville-option-nom">'+c.nom+'</span>' +
+          '<span class="ville-option-cp">'+cp+'</span>' +
+          '</div>';
+      }).join('');
+    } catch(e) {
+      dropdown.innerHTML = '<div class="ville-loading">Erreur réseau</div>';
+    }
+  }, 220);
+}
+
+function selectVilleApi(el) {
+  try {
+    const d = JSON.parse(el.dataset.v.replace(/&quot;/g,'"'));
+    applyVilleResult(d.nom, d.cp, d.lat, d.lng, d.inputId, d.dropdownId, d.cpId, d.latId, d.lngId, d.confirmId);
+  } catch(e) { console.error('selectVilleApi:', e); }
 }
 
 function selectVille(el, inputId, dropdownId, cpId, latId, lngId) {
   try {
-    const data = JSON.parse(el.dataset.v.replace(/&quot;/g, '"'));
-    if($(inputId)) $(inputId).value = data.nom;
-    if($(cpId)) $(cpId).value = data.cp || '';
-    if(latId && $(latId)) $(latId).value = data.lat || '';
-    if(lngId && $(lngId)) $(lngId).value = data.lng || '';
-    $(dropdownId)?.classList.remove('open');
-    // Confirmation verte
-    const confirmId = dropdownId.replace('dropdown', 'ville-confirm');
-    const confirm = $(confirmId);
-    if(confirm) {
-      confirm.textContent = '📍 ' + data.nom + (data.cp ? ' (' + data.cp + ')' : '');
-      confirm.style.color = 'var(--green)';
-    }
+    const data = JSON.parse(el.dataset.v.replace(/&quot;/g,'"'));
+    const confirmId = dropdownId.replace('dropdown','ville-confirm');
+    applyVilleResult(data.nom, data.cp, data.lat, data.lng, inputId, dropdownId, cpId, latId, lngId, confirmId);
   } catch(e) { console.error('selectVille:', e); }
 }
 
 function closeVilleDropdown(id) {
   $(id)?.classList.remove('open');
+}
+
+// ══ GPS — détection position + reverse geocoding API adresse.data.gouv.fr ══
+async function useGPS(inputId, dropdownId, cpId, latId, lngId, confirmId) {
+  if(!navigator.geolocation){ showToast('GPS non disponible sur ce navigateur'); return; }
+  const btnSelector = '[onclick*="useGPS"][onclick*="'+inputId+'"]';
+  const btn = document.querySelector(btnSelector);
+  if(btn){ btn.classList.add('loading'); btn.textContent = '\u{1F4E1} Localisation…'; }
+  navigator.geolocation.getCurrentPosition(async pos => {
+    const lat = pos.coords.latitude.toFixed(6);
+    const lng = pos.coords.longitude.toFixed(6);
+    try {
+      const url = 'https://api-adresse.data.gouv.fr/reverse/?lon='+lng+'&lat='+lat;
+      const res = await fetch(url);
+      const data = await res.json();
+      const feat = data.features && data.features[0];
+      if(feat){
+        const p = feat.properties;
+        const nom = p.city || p.municipality || p.town || p.village || 'Ma position';
+        const cp = p.postcode || '';
+        applyVilleResult(nom, cp, lat, lng, inputId, dropdownId, cpId, latId, lngId, confirmId);
+        showToast('\u{1F4CD} Position détectée : '+nom);
+      } else {
+        if($(latId)) $(latId).value = lat;
+        if($(lngId)) $(lngId).value = lng;
+        const confirm = $(confirmId);
+        if(confirm){ confirm.textContent='\u{1F4CD} Position GPS enregistrée'; confirm.style.color='var(--green)'; }
+        showToast('\u{1F4CD} Position GPS enregistrée');
+      }
+    } catch(e) {
+      if($(latId)) $(latId).value = lat;
+      if($(lngId)) $(lngId).value = lng;
+      showToast('\u{1F4CD} Coordonnées GPS enregistrées');
+    }
+    if(btn){ btn.classList.remove('loading'); btn.textContent='\u{1F4E1} Utiliser ma position GPS'; }
+  }, err => {
+    if(btn){ btn.classList.remove('loading'); btn.textContent='\u{1F4E1} Utiliser ma position GPS'; }
+    const msgs = {1:'Accès GPS refusé',2:'Position indisponible',3:'Délai GPS dépassé'};
+    showToast('\u26A0\uFE0F '+(msgs[err.code]||'Erreur GPS'));
+  }, { timeout:10000, maximumAge:60000 });
 }
 
 // ══ KEYBOARD ══
