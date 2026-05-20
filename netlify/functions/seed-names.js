@@ -11,7 +11,7 @@
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://gyierirtxsroaqlaphax.supabase.co";
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5aWVyaXJ0eHNyb2FxbGFwaGF4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODk3MTQ5NCwiZXhwIjoyMDk0NTQ3NDk0fQ.fYelgh24iaUHsf5ip3ldil8GiLI6BiZ_QDQh9fHNzFA";
 const ADMIN_SECRET = process.env.ADMIN_SECRET || "Jj0624988240@";
-const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY || "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";
+const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 
 // Collections à traiter avec leur contexte pour Claude
 const COLLECTIONS = [
