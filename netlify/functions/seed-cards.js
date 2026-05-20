@@ -71,7 +71,31 @@ async function upsertCards(collectionId, cards) {
 // ── APIs de cartes ──────────────────────────────────────────
 
 async function fetchTCGdex(setId, lang = 'fr') {
-  const r = await fetch(`https://api.tcgdex.net/v2/${lang}/sets/${setId}`);
+  // TCGdex accepte plusieurs formats d'ID, on essaie les deux
+  const idsToTry = [setId, setId.replace('pt', '-'), setId.toLowerCase()];
+  
+  for (const id of idsToTry) {
+    try {
+      const r = await fetch(`https://api.tcgdex.net/v2/${lang}/sets/${id}`);
+      if (r.ok) {
+        const data = await r.json();
+        const cards = (data.cards || []).map(c => ({
+          numero: c.localId,
+          nom: c.name,
+          sous_groupe: c.category || null
+        }));
+        if (cards.length > 0) return cards;
+      }
+    } catch(e) {}
+  }
+  
+  // Fallback anglais si français indisponible
+  if (lang !== 'en') {
+    return fetchTCGdex(setId, 'en');
+  }
+  
+  throw new Error(`TCGdex ${setId} → 404 sur tous les formats`);
+}/sets/${setId}`);
   if (!r.ok) throw new Error(`TCGdex ${setId} → ${r.status}`);
   const data = await r.json();
   return (data.cards || []).map(c => ({
