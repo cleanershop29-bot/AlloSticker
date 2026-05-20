@@ -1511,9 +1511,17 @@ function revealAll(){
 // ══ AUTH ══
 async function initAuth(){
   const loader=$('global-loader');
-  const{data:{session}}=await sb.auth.getSession();
+  let session=null;
+  try{
+    const{data}=await sb.auth.getSession();
+    session=data?.session||null;
+  }catch(e){
+    if(loader)loader.style.display='none';
+    showToast('⚠️ Connexion impossible — vérifie ton réseau');
+    return;
+  }
   if(session){
-    S.user=session.user;
+    S.user=session?.user||null;
     await loadUserProfile();
     const{data:p}=await sb.from('profiles').select('nom,ville').eq('id',S.user.id).single();
     if(loader) loader.style.display='none';
@@ -1677,16 +1685,41 @@ async function saveEditProfil(){
   const rayon=parseInt($('edit-rayon').value)||50;
   const btn=$('btn-save-profil');
   btn.disabled=true;btn.textContent='⏳ Sauvegarde…';
-  const updates={nom:nom||null,ville:ville||null,bio:bio||null,rayon,updated_at:new Date().toISOString()};
+
+  // Géocoder la ville si elle a changé
+  let lat=S.profile?.lat||null;
+  let lng=S.profile?.lng||null;
+  if(ville && ville!==S.profile?.ville){
+    try{
+      const geo=await geocodeVille(ville);
+      if(geo){lat=geo.lat;lng=geo.lng;}
+    }catch(e){console.log('Geocode:',e);}
+  }
+
+  const updates={nom:nom||null,ville:ville||null,bio:bio||null,rayon,lat,lng,updated_at:new Date().toISOString()};
   const{error}=await sb.from('profiles').update(updates).eq('id',S.user.id);
   btn.disabled=false;btn.textContent='💾 Sauvegarder';
   if(error){showToast('Erreur : '+error.message);return;}
+
+  // Mettre à jour STATE + UI immédiatement
   S.profile={...S.profile,...updates};
   const ini=(nom||S.user.email||'U').substring(0,2).toUpperCase();
   updateProfileUI(S.profile,ini);
+  // Mettre à jour avatar navbar accueil
   const av=$('accueil-avatar');if(av)av.textContent=ini;
   closeModal('modal-edit-profil');
-  showToast('✓ Profil mis à jour !');
+  showToast('✓ Profil mis à jour !'+(lat?' 📍':''));
+}
+
+// Géocodage ville via Netlify function (respecte la politique Nominatim)
+async function geocodeVille(ville){
+  try{
+    const res=await fetch('/.netlify/functions/geocode?q='+encodeURIComponent(ville+', France'));
+    if(!res.ok) return null;
+    const data=await res.json();
+    if(data?.lat&&data?.lng) return{lat:parseFloat(data.lat),lng:parseFloat(data.lng)};
+  }catch(e){}
+  return null;
 }
 
 // ══ ACCUEIL ══
@@ -1778,7 +1811,8 @@ function renderColls(){
   setTimeout(()=>document.querySelectorAll('.coll-card.reveal').forEach((el,i)=>setTimeout(()=>el.classList.add('visible'),i*20)),50);
 }
 function setCat(cat,el){S.currentCat=cat;document.querySelectorAll('#cats-scroll .chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');renderColls();}
-function filterColls(){renderColls();}
+let _collsSearchTimer=null;
+function filterColls(){clearTimeout(_collsSearchTimer);_collsSearchTimer=setTimeout(()=>renderColls(),250);}
 
 // ══ MA COLLECTION ══
 async function openCollection(slug,nom,id){
@@ -1965,26 +1999,38 @@ async function loadRealMatches(){
   const list=$('matches-list'),empty=$('matches-empty'),badge=$('match-total-badge'),sub=$('match-sub');
   list.innerHTML='<div style="padding:20px 16px;display:flex;flex-direction:column;gap:10px"><div class="skeleton" style="height:160px"></div><div class="skeleton" style="height:160px"></div></div>';
   // Requête sur la vue matches
-  let q=sb.from('matches').select('user_b,card_nom,card_numero,collection_nom,collection_slug').eq('user_a',S.user.id);
+  let q=sb.from('matches').select('user_b,card_nom,card_numero,collection_nom,collection_slug,categorie,distance_km').eq('user_a',S.user.id);
   if(S.matchFilter!=='all'&&S.matchFilter!=='proche') q=q.eq('categorie',S.matchFilter);
+  if(S.matchFilter==='proche') q=q.lte('distance_km',30);
   const{data:matchData,error}=await q.limit(50);
   if(error){console.error(error);renderDemoMatches();return;}
   if(!matchData?.length){list.innerHTML='';empty.style.display='block';if(badge)badge.textContent='0 match';if(sub)sub.textContent='Aucun échange possible pour le moment';return;}
   // Grouper par user_b
   const byUser={};
   matchData.forEach(m=>{
-    if(!byUser[m.user_b])byUser[m.user_b]={cards:[]};
-    byUser[m.user_b].cards.push({nom:m.card_nom,numero:m.card_numero,coll:m.collection_nom,slug:m.collection_slug});
+    if(!byUser[m.user_b])byUser[m.user_b]={cards:[],distance_km:m.distance_km,categorie:m.categorie};
+    byUser[m.user_b].cards.push({nom:m.card_nom,numero:m.card_numero,coll:m.collection_nom,slug:m.collection_slug,categorie:m.categorie});
   });
   // Charger les profils des users matchés
   const userIds=Object.keys(byUser);
   const{data:profiles}=await sb.from('profiles').select('id,nom,ville,reputation,nb_echanges').in('id',userIds);
   const profMap={};(profiles||[]).forEach(p=>profMap[p.id]=p);
   // Construire les match cards
+  const _avatarColors=[['#1a3a6e','#2a5cad'],['#6e1a1a','#ad2a2a'],['#1a5c3a','#2aad5c'],['#4a1a6e','#7a2aad'],['#6e4a1a','#ad7a2a']];
   const matchCards=userIds.map(uid=>{
     const p=profMap[uid]||{};
     const cards=byUser[uid].cards;
-    return{id:uid,user:{nom:p.nom||'Collectionneur',initiales:(p.nom||'CC').substring(0,2).toUpperCase(),ville:p.ville||'—',reputation:p.reputation||5.0,nb_echanges:p.nb_echanges||0,distance:'—',color:['#1a3a6e','#2a5cad']},collection:{nom:cards[0]?.coll||'—',emoji:'🃏',categorie:''},score:cards.length,je_donne:cards.slice(0,5).map(c=>c.nom||'#'+c.numero),je_recois:[]};
+    const dist=byUser[uid].distance_km;
+    const distLabel=dist!=null?(dist<1?'< 1 km':Math.round(dist)+' km'):'—';
+    const color=_avatarColors[(p.nom||uid).charCodeAt(0)%_avatarColors.length];
+    return{
+      id:uid,
+      user:{nom:p.nom||'Collectionneur',initiales:(p.nom||'CC').substring(0,2).toUpperCase(),ville:p.ville||'—',reputation:p.reputation||5.0,nb_echanges:p.nb_echanges||0,distance:distLabel,color},
+      collection:{nom:cards[0]?.coll||'—',emoji:CAT_EMOJI[cards[0]?.categorie]||'🃏',categorie:cards[0]?.categorie||''},
+      score:cards.length,
+      je_donne:cards.slice(0,5).map(c=>c.nom||'#'+c.numero),
+      je_recois:[]
+    };
   });
   if(badge)badge.textContent=matchCards.length+' match'+(matchCards.length>1?'s':'');
   if(sub)sub.textContent=matchCards.length+' échange'+(matchCards.length>1?'s':'')+' possible'+(matchCards.length>1?'s':'');
@@ -2085,7 +2131,8 @@ function renderTradesList(){
     const nom=other?.nom||'Collectionneur';
     const ini=nom.substring(0,2).toUpperCase();
     const isNew=!isProposer&&t.statut==='en_attente';
-    const colors=['#1a3a6e','#2a5cad'];
+    const _colorSets=[['#1a3a6e','#2a5cad'],['#6e1a1a','#ad2a2a'],['#1a5c3a','#2aad5c'],['#4a1a6e','#7a2aad'],['#6e4a1a','#ad7a2a'],['#1a4a6e','#2a7aad']];
+    const colors=_colorSets[(nom.charCodeAt(0)||0)%_colorSets.length];
     const heure=new Date(t.updated_at).toLocaleDateString('fr-FR',{day:'numeric',month:'short'});
     const trackUrl='https://allosticker.fr/.netlify/functions/trade-tracking?id='+t.id;
     return`<div class="conv-item${isNew?' unread':''}" onclick="openChatReal('${t.id}')">
@@ -2127,7 +2174,13 @@ function setTradeTab(tab,el){S.tradeTab=tab;document.querySelectorAll('.trade-ta
 // Chat réel (Supabase)
 let realtimeSub=null;
 async function openChatReal(tradeId){
-  const trade=S.trades.find(t=>t.id===tradeId);if(!trade)return;
+  // Chercher dans S.trades d'abord, sinon charger depuis Supabase
+  let trade=S.trades.find(t=>t.id===tradeId);
+  if(!trade){
+    const{data}=await sb.from('trades').select('*,proposer:profiles!proposer_id(id,nom),receiver:profiles!receiver_id(id,nom)').eq('id',tradeId).single();
+    if(!data){showToast('Échange introuvable');return;}
+    trade=data;S.trades.push(trade);
+  }
   S.currentTrade={...trade,isReal:true};
   S.localMessages=[];
   showChatView();
@@ -2137,7 +2190,12 @@ async function openChatReal(tradeId){
   renderTradeBannerReal(trade);
   // Charger messages
   const{data:msgs}=await sb.from('messages').select('*,sender:profiles(nom)').eq('trade_id',tradeId).order('created_at');
-  S.localMessages=(msgs||[]).map(m=>({id:m.id,role:m.sender_id===S.user.id?'me':'other',texte:m.contenu,time:new Date(m.created_at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}));
+  S.localMessages=(msgs||[]).map(m=>({
+    id:m.id,
+    role:m.is_system?'system':(m.sender_id===S.user.id?'me':'other'),
+    texte:m.contenu,
+    time:m.is_system?'':new Date(m.created_at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})
+  }));
   renderChatMessages();scrollChat();
   // Realtime
   if(realtimeSub)sb.removeChannel(realtimeSub);
@@ -2173,8 +2231,8 @@ async function updateTradeReal(statut){
   S.currentTrade.statut=statut;
   const labels={accepte:'✓ Échange accepté !',refuse:'Échange refusé',annule:'Échange annulé',complete:'🎉 Échange terminé !'};
   S.localMessages.push({id:Date.now(),role:'system',texte:labels[statut]||statut,time:''});
-  // Envoyer message système
-  await sb.from('messages').insert({trade_id:S.currentTrade.id,sender_id:S.user.id,contenu:labels[statut]||statut});
+  // Envoyer message système avec flag is_system
+  await sb.from('messages').insert({trade_id:S.currentTrade.id,sender_id:S.user.id,contenu:labels[statut]||statut,is_system:true});
   renderTradeBannerReal(S.currentTrade);renderChatMessages();scrollChat();
   showToast(labels[statut]||statut);
   loadTrades();
@@ -2327,8 +2385,7 @@ async function loadProfile(){
   badges.push({label:'👑 Légende',earned:ne>=100});
   const bRow=document.querySelector('.badges-row');
   if(bRow)bRow.innerHTML=badges.map(b=>'<div class="badge-item '+(b.earned?'earned':'locked')+'">'+b.label+'</div>').join('');
-  // Mes collections
-  await loadMesCartes();
+  // Mes collections (sans rappeler loadMesCartes qui rechargerait Supabase)
   const collsList=$('profil-colls-list');
   if(collsList){
     const activeIds=Object.keys(S.activeColls);
@@ -3001,6 +3058,24 @@ async function adminRegenAllCards(){
 function adminConfirmLogout(){
   if(confirm('Se déconnecter ?')){closeAdmin();doLogout();}
 }
+
+// ══ HELPERS NAVIGATION ══
+function copyTrackLink(tradeId){
+  const url='https://allosticker.fr/.netlify/functions/trade-tracking?id='+tradeId;
+  if(navigator.clipboard) navigator.clipboard.writeText(url).then(()=>showToast('🔗 Lien copié !'));
+  else{const a=document.createElement('a');a.href=url;a.target='_blank';a.click();}
+}
+
+async function collClick(id,slug){
+  let coll=S.collections.find(c=>c.id===id||c.slug===slug);
+  if(!coll&&S.user){
+    const{data}=await sb.from('collections').select('id,slug,nom,editeur,categorie,annee,nb_cartes,type').eq('id',id).single();
+    if(data){S.collections.push(data);coll=data;}
+  }
+  if(coll) openCollection(coll.slug,coll.nom,coll.id);
+  else showToast('Collection introuvable');
+}
+
 
 initAuth();
 </script>
