@@ -613,7 +613,11 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
       <div class="onboard-step active" id="os-0">
         <div class="onboard-title">📍 Où tu habites ?</div>
         <div class="onboard-sub">Pour trouver des échanges près de chez toi</div>
-        <div class="field-input-wrap"><span class="field-icon">🏙️</span><input class="field-input" id="ob-ville" type="text" placeholder="Ex: Paris, Lyon…"></div>
+        <div class="field-input-wrap"><span class="field-icon">🏙️</span><input class="field-input" id="ob-ville" type="text" placeholder="Ex: Lyon, Rennes…"></div>
+        </div>
+        <div class="field-wrap">
+          <div class="field-label">Code postal</div>
+          <div class="field-input-wrap"><span class="field-icon">🔢</span><input class="field-input" id="ob-cp" type="text" inputmode="numeric" maxlength="5" placeholder="Ex: 69001"></div>
         <button class="btn-primary btn-full" onclick="obNext()">Continuer →</button>
       </div>
       <div class="onboard-step" id="os-1">
@@ -985,7 +989,11 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
       </div>
       <div class="field-wrap">
         <div class="field-label">Ville</div>
-        <div class="field-input-wrap"><span class="field-icon">📍</span><input class="field-input" id="edit-ville" type="text" placeholder="Ex: Paris, Lyon…"></div>
+        <div class="field-input-wrap"><span class="field-icon">📍</span><input class="field-input" id="edit-ville" type="text" placeholder="Ex: Lyon, Rennes…"></div>
+      </div>
+      <div class="field-wrap">
+        <div class="field-label">Code postal</div>
+        <div class="field-input-wrap"><span class="field-icon">🔢</span><input class="field-input" id="edit-cp" type="text" inputmode="numeric" maxlength="5" placeholder="Ex: 69001"></div>
       </div>
       <div class="field-wrap">
         <div class="field-label">Bio</div>
@@ -1089,7 +1097,7 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
           Axion App Studio — Jérémy Fortin<br>
           SIRET : 914 511 639 00025<br>
           Saint-Ségal, Finistère, France<br>
-          Contact : <span style="color:var(--yellow)">contact@allosticker.fr</span>
+          Contact : <span style="color:var(--yellow)">contact@axionappstudio.com</span>
         </div>
         <div>
           <div style="font-weight:900;color:var(--text);margin-bottom:4px">Hébergement</div>
@@ -1102,7 +1110,7 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
         </div>
         <div>
           <div style="font-weight:900;color:var(--text);margin-bottom:4px">Données personnelles (RGPD)</div>
-          Les données collectées (email, nom, ville) sont utilisées uniquement pour le fonctionnement de l'application. Elles ne sont pas revendues. Vous pouvez demander la suppression de votre compte en contactant contact@allosticker.fr.
+          Les données collectées (email, nom, ville) sont utilisées uniquement pour le fonctionnement de l'application. Elles ne sont pas revendues. Vous pouvez demander la suppression de votre compte en contactant contact@axionappstudio.com.
         </div>
         <div>
           <div style="font-weight:900;color:var(--text);margin-bottom:4px">Responsabilité</div>
@@ -1137,11 +1145,11 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
         </div>
         <div style="background:var(--card);border:1px solid var(--border);border-radius:13px;padding:14px">
           <div style="font-size:13px;font-weight:900;margin-bottom:8px">📧 Nous contacter</div>
-          <div style="font-size:12px;color:var(--muted);font-weight:700;line-height:1.6">Pour tout problème ou suggestion, écris-nous à :<br><span style="color:var(--yellow)">contact@allosticker.fr</span></div>
+          <div style="font-size:12px;color:var(--muted);font-weight:700;line-height:1.6">Pour tout problème ou suggestion, écris-nous à :<br><span style="color:var(--yellow)">contact@axionappstudio.com</span></div>
         </div>
         <div style="background:var(--card);border:1px solid var(--border);border-radius:13px;padding:14px">
           <div style="font-size:13px;font-weight:900;margin-bottom:8px">🐛 Signaler un bug</div>
-          <div style="font-size:12px;color:var(--muted);font-weight:700;line-height:1.6">Décris le problème rencontré et envoie-le à <span style="color:var(--yellow)">bugs@allosticker.fr</span></div>
+          <div style="font-size:12px;color:var(--muted);font-weight:700;line-height:1.6">Décris le problème rencontré et envoie-le à <span style="color:var(--yellow)">contact@axionappstudio.com</span></div>
         </div>
       </div>
     </div>
@@ -1465,6 +1473,7 @@ function openEditProfil(){
   if(!S.user){showToast('Connecte-toi pour modifier ton profil');return;}
   $('edit-nom').value=S.profile?.nom||'';
   $('edit-ville').value=S.profile?.ville||'';
+  const cpEl=$('edit-cp');if(cpEl)cpEl.value=S.profile?.code_postal||'';
   $('edit-bio').value=S.profile?.bio||'';
   $('edit-rayon').value=S.profile?.rayon||50;
   openModal('modal-edit-profil');
@@ -1566,7 +1575,7 @@ async function loadUserProfile(){
 function updateProfileUI(p,ini){
   set('profil-avatar',ini);
   set('profil-nom',p.nom||S.user?.email||'Utilisateur');
-  set('profil-ville',p.ville||'Non renseigné');
+  set('profil-ville',(p.ville||(p.code_postal?'':null)||'Non renseigné')+(p.code_postal?' ('+p.code_postal+')':''));
   set('profil-bio',p.bio||'Collectionneur passionné');
   set('profil-rep',(p.reputation||5.0).toFixed(1));
   set('profil-rep-count','('+( p.nb_echanges||0)+' avis)');
@@ -1671,8 +1680,18 @@ function obPrev(){
 }
 function toggleObCat(el,cat){el.classList.toggle('selected');S.obCats.has(cat)?S.obCats.delete(cat):S.obCats.add(cat);}
 async function finishOnboard(){
-  const ville=$('ob-ville')?.value.trim();
-  if(S.user){await sb.from('profiles').upsert({id:S.user.id,ville:ville||null,updated_at:new Date().toISOString()},{onConflict:'id'});}
+  const ville=($('ob-ville')?.value||'').trim();
+  const cp=($('ob-cp')?.value||'').trim().replace(/\D/g,'').substring(0,5);
+  if(S.user){
+    let lat=null,lng=null;
+    if(ville){
+      try{const geo=await geocodeVille(cp?ville+' '+cp:ville);if(geo){lat=geo.lat;lng=geo.lng;}}catch(e){}
+    }
+    await sb.from('profiles').upsert({
+      id:S.user.id,ville:ville||null,code_postal:cp||null,lat,lng,
+      updated_at:new Date().toISOString()
+    },{onConflict:'id'});
+  }
   $('auth-onboard').style.display='none';goTo('accueil');
 }
 
@@ -1681,6 +1700,7 @@ async function saveEditProfil(){
   if(!S.user) return;
   const nom=$('edit-nom').value.trim();
   const ville=$('edit-ville').value.trim();
+  const cp=($('edit-cp')?.value||'').trim().replace(/\D/g,'').substring(0,5);
   const bio=$('edit-bio').value.trim();
   const rayon=parseInt($('edit-rayon').value)||50;
   const btn=$('btn-save-profil');
@@ -1689,14 +1709,24 @@ async function saveEditProfil(){
   // Géocoder la ville si elle a changé
   let lat=S.profile?.lat||null;
   let lng=S.profile?.lng||null;
-  if(ville && ville!==S.profile?.ville){
+  // Géocoder si ville ou code postal a changé
+  const villeChanged = ville!==S.profile?.ville || cp!==(S.profile?.code_postal||'');
+  if(ville && villeChanged){
     try{
-      const geo=await geocodeVille(ville);
+      const query = cp ? ville+' '+cp : ville;
+      const geo=await geocodeVille(query);
       if(geo){lat=geo.lat;lng=geo.lng;}
     }catch(e){console.log('Geocode:',e);}
   }
 
-  const updates={nom:nom||null,ville:ville||null,bio:bio||null,rayon,lat,lng,updated_at:new Date().toISOString()};
+  const updates={
+    nom:nom||null,
+    ville:ville||null,
+    code_postal:cp||null,
+    bio:bio||null,
+    rayon,lat,lng,
+    updated_at:new Date().toISOString()
+  };
   const{error}=await sb.from('profiles').update(updates).eq('id',S.user.id);
   btn.disabled=false;btn.textContent='💾 Sauvegarder';
   if(error){showToast('Erreur : '+error.message);return;}
