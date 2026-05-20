@@ -513,6 +513,17 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
 .pwa-banner-btn{background:var(--yellow);color:#0f0f14;font-family:"Nunito",sans-serif;font-size:12px;font-weight:900;padding:9px 16px;border-radius:100px;border:none;cursor:pointer;flex-shrink:0;white-space:nowrap;-webkit-tap-highlight-color:transparent;transition:transform .15s}
 .pwa-banner-btn:active{transform:scale(.95)}
 .pwa-banner-close{width:28px;height:28px;border-radius:50%;background:var(--card2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);font-size:12px;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+
+/* ════ AUTOCOMPLETE VILLE ════ */
+.ville-wrap{position:relative}
+.ville-dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--card2);border:1px solid rgba(255,217,61,.3);border-radius:13px;overflow:hidden;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,.4);display:none;max-height:220px;overflow-y:auto}
+.ville-dropdown.open{display:block}
+.ville-option{padding:11px 14px;cursor:pointer;font-size:13px;font-weight:700;color:var(--text);transition:background .15s;display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid var(--border)}
+.ville-option:last-child{border-bottom:none}
+.ville-option:hover,.ville-option:active{background:var(--card)}
+.ville-option-nom{font-weight:800}
+.ville-option-cp{font-size:11px;color:var(--muted);font-weight:700;flex-shrink:0}
+.ville-loading{padding:11px 14px;font-size:12px;color:var(--muted);font-weight:700;text-align:center}
 </style>
 </head>
 <body>
@@ -613,11 +624,14 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
       <div class="onboard-step active" id="os-0">
         <div class="onboard-title">📍 Où tu habites ?</div>
         <div class="onboard-sub">Pour trouver des échanges près de chez toi</div>
-        <div class="field-input-wrap"><span class="field-icon">🏙️</span><input class="field-input" id="ob-ville" type="text" placeholder="Ex: Lyon, Rennes…"></div>
+        <div class="ville-wrap">
+          <div class="field-input-wrap"><span class="field-icon">🏙️</span><input class="field-input" id="ob-ville" type="text" placeholder="Commence à taper ta ville…" autocomplete="off" oninput="villeAutocomplete(this,'ob-dropdown','ob-cp','ob-lat','ob-lng')" onblur="setTimeout(()=>closeVilleDropdown('ob-dropdown'),200)"></div>
+          <div class="ville-dropdown" id="ob-dropdown"></div>
         </div>
-        <div class="field-wrap">
-          <div class="field-label">Code postal</div>
-          <div class="field-input-wrap"><span class="field-icon">🔢</span><input class="field-input" id="ob-cp" type="text" inputmode="numeric" maxlength="5" placeholder="Ex: 69001"></div>
+        <input type="hidden" id="ob-cp">
+        <input type="hidden" id="ob-lat">
+        <input type="hidden" id="ob-lng">
+        <div style="font-size:11px;color:var(--muted);font-weight:700;margin-top:4px" id="ob-ville-confirm"></div>
         <button class="btn-primary btn-full" onclick="obNext()">Continuer →</button>
       </div>
       <div class="onboard-step" id="os-1">
@@ -988,12 +1002,15 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
         <div class="field-input-wrap"><span class="field-icon">👤</span><input class="field-input" id="edit-nom" type="text" placeholder="Ton nom"></div>
       </div>
       <div class="field-wrap">
-        <div class="field-label">Ville</div>
-        <div class="field-input-wrap"><span class="field-icon">📍</span><input class="field-input" id="edit-ville" type="text" placeholder="Ex: Lyon, Rennes…"></div>
-      </div>
-      <div class="field-wrap">
-        <div class="field-label">Code postal</div>
-        <div class="field-input-wrap"><span class="field-icon">🔢</span><input class="field-input" id="edit-cp" type="text" inputmode="numeric" maxlength="5" placeholder="Ex: 69001"></div>
+        <div class="field-label">Ville & Code postal</div>
+        <div class="ville-wrap">
+          <div class="field-input-wrap"><span class="field-icon">📍</span><input class="field-input" id="edit-ville" type="text" placeholder="Commence à taper ta ville…" autocomplete="off" oninput="villeAutocomplete(this,'edit-dropdown','edit-cp','edit-lat','edit-lng')" onblur="setTimeout(()=>closeVilleDropdown('edit-dropdown'),200)"></div>
+          <div class="ville-dropdown" id="edit-dropdown"></div>
+        </div>
+        <input type="hidden" id="edit-cp">
+        <input type="hidden" id="edit-lat">
+        <input type="hidden" id="edit-lng">
+        <div style="font-size:11px;color:var(--muted);font-weight:700;margin-top:4px" id="edit-ville-confirm"></div>
       </div>
       <div class="field-wrap">
         <div class="field-label">Bio</div>
@@ -1472,8 +1489,14 @@ function closeModal(id){$(id)?.classList.remove('open');}
 function openEditProfil(){
   if(!S.user){showToast('Connecte-toi pour modifier ton profil');return;}
   $('edit-nom').value=S.profile?.nom||'';
-  $('edit-ville').value=S.profile?.ville||'';
-  const cpEl=$('edit-cp');if(cpEl)cpEl.value=S.profile?.code_postal||'';
+  const v=S.profile?.ville||'';
+  const cp=S.profile?.code_postal||'';
+  $('edit-ville').value=v;
+  $('edit-cp').value=cp;
+  $('edit-lat').value=S.profile?.lat||'';
+  $('edit-lng').value=S.profile?.lng||'';
+  const confirm=$('edit-ville-confirm');
+  if(confirm)confirm.textContent=v&&cp?'📍 '+v+' ('+cp+')':v?'📍 '+v:'';
   $('edit-bio').value=S.profile?.bio||'';
   $('edit-rayon').value=S.profile?.rayon||50;
   openModal('modal-edit-profil');
@@ -1681,14 +1704,16 @@ function obPrev(){
 function toggleObCat(el,cat){el.classList.toggle('selected');S.obCats.has(cat)?S.obCats.delete(cat):S.obCats.add(cat);}
 async function finishOnboard(){
   const ville=($('ob-ville')?.value||'').trim();
-  const cp=($('ob-cp')?.value||'').trim().replace(/\D/g,'').substring(0,5);
+  const cp=($('ob-cp')?.value||'').trim();
+  const lat=parseFloat($('ob-lat')?.value||'')||null;
+  const lng=parseFloat($('ob-lng')?.value||'')||null;
   if(S.user){
-    let lat=null,lng=null;
-    if(ville){
-      try{const geo=await geocodeVille(cp?ville+' '+cp:ville);if(geo){lat=geo.lat;lng=geo.lng;}}catch(e){}
-    }
     await sb.from('profiles').upsert({
-      id:S.user.id,ville:ville||null,code_postal:cp||null,lat,lng,
+      id:S.user.id,
+      ville:ville||null,
+      code_postal:cp||null,
+      lat:lat||null,
+      lng:lng||null,
       updated_at:new Date().toISOString()
     },{onConflict:'id'});
   }
@@ -1700,7 +1725,9 @@ async function saveEditProfil(){
   if(!S.user) return;
   const nom=$('edit-nom').value.trim();
   const ville=$('edit-ville').value.trim();
-  const cp=($('edit-cp')?.value||'').trim().replace(/\D/g,'').substring(0,5);
+  const cp=($('edit-cp')?.value||'').trim();
+  const latVal=parseFloat($('edit-lat')?.value||'');
+  const lngVal=parseFloat($('edit-lng')?.value||'');
   const bio=$('edit-bio').value.trim();
   const rayon=parseInt($('edit-rayon').value)||50;
   const btn=$('btn-save-profil');
@@ -1709,15 +1736,8 @@ async function saveEditProfil(){
   // Géocoder la ville si elle a changé
   let lat=S.profile?.lat||null;
   let lng=S.profile?.lng||null;
-  // Géocoder si ville ou code postal a changé
-  const villeChanged = ville!==S.profile?.ville || cp!==(S.profile?.code_postal||'');
-  if(ville && villeChanged){
-    try{
-      const query = cp ? ville+' '+cp : ville;
-      const geo=await geocodeVille(query);
-      if(geo){lat=geo.lat;lng=geo.lng;}
-    }catch(e){console.log('Geocode:',e);}
-  }
+  // Coordonnées viennent du sélecteur autocomplete (champs hidden)
+  if(!isNaN(latVal)&&!isNaN(lngVal)){lat=latVal;lng=lngVal;}
 
   const updates={
     nom:nom||null,
@@ -2553,6 +2573,103 @@ async function subscribePush(reg){
       updated_at:new Date().toISOString()
     },{onConflict:'user_id'});
   }catch(e){ console.log('Push subscribe:',e.message); }
+}
+
+// ══ AUTOCOMPLETE VILLE (API Geo.gouv.fr — données INSEE officielles) ══
+let _villeTimer = null;
+
+async function villeAutocomplete(input, dropdownId, cpId, latId, lngId) {
+  const q = input.value.trim();
+  const dropdown = $(dropdownId);
+  if(!dropdown) return;
+
+  // Effacer les coordonnées si l'user retape
+  $(cpId).value = '';
+  if(latId) $(latId).value = '';
+  if(lngId) $(lngId).value = '';
+  const confirm = $(input.id + '-confirm') || $(dropdownId.replace('dropdown','ville-confirm'));
+  if(confirm) confirm.textContent = '';
+
+  if(q.length < 2) { dropdown.classList.remove('open'); return; }
+
+  clearTimeout(_villeTimer);
+  _villeTimer = setTimeout(async () => {
+    dropdown.innerHTML = '<div class="ville-loading">Recherche…</div>';
+    dropdown.classList.add('open');
+    try {
+      // API officielle française — coordonnées précises au centroïde de commune
+      const url = 'https://geo.api.gouv.fr/communes?nom=' + encodeURIComponent(q)
+        + '&fields=nom,codesPostaux,centre,codeDepartement&boost=population&limit=8';
+      const res = await fetch(url);
+      if(!res.ok) throw new Error('API indisponible');
+      const communes = await res.json();
+
+      if(!communes.length) {
+        dropdown.innerHTML = '<div class="ville-loading">Aucune ville trouvée</div>';
+        return;
+      }
+
+      // Construire la liste — une ligne par code postal si plusieurs
+      const items = [];
+      communes.forEach(c => {
+        const cps = c.codesPostaux || [];
+        const lat = c.centre?.coordinates?.[1] || null;
+        const lng = c.centre?.coordinates?.[0] || null;
+        if(cps.length === 0) {
+          items.push({ nom: c.nom, cp: '', dept: c.codeDepartement, lat, lng });
+        } else if(cps.length === 1) {
+          items.push({ nom: c.nom, cp: cps[0], dept: c.codeDepartement, lat, lng });
+        } else {
+          // Plusieurs CP → montrer seulement le premier (ex: Paris → 75001)
+          items.push({ nom: c.nom, cp: cps[0], dept: c.codeDepartement, lat, lng,
+            cpSuffix: cps.length > 1 ? ' (+' + (cps.length-1) + ')' : '' });
+        }
+      });
+
+      dropdown.innerHTML = items.slice(0, 7).map(item => {
+        const data = encodeURIComponent(JSON.stringify({
+          nom: item.nom, cp: item.cp, lat: item.lat, lng: item.lng
+        }));
+        return '<div class="ville-option" onclick="selectVille(this,' +
+          JSON.stringify(input.id) + ',' +
+          JSON.stringify(dropdownId) + ',' +
+          JSON.stringify(cpId) + ',' +
+          JSON.stringify(latId||'') + ',' +
+          JSON.stringify(lngId||'') + ')" data-v="' + data + '">' +
+          '<span class="ville-option-nom">' + item.nom + '</span>' +
+          '<span class="ville-option-cp">' + (item.cp || item.dept) + (item.cpSuffix||'') + '</span>' +
+          '</div>';
+      }).join('');
+
+    } catch(e) {
+      dropdown.innerHTML = '<div class="ville-loading">Erreur de recherche</div>';
+    }
+  }, 300);
+}
+
+function selectVille(el, inputId, dropdownId, cpId, latId, lngId) {
+  try {
+    const data = JSON.parse(decodeURIComponent(el.dataset.v));
+    const input = $(inputId);
+    const dropdown = $(dropdownId);
+    if(input) input.value = data.nom;
+    if($(cpId)) $(cpId).value = data.cp || '';
+    if(latId && $(latId)) $(latId).value = data.lat || '';
+    if(lngId && $(lngId)) $(lngId).value = data.lng || '';
+    if(dropdown) dropdown.classList.remove('open');
+    // Afficher confirmation
+    const confirmId = dropdownId.replace('dropdown', 'ville-confirm');
+    const confirm = $(confirmId);
+    if(confirm) {
+      const label = data.nom + (data.cp ? ' (' + data.cp + ')' : '');
+      confirm.textContent = data.lat ? '📍 ' + label : '📍 ' + label + ' (position approx.)';
+      confirm.style.color = 'var(--green)';
+    }
+  } catch(e) { console.error('selectVille:', e); }
+}
+
+function closeVilleDropdown(id) {
+  $(id)?.classList.remove('open');
 }
 
 // ══ KEYBOARD ══
