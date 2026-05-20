@@ -95,14 +95,6 @@ async function fetchTCGdex(setId, lang = 'fr') {
   }
   
   throw new Error(`TCGdex ${setId} → 404 sur tous les formats`);
-}/sets/${setId}`);
-  if (!r.ok) throw new Error(`TCGdex ${setId} → ${r.status}`);
-  const data = await r.json();
-  return (data.cards || []).map(c => ({
-    numero: c.localId,
-    nom: c.name,
-    sous_groupe: c.category || null
-  }));
 }
 
 async function fetchScryfall(setCode) {
