@@ -179,11 +179,23 @@ const COLLECTIONS = [
 // ── Handler principal ───────────────────────────────────────
 
 exports.handler = async (event) => {
+  // CORS preflight
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      },
+      body: ''
+    };
+  }
   const params = event.queryStringParameters || {};
 
   // Sécurité
   if (params.secret !== ADMIN_SECRET) {
-    return { statusCode: 401, body: JSON.stringify({ error: 'Non autorisé' }) };
+    return { statusCode: 401, headers: { 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ error: 'Non autorisé' }) };
   }
 
   // Mode : une collection spécifique ou batch
@@ -192,7 +204,9 @@ exports.handler = async (event) => {
 
   const headers = {
     'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*'
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type'
   };
 
   // ── Mode : lister toutes les collections disponibles
