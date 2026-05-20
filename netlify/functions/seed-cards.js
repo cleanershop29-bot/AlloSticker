@@ -12,9 +12,9 @@
  *   SUPABASE_URL, SUPABASE_SERVICE_KEY, ADMIN_SECRET
  */
 
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
-const ADMIN_SECRET = process.env.ADMIN_SECRET;
+const SUPABASE_URL = process.env.SUPABASE_URL || "https://gyierirtxsroaqlaphax.supabase.co";
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5aWVyaXJ0eHNyb2FxbGFwaGF4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODk3MTQ5NCwiZXhwIjoyMDk0NTQ3NDk0fQ.fYelgh24iaUHsf5ip3ldil8GiLI6BiZ_QDQh9fHNzFA";
+const ADMIN_SECRET = process.env.ADMIN_SECRET || "Jj0624988240@";
 
 // ── Helpers Supabase REST (sans SDK pour garder la function légère) ──
 
