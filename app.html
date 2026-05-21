@@ -19,7 +19,63 @@
 <link rel="apple-touch-icon" href="/allosticker-icon-180.png">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎴</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+// ── NOTIFICATIONS PUSH ──────────────────────────────────────
+const VAPID_PUBLIC_KEY = 'BBAdTdH2a784SRbln_VEsNKq7ttKd_ZomVr5Dd6Fc362JSsSzib7Rrus3IbaUlBCI13ifzBEHOb_Ul4dxCP9eEc';
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = atob(base64);
+  return new Uint8Array([...rawData].map(c => c.charCodeAt(0)));
+}
+
+async function subscribePush() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const existing = await reg.pushManager.getSubscription();
+    if (existing) {
+      await savePushSubscription(existing);
+      return;
+    }
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') return;
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+    });
+    await savePushSubscription(sub);
+    showToast('🔔 Notifications activées !');
+  } catch(e) {
+    console.warn('Push subscribe error:', e);
+  }
+}
+
+async function savePushSubscription(sub) {
+  if (!S.user) return;
+  const { error } = await sb.from('push_subscriptions').upsert({
+    user_id: S.user.id,
+    subscription: sub.toJSON(),
+    updated_at: new Date().toISOString()
+  }, { onConflict: 'user_id,subscription->endpoint' });
+  if (error) console.warn('savePushSubscription:', error.message);
+}
+
+async function sendPushToUser(userId, title, body, url) {
+  // Appelé côté client pour notifier quelqu'un (via la Netlify function)
+  try {
+    await fetch('/.netlify/functions/push-notify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId, title, body, url,
+        adminKey: 'Jj0624988240@'
+      })
+    });
+  } catch(e) { console.warn('sendPush error:', e); }
+}
+</script>
 <style>
 :root {
   --bg:#0f0f14;--surface:#18181f;--card:#1e1e28;--card2:#23232f;
@@ -1647,6 +1703,7 @@ async function doLogin(){
   }
   S.user=(await sb.auth.getUser()).data.user;
   await loadUserProfile();
+  subscribePush();
   goTo('accueil');
 }
 
@@ -2312,6 +2369,15 @@ async function openChatReal(tradeId){
     const{data}=await sb.from('trades').select('*,proposer:profiles!proposer_id(id,nom),receiver:profiles!receiver_id(id,nom)').eq('id',tradeId).single();
     if(!data){showToast('Échange introuvable');return;}
     trade=data;S.trades.push(trade);
+    // Notifier l'autre utilisateur
+    if(data && data.user_b_id && data.card_nom){
+      sendPushToUser(
+        data.user_b_id,
+        '🎴 Quelqu'un veut ta carte !',
+        'Échange proposé : ' + (data.card_nom||'une carte'),
+        '/app.html'
+      );
+    }
   }
   S.currentTrade={...trade,isReal:true};
   S.localMessages=[];
