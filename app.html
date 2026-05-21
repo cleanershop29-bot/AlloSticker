@@ -75,6 +75,97 @@ async function sendPushToUser(userId, title, body, url) {
     });
   } catch(e) { console.warn('sendPush error:', e); }
 }
+
+// ── PREMIUM ──────────────────────────────────────────────────
+const COLLECTIONS_FREE_LIMIT = 3;
+
+function isPremium(){
+  return S.profile?.plan === 'premium';
+}
+
+function checkCollectionLimit(){
+  if(isPremium()) return true;
+  const nb = Object.keys(S.activeColls).length;
+  if(nb >= COLLECTIONS_FREE_LIMIT){
+    showPremiumGate(
+      'Tu as atteint la limite gratuite',
+      `Le plan gratuit permet ${COLLECTIONS_FREE_LIMIT} collections actives. Passe Premium pour en ajouter autant que tu veux.`
+    );
+    return false;
+  }
+  return true;
+}
+
+function showPremiumGate(title, sub){
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.style.cssText = 'display:flex;z-index:9999';
+  modal.innerHTML = `
+    <div class="modal-sheet" style="max-width:400px">
+      <div class="modal-drag"></div>
+      <div class="modal-body" style="text-align:center;padding:24px">
+        <div class="premium-lock-icon">🔒</div>
+        <div class="premium-lock-title" style="margin:10px 0 6px">${title}</div>
+        <div class="premium-lock-sub">${sub}</div>
+        <button class="btn-premium" style="margin-top:16px" onclick="this.closest('.modal-overlay').remove();goTo('premium')">
+          ✨ Voir Premium
+        </button>
+        <button onclick="this.closest('.modal-overlay').remove()" style="background:none;border:none;color:var(--muted);font-size:13px;font-weight:700;margin-top:10px;cursor:pointer;display:block;width:100%">
+          Pas maintenant
+        </button>
+      </div>
+    </div>
+  `;
+  modal.onclick = e => { if(e.target===modal) modal.remove(); };
+  document.body.appendChild(modal);
+}
+
+function openPremiumPage(){
+  const isp = isPremium();
+  const freeCard = document.getElementById('plan-free-card');
+  const premCard = document.getElementById('plan-premium-card');
+  const actionZone = document.getElementById('premium-action-zone');
+  const activeZone = document.getElementById('premium-active-zone');
+  const badgeFree = document.getElementById('badge-current-free');
+  const badgePrem = document.getElementById('badge-current-premium');
+
+  if(isp){
+    if(freeCard) freeCard.classList.remove('active');
+    if(premCard) premCard.classList.add('active');
+    if(actionZone) actionZone.style.display = 'none';
+    if(activeZone) activeZone.style.display = 'block';
+    if(badgeFree) badgeFree.style.display = 'none';
+    if(badgePrem) badgePrem.style.display = 'inline-flex';
+  } else {
+    if(freeCard) freeCard.classList.add('active');
+    if(actionZone) actionZone.style.display = 'block';
+    if(activeZone) activeZone.style.display = 'none';
+    if(badgeFree) badgeFree.style.display = 'inline-flex';
+    if(badgePrem) badgePrem.style.display = 'none';
+  }
+  goTo('premium');
+}
+
+async function openStripeCheckout(){
+  // Placeholder Stripe — à brancher avec ton compte Stripe
+  // Pour l'instant on simule avec un lien Stripe Payment Link
+  showToast('💳 Redirection vers le paiement...');
+  // Remplace cette URL par ton vrai Payment Link Stripe
+  const stripeUrl = 'https://buy.stripe.com/REMPLACE_PAR_TON_LIEN';
+  window.open(stripeUrl + '?client_reference_id=' + (S.user?.id||''), '_blank');
+}
+
+// Activer Premium manuellement (depuis l'admin ou webhook Stripe)
+async function activatePremium(userId){
+  const { error } = await sb.from('profiles')
+    .update({ plan: 'premium' })
+    .eq('id', userId || S.user?.id);
+  if(!error){
+    S.profile.plan = 'premium';
+    showToast('✨ Premium activé !');
+  }
+}
+
 </script>
 <style>
 :root {
@@ -530,6 +621,21 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
 .avatar-upload-preview{width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid var(--yellow)}
 .avatar-upload-placeholder{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--yellow),var(--orange));display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;color:#0f0f14}
 .avatar-upload-label{font-size:12px;color:var(--muted);font-weight:700}
+
+.premium-badge{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,#FFD93D,#FF9F27);color:#0f0f14;font-size:10px;font-weight:900;padding:2px 8px;border-radius:100px;text-transform:uppercase;letter-spacing:0.5px}
+.premium-lock{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:24px;text-align:center;background:rgba(255,217,61,.05);border:1px solid rgba(255,217,61,.15);border-radius:14px;margin:12px 0}
+.premium-lock-icon{font-size:36px}
+.premium-lock-title{font-size:15px;font-weight:900;color:var(--text)}
+.premium-lock-sub{font-size:12px;color:var(--muted);font-weight:700;line-height:1.5}
+.btn-premium{background:linear-gradient(135deg,#FFD93D,#FF9F27);color:#0f0f14;border:none;border-radius:12px;padding:14px 24px;font-size:15px;font-weight:900;cursor:pointer;width:100%;margin-top:8px;letter-spacing:0.3px}
+.plan-card{background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:10px}
+.plan-card.active{border-color:var(--yellow);background:rgba(255,217,61,.05)}
+.plan-title{font-size:16px;font-weight:900;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.plan-price{font-size:24px;font-weight:900;color:var(--yellow);margin-bottom:10px}
+.plan-price span{font-size:13px;font-weight:700;color:var(--muted)}
+.plan-features{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+.plan-features li{font-size:12px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:6px}
+.plan-features li.ok{color:var(--text)}
 .avatar-edit-btn{position:absolute;bottom:2px;right:2px;width:24px;height:24px;background:var(--card2);border:2px solid var(--bg);border-radius:50%;z-index:2;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px}
 .profile-nom{font-family:'Bangers',cursive;font-size:26px;letter-spacing:1px;margin-bottom:4px}
 .profile-ville-row{font-size:13px;color:var(--muted);font-weight:700;display:flex;align-items:center;gap:4px;justify-content:center;margin-bottom:10px}
@@ -1027,7 +1133,19 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
     </div>
     <div class="my-colls-section reveal">
       <div class="section-title" style="margin-bottom:12px">📋 Mes collections</div>
-      <div id="profil-colls-list"><div style="color:var(--muted);font-size:13px;font-weight:700">Aucune collection active</div></div>
+      <div style="margin:0 0 16px">
+      <button onclick="openPremiumPage()" style="width:100%;background:linear-gradient(135deg,rgba(255,217,61,.12),rgba(255,159,39,.12));border:1px solid rgba(255,217,61,.25);border-radius:12px;padding:12px;display:flex;align-items:center;justify-content:space-between;cursor:pointer">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:20px">✨</span>
+          <div style="text-align:left">
+            <div style="font-size:13px;font-weight:900;color:var(--text)" id="premium-btn-label">Passer Premium</div>
+            <div style="font-size:11px;color:var(--muted);font-weight:700" id="premium-btn-sub">Collections illimitées • 2,99€/mois</div>
+          </div>
+        </div>
+        <span style="color:var(--yellow);font-size:16px">→</span>
+      </button>
+    </div>
+    <div id="profil-colls-list"><div style="color:var(--muted);font-size:13px;font-weight:700">Aucune collection active</div></div>
     </div>
     <div class="settings-section reveal">
       <div class="section-title" style="margin-bottom:4px">⚙️ Paramètres</div>
@@ -1410,6 +1528,14 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
               <div class="admin-field"><label>Nom</label><input type="text" id="admin-edit-name-input"></div>
               <div class="admin-field"><label>Éditeur</label><input type="text" id="admin-edit-editeur"></div>
               <div class="admin-field"><label>Année</label><input type="number" id="admin-edit-annee" min="1970" max="2030"></div>
+              <div class="admin-field">
+                <label>Accès</label>
+                <div style="display:flex;gap:8px;margin-top:4px">
+                  <button id="btn-plan-free" onclick="adminSetCollPlan('free')" style="flex:1;padding:8px;border-radius:10px;border:2px solid var(--border);background:var(--card2);color:var(--text);font-weight:900;font-size:12px;cursor:pointer">🆓 Gratuit</button>
+                  <button id="btn-plan-premium" onclick="adminSetCollPlan('premium')" style="flex:1;padding:8px;border-radius:10px;border:2px solid var(--border);background:var(--card2);color:var(--text);font-weight:900;font-size:12px;cursor:pointer">⭐ Premium</button>
+                </div>
+                <input type="hidden" id="admin-edit-plan" value="free">
+              </div>
               <button class="admin-btn admin-btn-yellow" onclick="adminSaveCollection()" id="admin-save-btn">💾 Sauvegarder</button>
               <div style="height:1px;background:var(--border);margin:4px 0"></div>
               <div style="font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Régénération des cartes</div>
@@ -1448,6 +1574,12 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
                 <select id="new-coll-type" style="background:var(--card2);border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;font-family:Nunito,sans-serif;font-size:13px;font-weight:700;color:var(--text);outline:none;width:100%">
                   <option value="stickers">Stickers</option>
                   <option value="cartes">Cartes</option>
+                </select>
+              </div>
+              <div class="admin-field"><label>Accès</label>
+                <select id="new-coll-plan" style="background:var(--card2);border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;font-family:Nunito,sans-serif;font-size:13px;font-weight:700;color:var(--text);outline:none;width:100%">
+                  <option value="premium">⭐ Premium uniquement</option>
+                  <option value="free">🆓 Gratuit</option>
                 </select>
               </div>
               <div style="display:flex;gap:8px">
@@ -1986,7 +2118,8 @@ function renderColls(){
       `<div style="margin-top:4px;height:3px;border-radius:100px;background:var(--card2);overflow:hidden"><div style="height:100%;width:${S.activeColls[c.id]}%;background:linear-gradient(90deg,var(--yellow),var(--orange));border-radius:100px"></div></div>`
       :'';
     const iconSvg=getCollIconLarge(c);
-    return`<div class="coll-card reveal" style="animation-delay:${i*20}ms" onclick="openCollection('${c.slug}','${nomSafe}','${c.id}')">
+    const isPLock=c.plan==='premium'&&!isPremium();
+    return`<div class="coll-card reveal" style="animation-delay:${i*20}ms;position:relative" onclick="openCollection('${c.slug}','${nomSafe}','${c.id}')">
       <div class="coll-annee">${c.annee||''}</div>
       <div class="coll-card-top">
         <div class="coll-emoji-wrap" style="background:none;width:44px;height:44px;padding:0">${iconSvg}</div>
@@ -2005,6 +2138,18 @@ function filterColls(){clearTimeout(_collsSearchTimer);_collsSearchTimer=setTime
 
 // ══ MA COLLECTION ══
 async function openCollection(slug,nom,id){
+  // Vérifier si c'est une collection premium
+  const collData = S.collections?.find(c=>c.id===id);
+  if(collData?.plan==='premium' && !isPremium()){
+    showPremiumGate(
+      '⭐ Collection Premium',
+      '"' + (collData.nom||'Cette collection') + '" est réservée aux membres Premium.'
+    );
+    return;
+  }
+  // Vérifier si c'est une nouvelle collection non encore active
+  const isNew = !S.activeColls.hasOwnProperty(id);
+  if(isNew && !checkCollectionLimit()) return;
   S.currentCollSlug=slug;S.currentCollId=id;
   S.allCards=[];S.userCards={};
   S.mcStatut='all';S.mcSearch='';S.mcSelected=new Set();
@@ -2373,7 +2518,7 @@ async function openChatReal(tradeId){
     if(data && data.user_b_id && data.card_nom){
       sendPushToUser(
         data.user_b_id,
-        '🎴 Quelqu'un veut ta carte !',
+        '🎴 Quelqu\'un veut ta carte !',
         'Échange proposé : ' + (data.card_nom||'une carte'),
         '/app.html'
       );
@@ -3252,20 +3397,53 @@ async function adminAddAndGenerate(){
 
 async function adminLoadUsers(){
   const container=$('adm-users-list');if(!container)return;
-  const{data}=await sb.from('profiles').select('id,nom,email,ville,nb_echanges,plan,created_at').order('created_at',{ascending:false}).limit(20);
+  container.innerHTML='<div style="color:var(--muted);font-size:12px">Chargement…</div>';
+  const{data}=await sb.from('profiles').select('id,nom,email,ville,nb_echanges,plan,created_at').order('created_at',{ascending:false}).limit(50);
   if(!data?.length){container.innerHTML='<div style="color:var(--muted);font-size:12px">Aucun utilisateur</div>';return;}
   container.innerHTML=data.map(u=>{
     const ini=(u.nom||u.email||'U').substring(0,2).toUpperCase();
     const date=new Date(u.created_at).toLocaleDateString('fr-FR');
-    return`<div style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--card2);border-radius:10px;border:1px solid var(--border)">
+    const isPrem=u.plan==='premium';
+    const planColor=isPrem?'rgba(61,255,176,.15)':'rgba(255,217,61,.08)';
+    const planTextColor=isPrem?'#3dffb0':'var(--yellow)';
+    const planLabel=isPrem?'⭐ Premium':'free';
+    const btnLabel=isPrem?'Révoquer':'→ Premium';
+    const btnColor=isPrem?'rgba(255,92,92,.15)':'rgba(61,255,176,.15)';
+    const btnTextColor=isPrem?'#ff5c5c':'#3dffb0';
+    return`<div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--card2);border-radius:10px;border:1px solid var(--border)">
       <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--yellow),var(--orange));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#0f0f14;flex-shrink:0">${ini}</div>
       <div style="flex:1;min-width:0">
         <div style="font-size:12px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${u.nom||u.email||'—'}</div>
         <div style="font-size:10px;color:var(--muted);font-weight:700">${u.ville||'—'} · ${u.nb_echanges||0} échanges · ${date}</div>
       </div>
-      <div style="font-size:10px;font-weight:900;padding:2px 7px;border-radius:100px;background:rgba(255,217,61,.1);color:var(--yellow)">${u.plan||'free'}</div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
+        <div style="font-size:10px;font-weight:900;padding:2px 7px;border-radius:100px;background:${planColor};color:${planTextColor}">${planLabel}</div>
+        <button onclick="adminTogglePremium('${u.id}','${isPrem?'free':'premium'}')" style="font-size:10px;font-weight:900;padding:2px 8px;border-radius:100px;background:${btnColor};color:${btnTextColor};border:none;cursor:pointer">${btnLabel}</button>
+      </div>
     </div>`;
   }).join('');
+}
+
+
+function adminSetCollPlan(plan){
+  const input = document.getElementById('admin-edit-plan');
+  const btnFree = document.getElementById('btn-plan-free');
+  const btnPrem = document.getElementById('btn-plan-premium');
+  if(input) input.value = plan;
+  if(btnFree){
+    btnFree.style.borderColor = plan==='free' ? 'var(--yellow)' : 'var(--border)';
+    btnFree.style.color = plan==='free' ? 'var(--yellow)' : 'var(--text)';
+  }
+  if(btnPrem){
+    btnPrem.style.borderColor = plan==='premium' ? '#3dffb0' : 'var(--border)';
+    btnPrem.style.color = plan==='premium' ? '#3dffb0' : 'var(--text)';
+  }
+}
+async function adminTogglePremium(userId, newPlan){
+  const{error}=await sb.from('profiles').update({plan:newPlan}).eq('id',userId);
+  if(error){showToast('Erreur : '+error.message);return;}
+  showToast(newPlan==='premium'?'✨ Premium activé !':'Plan remis en gratuit');
+  adminLoadUsers();
 }
 
 async function adminExportWaitlist(){
@@ -3360,6 +3538,73 @@ async function collClick(id,slug){
 
 initAuth();
 </script>
+
+
+<!-- ════════ VUE PREMIUM ════════ -->
+<div class="view" id="view-premium">
+  <div class="view-header">
+    <div class="back-btn" onclick="goBack()">←</div>
+    <div class="view-title">✨ AlloSticker Premium</div>
+  </div>
+  <div class="view-body" style="padding:16px">
+
+    <div style="text-align:center;padding:20px 0 10px">
+      <div style="font-size:48px;margin-bottom:8px">🎴</div>
+      <div style="font-size:22px;font-weight:900;font-family:'Bangers',cursive;letter-spacing:1px">Passe au niveau supérieur</div>
+      <div style="font-size:13px;color:var(--muted);font-weight:700;margin-top:4px">Échange sans limites avec tous les collectionneurs</div>
+    </div>
+
+    <!-- Plan Gratuit -->
+    <div class="plan-card" id="plan-free-card">
+      <div class="plan-title">🆓 Gratuit <span id="badge-current-free" style="display:none" class="premium-badge">Actuel</span></div>
+      <div class="plan-price">0€ <span>/ mois</span></div>
+      <ul class="plan-features">
+        <li class="ok">✅ 3 collections actives</li>
+        <li class="ok">✅ Matching dans un rayon de 50 km</li>
+        <li class="ok">✅ Messagerie avec les matchs</li>
+        <li>🔒 Collections illimitées</li>
+        <li>🔒 Rayon personnalisé jusqu'à 500 km</li>
+        <li>🔒 Notifications push prioritaires</li>
+        <li>🔒 Badge Premium visible</li>
+      </ul>
+    </div>
+
+    <!-- Plan Premium -->
+    <div class="plan-card active" id="plan-premium-card">
+      <div class="plan-title">⭐ Premium <span id="badge-current-premium" style="display:none" class="premium-badge">Actuel</span></div>
+      <div class="plan-price">2,99€ <span>/ mois</span></div>
+      <ul class="plan-features">
+        <li class="ok">✅ Collections illimitées</li>
+        <li class="ok">✅ Rayon jusqu'à 500 km</li>
+        <li class="ok">✅ Notifications push prioritaires</li>
+        <li class="ok">✅ Badge Premium visible sur ton profil</li>
+        <li class="ok">✅ Accès prioritaire aux nouvelles collections</li>
+        <li class="ok">✅ Support prioritaire</li>
+      </ul>
+    </div>
+
+    <div id="premium-action-zone">
+      <button class="btn-premium" onclick="openStripeCheckout()">✨ Passer Premium — 2,99€/mois</button>
+      <div style="font-size:11px;color:var(--muted);font-weight:700;text-align:center;margin-top:8px">Résiliation à tout moment • Paiement sécurisé par Stripe</div>
+    </div>
+
+    <div id="premium-active-zone" style="display:none">
+      <div style="text-align:center;padding:16px;background:rgba(61,255,176,.08);border:1px solid rgba(61,255,176,.2);border-radius:14px;margin-top:4px">
+        <div style="font-size:28px;margin-bottom:4px">🎉</div>
+        <div style="font-size:15px;font-weight:900">Tu es déjà Premium !</div>
+        <div style="font-size:12px;color:var(--muted);font-weight:700;margin-top:4px">Profite de toutes les fonctionnalités sans limite.</div>
+      </div>
+    </div>
+
+    <div style="margin-top:20px;padding:14px;background:var(--card2);border-radius:12px">
+      <div style="font-size:12px;color:var(--muted);font-weight:700;line-height:1.6">
+        💡 <strong style="color:var(--text)">Pourquoi Premium ?</strong><br>
+        Avec 3 collections gratuites, tu peux déjà échanger. Mais si tu collectionnes Pokémon ET le foot ET les cartes NBA, le Premium te donne accès à tout sans restriction. Et le rayon 500 km, c'est la France entière.
+      </div>
+    </div>
+
+  </div>
+</div>
 
 </body>
 </html>
