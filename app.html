@@ -19,190 +19,7 @@
 <link rel="apple-touch-icon" href="/allosticker-icon-180.png">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎴</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
-// ── NOTIFICATIONS PUSH ──────────────────────────────────────
-const VAPID_PUBLIC_KEY = 'BBAdTdH2a784SRbln_VEsNKq7ttKd_ZomVr5Dd6Fc362JSsSzib7Rrus3IbaUlBCI13ifzBEHOb_Ul4dxCP9eEc';
-
-function urlBase64ToUint8Array(base64String) {
-  const padding = '='.repeat((4 - base64String.length % 4) % 4);
-  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-  const rawData = atob(base64);
-  return new Uint8Array([...rawData].map(c => c.charCodeAt(0)));
-}
-
-async function subscribePush() {
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
-  try {
-    const reg = await navigator.serviceWorker.ready;
-    const existing = await reg.pushManager.getSubscription();
-    if (existing) {
-      await savePushSubscription(existing);
-      return;
-    }
-    const permission = await Notification.requestPermission();
-    if (permission !== 'granted') return;
-    const sub = await reg.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-    });
-    await savePushSubscription(sub);
-    showToast('🔔 Notifications activées !');
-  } catch(e) {
-    console.warn('Push subscribe error:', e);
-  }
-}
-
-async function savePushSubscription(sub) {
-  if (!S.user) return;
-  const { error } = await sb.from('push_subscriptions').upsert({
-    user_id: S.user.id,
-    subscription: sub.toJSON(),
-    updated_at: new Date().toISOString()
-  }, { onConflict: 'user_id,subscription->endpoint' });
-  if (error) console.warn('savePushSubscription:', error.message);
-}
-
-async function sendPushToUser(userId, title, body, url) {
-  // Appelé côté client pour notifier quelqu'un (via la Netlify function)
-  try {
-    await fetch('/.netlify/functions/push-notify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        userId, title, body, url,
-        adminKey: 'Jj0624988240@'
-      })
-    });
-  } catch(e) { console.warn('sendPush error:', e); }
-}
-
-function checkCollectionLimit(){
-  if(isPremium()) return true;
-  const nb = Object.keys(S.activeColls).length;
-  if(nb >= COLLECTIONS_FREE_LIMIT){
-    showPremiumGate(
-      'Tu as atteint la limite gratuite',
-      `Le plan gratuit permet ${COLLECTIONS_FREE_LIMIT} collections actives. Passe Premium pour en ajouter autant que tu veux.`
-    );
-    return false;
-  }
-  return true;
-}
-
-function showPremiumGate(title, sub){
-  const modal = document.createElement('div');
-  modal.className = 'modal-overlay';
-  modal.style.cssText = 'display:flex;z-index:9999';
-  modal.innerHTML = `
-    <div class="modal-sheet" style="max-width:400px">
-      <div class="modal-drag"></div>
-      <div class="modal-body" style="text-align:center;padding:24px">
-        <div class="premium-lock-icon">🔒</div>
-        <div class="premium-lock-title" style="margin:10px 0 6px">${title}</div>
-        <div class="premium-lock-sub">${sub}</div>
-        <button class="btn-premium" style="margin-top:16px" onclick="this.closest('.modal-overlay').remove();goTo('premium')">
-          ✨ Voir Premium
-        </button>
-        <button onclick="this.closest('.modal-overlay').remove()" style="background:none;border:none;color:var(--muted);font-size:13px;font-weight:700;margin-top:10px;cursor:pointer;display:block;width:100%">
-          Pas maintenant
-        </button>
-      </div>
-    </div>
-  `;
-  modal.onclick = e => { if(e.target===modal) modal.remove(); };
-  document.body.appendChild(modal);
-}
-
-function openPremiumPage(){
-  const isp = isPremium();
-  const freeCard = document.getElementById('plan-free-card');
-  const premCard = document.getElementById('plan-premium-card');
-  const actionZone = document.getElementById('premium-action-zone');
-  const activeZone = document.getElementById('premium-active-zone');
-  const badgeFree = document.getElementById('badge-current-free');
-  const badgePrem = document.getElementById('badge-current-premium');
-
-  if(isp){
-    if(freeCard) freeCard.classList.remove('active');
-    if(premCard) premCard.classList.add('active');
-    if(actionZone) actionZone.style.display = 'none';
-    if(activeZone) activeZone.style.display = 'block';
-    if(badgeFree) badgeFree.style.display = 'none';
-    if(badgePrem) badgePrem.style.display = 'inline-flex';
-  } else {
-    if(freeCard) freeCard.classList.add('active');
-    if(actionZone) actionZone.style.display = 'block';
-    if(activeZone) activeZone.style.display = 'none';
-    if(badgeFree) badgeFree.style.display = 'inline-flex';
-    if(badgePrem) badgePrem.style.display = 'none';
-  }
-  goTo('premium');
-}
-
-async function openStripeCheckout(){
-  // Placeholder Stripe — à brancher avec ton compte Stripe
-  // Pour l'instant on simule avec un lien Stripe Payment Link
-  showToast('💳 Redirection vers le paiement...');
-  // Remplace cette URL par ton vrai Payment Link Stripe
-  const stripeUrl = 'https://buy.stripe.com/REMPLACE_PAR_TON_LIEN';
-  window.open(stripeUrl + '?client_reference_id=' + (S.user?.id||''), '_blank');
-}
-
-// Activer Premium manuellement (depuis l'admin ou webhook Stripe)
-async function activatePremium(userId){
-  const { error } = await sb.from('profiles')
-    .update({ plan: 'premium' })
-    .eq('id', userId || S.user?.id);
-  if(!error){
-    S.profile.plan = 'premium';
-    showToast('✨ Premium activé !');
-  }
-}
-
-
-// ════════════════════════════════════════════════
-//  ADMIN — GESTION PLAN COLLECTIONS + USERS
-// ════════════════════════════════════════════════
-
-// ── Collections : toggle plan ───────────────────
-function adminSetCollPlan(plan) {
-  const input = document.getElementById('admin-edit-plan');
-  if (input) input.value = plan;
-  const btnFree = document.getElementById('btn-plan-free');
-  const btnPrem = document.getElementById('btn-plan-premium');
-  if (btnFree) {
-    btnFree.style.borderColor = plan === 'free' ? 'var(--yellow)' : 'var(--border)';
-    btnFree.style.color       = plan === 'free' ? 'var(--yellow)' : 'var(--text)';
-    btnFree.style.background  = plan === 'free' ? 'rgba(255,217,61,.08)' : 'var(--card2)';
-  }
-  if (btnPrem) {
-    btnPrem.style.borderColor = plan === 'premium' ? '#3dffb0' : 'var(--border)';
-    btnPrem.style.color       = plan === 'premium' ? '#3dffb0' : 'var(--text)';
-    btnPrem.style.background  = plan === 'premium' ? 'rgba(61,255,176,.08)' : 'var(--card2)';
-  }
-}
-
-// ── Users : toggle plan premium ─────────────────
-async function adminTogglePremium(userId, newPlan) {
-  const btn = document.querySelector('[data-uid="' + userId + '"]');
-  if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
-  
-  const { error } = await sb.from('profiles')
-    .update({ plan: newPlan })
-    .eq('id', userId);
-  
-  if (error) {
-    showToast('Erreur : ' + error.message);
-    if (btn) { btn.disabled = false; }
-    return;
-  }
-  
-  showToast(newPlan === 'premium' ? '✨ Premium activé !' : '🔄 Plan remis en gratuit');
-  // Recharger la liste
-  adminLoadUsers();
-}
-
-</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
   --bg:#0f0f14;--surface:#18181f;--card:#1e1e28;--card2:#23232f;
@@ -1698,6 +1515,190 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
 
 <div class="toast" id="toast"></div>
 <script>
+
+// ── NOTIFICATIONS PUSH ──────────────────────────────────────
+const VAPID_PUBLIC_KEY = 'BBAdTdH2a784SRbln_VEsNKq7ttKd_ZomVr5Dd6Fc362JSsSzib7Rrus3IbaUlBCI13ifzBEHOb_Ul4dxCP9eEc';
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = atob(base64);
+  return new Uint8Array([...rawData].map(c => c.charCodeAt(0)));
+}
+
+async function subscribePush() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const existing = await reg.pushManager.getSubscription();
+    if (existing) {
+      await savePushSubscription(existing);
+      return;
+    }
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') return;
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+    });
+    await savePushSubscription(sub);
+    showToast('🔔 Notifications activées !');
+  } catch(e) {
+    console.warn('Push subscribe error:', e);
+  }
+}
+
+async function savePushSubscription(sub) {
+  if (!S.user) return;
+  const { error } = await sb.from('push_subscriptions').upsert({
+    user_id: S.user.id,
+    subscription: sub.toJSON(),
+    updated_at: new Date().toISOString()
+  }, { onConflict: 'user_id,subscription->endpoint' });
+  if (error) console.warn('savePushSubscription:', error.message);
+}
+
+async function sendPushToUser(userId, title, body, url) {
+  // Appelé côté client pour notifier quelqu'un (via la Netlify function)
+  try {
+    await fetch('/.netlify/functions/push-notify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId, title, body, url,
+        adminKey: 'Jj0624988240@'
+      })
+    });
+  } catch(e) { console.warn('sendPush error:', e); }
+}
+
+function checkCollectionLimit(){
+  if(isPremium()) return true;
+  const nb = Object.keys(S.activeColls).length;
+  if(nb >= COLLECTIONS_FREE_LIMIT){
+    showPremiumGate(
+      'Tu as atteint la limite gratuite',
+      `Le plan gratuit permet ${COLLECTIONS_FREE_LIMIT} collections actives. Passe Premium pour en ajouter autant que tu veux.`
+    );
+    return false;
+  }
+  return true;
+}
+
+function showPremiumGate(title, sub){
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.style.cssText = 'display:flex;z-index:9999';
+  modal.innerHTML = `
+    <div class="modal-sheet" style="max-width:400px">
+      <div class="modal-drag"></div>
+      <div class="modal-body" style="text-align:center;padding:24px">
+        <div class="premium-lock-icon">🔒</div>
+        <div class="premium-lock-title" style="margin:10px 0 6px">${title}</div>
+        <div class="premium-lock-sub">${sub}</div>
+        <button class="btn-premium" style="margin-top:16px" onclick="this.closest('.modal-overlay').remove();goTo('premium')">
+          ✨ Voir Premium
+        </button>
+        <button onclick="this.closest('.modal-overlay').remove()" style="background:none;border:none;color:var(--muted);font-size:13px;font-weight:700;margin-top:10px;cursor:pointer;display:block;width:100%">
+          Pas maintenant
+        </button>
+      </div>
+    </div>
+  `;
+  modal.onclick = e => { if(e.target===modal) modal.remove(); };
+  document.body.appendChild(modal);
+}
+
+function openPremiumPage(){
+  const isp = isPremium();
+  const freeCard = document.getElementById('plan-free-card');
+  const premCard = document.getElementById('plan-premium-card');
+  const actionZone = document.getElementById('premium-action-zone');
+  const activeZone = document.getElementById('premium-active-zone');
+  const badgeFree = document.getElementById('badge-current-free');
+  const badgePrem = document.getElementById('badge-current-premium');
+
+  if(isp){
+    if(freeCard) freeCard.classList.remove('active');
+    if(premCard) premCard.classList.add('active');
+    if(actionZone) actionZone.style.display = 'none';
+    if(activeZone) activeZone.style.display = 'block';
+    if(badgeFree) badgeFree.style.display = 'none';
+    if(badgePrem) badgePrem.style.display = 'inline-flex';
+  } else {
+    if(freeCard) freeCard.classList.add('active');
+    if(actionZone) actionZone.style.display = 'block';
+    if(activeZone) activeZone.style.display = 'none';
+    if(badgeFree) badgeFree.style.display = 'inline-flex';
+    if(badgePrem) badgePrem.style.display = 'none';
+  }
+  goTo('premium');
+}
+
+async function openStripeCheckout(){
+  // Placeholder Stripe — à brancher avec ton compte Stripe
+  // Pour l'instant on simule avec un lien Stripe Payment Link
+  showToast('💳 Redirection vers le paiement...');
+  // Remplace cette URL par ton vrai Payment Link Stripe
+  const stripeUrl = 'https://buy.stripe.com/REMPLACE_PAR_TON_LIEN';
+  window.open(stripeUrl + '?client_reference_id=' + (S.user?.id||''), '_blank');
+}
+
+// Activer Premium manuellement (depuis l'admin ou webhook Stripe)
+async function activatePremium(userId){
+  const { error } = await sb.from('profiles')
+    .update({ plan: 'premium' })
+    .eq('id', userId || S.user?.id);
+  if(!error){
+    S.profile.plan = 'premium';
+    showToast('✨ Premium activé !');
+  }
+}
+
+
+// ════════════════════════════════════════════════
+//  ADMIN — GESTION PLAN COLLECTIONS + USERS
+// ════════════════════════════════════════════════
+
+// ── Collections : toggle plan ───────────────────
+function adminSetCollPlan(plan) {
+  const input = document.getElementById('admin-edit-plan');
+  if (input) input.value = plan;
+  const btnFree = document.getElementById('btn-plan-free');
+  const btnPrem = document.getElementById('btn-plan-premium');
+  if (btnFree) {
+    btnFree.style.borderColor = plan === 'free' ? 'var(--yellow)' : 'var(--border)';
+    btnFree.style.color       = plan === 'free' ? 'var(--yellow)' : 'var(--text)';
+    btnFree.style.background  = plan === 'free' ? 'rgba(255,217,61,.08)' : 'var(--card2)';
+  }
+  if (btnPrem) {
+    btnPrem.style.borderColor = plan === 'premium' ? '#3dffb0' : 'var(--border)';
+    btnPrem.style.color       = plan === 'premium' ? '#3dffb0' : 'var(--text)';
+    btnPrem.style.background  = plan === 'premium' ? 'rgba(61,255,176,.08)' : 'var(--card2)';
+  }
+}
+
+// ── Users : toggle plan premium ─────────────────
+async function adminTogglePremium(userId, newPlan) {
+  const btn = document.querySelector('[data-uid="' + userId + '"]');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
+  
+  const { error } = await sb.from('profiles')
+    .update({ plan: newPlan })
+    .eq('id', userId);
+  
+  if (error) {
+    showToast('Erreur : ' + error.message);
+    if (btn) { btn.disabled = false; }
+    return;
+  }
+  
+  showToast(newPlan === 'premium' ? '✨ Premium activé !' : '🔄 Plan remis en gratuit');
+  // Recharger la liste
+  adminLoadUsers();
+}
+
+
 const{createClient}=supabase;
 const sb=createClient('https://gyierirtxsroaqlaphax.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5aWVyaXJ0eHNyb2FxbGFwaGF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5NzE0OTQsImV4cCI6MjA5NDU0NzQ5NH0.i5YjOBIDKFdZ4QXuFvV2r8ARuJBpNJUI010H86mOn30');
 
