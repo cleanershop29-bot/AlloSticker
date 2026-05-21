@@ -76,13 +76,6 @@ async function sendPushToUser(userId, title, body, url) {
   } catch(e) { console.warn('sendPush error:', e); }
 }
 
-// ── PREMIUM ──────────────────────────────────────────────────
-const COLLECTIONS_FREE_LIMIT = 3;
-
-function isPremium(){
-  return S.profile?.plan === 'premium';
-}
-
 function checkCollectionLimit(){
   if(isPremium()) return true;
   const nb = Object.keys(S.activeColls).length;
@@ -164,6 +157,49 @@ async function activatePremium(userId){
     S.profile.plan = 'premium';
     showToast('✨ Premium activé !');
   }
+}
+
+
+// ════════════════════════════════════════════════
+//  ADMIN — GESTION PLAN COLLECTIONS + USERS
+// ════════════════════════════════════════════════
+
+// ── Collections : toggle plan ───────────────────
+function adminSetCollPlan(plan) {
+  const input = document.getElementById('admin-edit-plan');
+  if (input) input.value = plan;
+  const btnFree = document.getElementById('btn-plan-free');
+  const btnPrem = document.getElementById('btn-plan-premium');
+  if (btnFree) {
+    btnFree.style.borderColor = plan === 'free' ? 'var(--yellow)' : 'var(--border)';
+    btnFree.style.color       = plan === 'free' ? 'var(--yellow)' : 'var(--text)';
+    btnFree.style.background  = plan === 'free' ? 'rgba(255,217,61,.08)' : 'var(--card2)';
+  }
+  if (btnPrem) {
+    btnPrem.style.borderColor = plan === 'premium' ? '#3dffb0' : 'var(--border)';
+    btnPrem.style.color       = plan === 'premium' ? '#3dffb0' : 'var(--text)';
+    btnPrem.style.background  = plan === 'premium' ? 'rgba(61,255,176,.08)' : 'var(--card2)';
+  }
+}
+
+// ── Users : toggle plan premium ─────────────────
+async function adminTogglePremium(userId, newPlan) {
+  const btn = document.querySelector('[data-uid="' + userId + '"]');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
+  
+  const { error } = await sb.from('profiles')
+    .update({ plan: newPlan })
+    .eq('id', userId);
+  
+  if (error) {
+    showToast('Erreur : ' + error.message);
+    if (btn) { btn.disabled = false; }
+    return;
+  }
+  
+  showToast(newPlan === 'premium' ? '✨ Premium activé !' : '🔄 Plan remis en gratuit');
+  // Recharger la liste
+  adminLoadUsers();
 }
 
 </script>
@@ -3283,6 +3319,7 @@ function adminOpenEdit(id){
   $('admin-log').style.display='none';
   $('admin-log').innerHTML='';
   $('admin-regen-progress').style.width='0%';
+  adminSetCollPlan(adminCurrentColl.plan||'free');
 }
 
 function adminBackToList(){
@@ -3300,7 +3337,8 @@ async function adminSaveCollection(){
   if(!nb||nb<1){showToast('Nombre de cartes invalide');return;}
   const btn=$('admin-save-btn');
   btn.disabled=true;btn.textContent='⏳ Sauvegarde…';
-  const updates={};
+  const collPlan=$('admin-edit-plan')?.value||'free';
+  const updates={plan:collPlan};
   if(nb)updates.nb_cartes=nb;
   if(nom)updates.nom=nom;
   if(editeur)updates.editeur=editeur;
@@ -3404,11 +3442,12 @@ async function adminLoadUsers(){
     const ini=(u.nom||u.email||'U').substring(0,2).toUpperCase();
     const date=new Date(u.created_at).toLocaleDateString('fr-FR');
     const isPrem=u.plan==='premium';
+    const newPlan=isPrem?'free':'premium';
     const planColor=isPrem?'rgba(61,255,176,.15)':'rgba(255,217,61,.08)';
     const planTextColor=isPrem?'#3dffb0':'var(--yellow)';
-    const planLabel=isPrem?'⭐ Premium':'free';
-    const btnLabel=isPrem?'Révoquer':'→ Premium';
-    const btnColor=isPrem?'rgba(255,92,92,.15)':'rgba(61,255,176,.15)';
+    const planLabel=isPrem?'⭐ Premium':'Gratuit';
+    const btnLabel=isPrem?'Révoquer Premium':'→ Passer Premium';
+    const btnColor=isPrem?'rgba(255,92,92,.12)':'rgba(61,255,176,.12)';
     const btnTextColor=isPrem?'#ff5c5c':'#3dffb0';
     return`<div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--card2);border-radius:10px;border:1px solid var(--border)">
       <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--yellow),var(--orange));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#0f0f14;flex-shrink:0">${ini}</div>
@@ -3418,33 +3457,12 @@ async function adminLoadUsers(){
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
         <div style="font-size:10px;font-weight:900;padding:2px 7px;border-radius:100px;background:${planColor};color:${planTextColor}">${planLabel}</div>
-        <button onclick="adminTogglePremium('${u.id}','${isPrem?'free':'premium'}')" style="font-size:10px;font-weight:900;padding:2px 8px;border-radius:100px;background:${btnColor};color:${btnTextColor};border:none;cursor:pointer">${btnLabel}</button>
+        <button data-uid="${u.id}" onclick="adminTogglePremium('${u.id}','${newPlan}')" style="font-size:10px;font-weight:900;padding:3px 8px;border-radius:100px;background:${btnColor};color:${btnTextColor};border:1px solid ${btnTextColor};cursor:pointer;white-space:nowrap">${btnLabel}</button>
       </div>
     </div>`;
   }).join('');
 }
 
-
-function adminSetCollPlan(plan){
-  const input = document.getElementById('admin-edit-plan');
-  const btnFree = document.getElementById('btn-plan-free');
-  const btnPrem = document.getElementById('btn-plan-premium');
-  if(input) input.value = plan;
-  if(btnFree){
-    btnFree.style.borderColor = plan==='free' ? 'var(--yellow)' : 'var(--border)';
-    btnFree.style.color = plan==='free' ? 'var(--yellow)' : 'var(--text)';
-  }
-  if(btnPrem){
-    btnPrem.style.borderColor = plan==='premium' ? '#3dffb0' : 'var(--border)';
-    btnPrem.style.color = plan==='premium' ? '#3dffb0' : 'var(--text)';
-  }
-}
-async function adminTogglePremium(userId, newPlan){
-  const{error}=await sb.from('profiles').update({plan:newPlan}).eq('id',userId);
-  if(error){showToast('Erreur : '+error.message);return;}
-  showToast(newPlan==='premium'?'✨ Premium activé !':'Plan remis en gratuit');
-  adminLoadUsers();
-}
 
 async function adminExportWaitlist(){
   const{data}=await sb.from('waitlist_allosticker').select('email,created_at').order('created_at');
