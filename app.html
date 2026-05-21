@@ -1682,20 +1682,25 @@ function adminSetCollPlan(plan) {
 async function adminTogglePremium(userId, newPlan) {
   const btn = document.querySelector('[data-uid="' + userId + '"]');
   if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
-  
-  const { error } = await sb.from('profiles')
-    .update({ plan: newPlan })
-    .eq('id', userId);
-  
-  if (error) {
-    showToast('Erreur : ' + error.message);
-    if (btn) { btn.disabled = false; }
-    return;
+  try {
+    const r = await fetch('/.netlify/functions/admin-update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        secret: 'Jj0624988240@',
+        action: 'update_user',
+        id: userId,
+        updates: { plan: newPlan }
+      })
+    });
+    const data = await r.json();
+    if (!r.ok || !data.ok) throw new Error(data.error || 'Erreur');
+    showToast(newPlan === 'premium' ? '✨ Premium activé !' : '🔄 Plan remis en gratuit');
+    adminLoadUsers();
+  } catch(e) {
+    showToast('Erreur : ' + e.message);
+    if (btn) { btn.disabled = false; btn.textContent = newPlan === 'premium' ? '→ Passer Premium' : 'Révoquer Premium'; }
   }
-  
-  showToast(newPlan === 'premium' ? '✨ Premium activé !' : '🔄 Plan remis en gratuit');
-  // Recharger la liste
-  adminLoadUsers();
 }
 
 
@@ -3344,9 +3349,22 @@ async function adminSaveCollection(){
   if(nom)updates.nom=nom;
   if(editeur)updates.editeur=editeur;
   if(annee)updates.annee=annee;
-  const{error}=await sb.from('collections').update(updates).eq('id',adminCurrentColl.id);
+  let saveOk=false;
+  try{
+    const r=await fetch('/.netlify/functions/admin-update',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({secret:'Jj0624988240@',action:'update_collection',id:adminCurrentColl.id,updates})
+    });
+    const d=await r.json();
+    if(!r.ok||!d.ok)throw new Error(d.error||'Erreur');
+    saveOk=true;
+  }catch(e){
+    btn.disabled=false;btn.textContent='💾 Sauvegarder';
+    showToast('Erreur : '+e.message);return;
+  }
   btn.disabled=false;btn.textContent='💾 Sauvegarder';
-  if(error){showToast('Erreur : '+error.message);return;}
+  if(!saveOk)return;
   adminCurrentColl={...adminCurrentColl,...updates};
   const idx=adminAllColls.findIndex(c=>c.id===adminCurrentColl.id);
   if(idx!==-1)adminAllColls[idx]=adminCurrentColl;
