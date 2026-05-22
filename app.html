@@ -1578,7 +1578,7 @@ function isPremium(){
 }
 
 function checkCollectionLimit(){
-  if(isPremium()) return true;
+  if(S.profile?.plan==='premium') return true;
   const nb = Object.keys(S.activeColls).length;
   if(nb >= COLLECTIONS_FREE_LIMIT){
     showPremiumGate(
@@ -1615,7 +1615,7 @@ function showPremiumGate(title, sub){
 }
 
 function openPremiumPage(){
-  const isp = isPremium();
+  const isp = S.profile?.plan==='premium';
   const freeCard = document.getElementById('plan-free-card');
   const premCard = document.getElementById('plan-premium-card');
   const actionZone = document.getElementById('premium-action-zone');
@@ -2165,7 +2165,7 @@ function renderColls(){
       `<div style="margin-top:4px;height:3px;border-radius:100px;background:var(--card2);overflow:hidden"><div style="height:100%;width:${S.activeColls[c.id]}%;background:linear-gradient(90deg,var(--yellow),var(--orange));border-radius:100px"></div></div>`
       :'';
     const iconSvg=getCollIconLarge(c);
-    const isPLock=c.plan==='premium'&&!isPremium();
+    const isPLock=c.plan==='premium'&&(S.profile?.plan!=='premium');
     return`<div class="coll-card reveal" style="animation-delay:${i*20}ms;position:relative;${isPLock?'opacity:0.75':''}" onclick="openCollection('${c.slug}','${nomSafe}','${c.id}')">
       ${isPLock?'<div style="position:absolute;top:8px;right:8px;font-size:10px;font-weight:900;background:linear-gradient(135deg,#FFD93D,#FF9F27);color:#0f0f14;padding:2px 7px;border-radius:100px;z-index:2">⭐ Premium</div>':''}
       <div class="coll-annee">${c.annee||''}</div>
@@ -2188,7 +2188,7 @@ function filterColls(){clearTimeout(_collsSearchTimer);_collsSearchTimer=setTime
 async function openCollection(slug,nom,id){
   // Vérifier si c'est une collection premium
   const collData = S.collections?.find(c=>c.id===id);
-  if(collData?.plan==='premium' && !isPremium()){
+  if(collData?.plan==='premium' && S.profile?.plan!=='premium'){
     showPremiumGate(
       '⭐ Collection Premium',
       '"' + (collData.nom||'Cette collection') + '" est réservée aux membres Premium.'
