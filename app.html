@@ -964,6 +964,7 @@ body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-
         <div class="avatar-edit-btn" onclick="openEditProfil()">✏️</div>
       </div>
       <div class="profile-nom" id="profil-nom">Utilisateur</div>
+      <span id="profil-plan-badge" style="display:none;background:linear-gradient(135deg,#FFD93D,#FF9F27);color:#0f0f14;font-size:11px;font-weight:900;padding:3px 10px;border-radius:100px;margin:4px 0;display:none">⭐ Premium</span>
       <div class="profile-ville-row">📍 <span id="profil-ville">Non renseigné</span></div>
       <div class="profile-bio" id="profil-bio">Collectionneur passionné</div>
       <div class="rep-row">
@@ -1854,14 +1855,46 @@ async function loadUserProfile(){
 }
 
 function updateProfileUI(p,ini){
-  set('profil-avatar',ini);
+  // Avatar
+  const av=$('profil-avatar');
+  if(av){
+    if(p.avatar_url){av.innerHTML=`<img src="${p.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;} 
+    else{av.textContent=ini;}
+  }
+  const navAv=$('accueil-avatar');
+  if(navAv){
+    if(p.avatar_url){navAv.innerHTML=`<img src="${p.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;}
+    else{navAv.textContent=ini;}
+  }
   set('profil-nom',p.nom||S.user?.email||'Utilisateur');
   set('profil-ville',(p.ville||(p.code_postal?'':null)||'Non renseigné')+(p.code_postal?' ('+p.code_postal+')':''));
   set('profil-bio',p.bio||'Collectionneur passionné');
   set('profil-rep',(p.reputation||5.0).toFixed(1));
-  set('profil-rep-count','('+( p.nb_echanges||0)+' avis)');
+  set('profil-rep-count','('+(p.nb_echanges||0)+' avis)');
   set('profil-stat-echanges',p.nb_echanges||0);
   set('settings-ville',p.ville||'—');
+  // Badge premium
+  const planBadge=$('profil-plan-badge');
+  if(planBadge){
+    if(p.plan==='premium'){
+      planBadge.style.display='inline-flex';
+      planBadge.textContent='⭐ Premium';
+    } else {
+      planBadge.style.display='none';
+    }
+  }
+  // Bouton premium dans le profil
+  const premBtn=$('premium-btn-label');
+  const premSub=$('premium-btn-sub');
+  if(premBtn){
+    if(p.plan==='premium'){
+      premBtn.textContent='✨ Tu es Premium';
+      if(premSub) premSub.textContent='Collections illimitées activées';
+    } else {
+      premBtn.textContent='Passer Premium';
+      if(premSub) premSub.textContent='Collections illimitées • 2,99€/mois';
+    }
+  }
 }
 
 function switchAuthTab(tab){
