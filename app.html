@@ -2087,7 +2087,7 @@ async function geocodeVille(ville){
 
 // ══ ACCUEIL ══
 async function loadCollections(){
-  if(S.collections.length>0){renderColls();updateHeroStats();return;}
+  if(S.collections.length>0&&S.collections[0].hasOwnProperty('plan')){renderColls();updateHeroStats();return;}
   const{data,error}=await sb.from('collections').select('id,slug,nom,editeur,categorie,annee,nb_cartes,type,plan').order('annee',{ascending:false});
   if(error){console.error('Collections:',error);return;}
   S.collections=data||[];
