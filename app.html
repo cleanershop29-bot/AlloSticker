@@ -2167,7 +2167,7 @@ function renderColls(){
     const iconSvg=getCollIconLarge(c);
     const isPLock=c.plan==='premium'&&!isPremium();
     const lockBadge=isPLock?'<div style="position:absolute;top:8px;right:8px;font-size:10px;font-weight:900;background:linear-gradient(135deg,#FFD93D,#FF9F27);color:#0f0f14;padding:2px 7px;border-radius:100px;z-index:2">⭐ Premium</div>':'';
-    return`<div class="coll-card reveal" style="animation-delay:${i*20}ms;position:relative;${isPLock?'opacity:0.75':''}" onclick="openCollection('${c.slug}','${nomSafe}','${c.id}')">` + lockBadge + `>
+    return`<div class="coll-card reveal" style="animation-delay:${i*20}ms;position:relative;${isPLock?'opacity:0.75':''}" onclick="openCollection('${c.slug}','${nomSafe}','${c.id}')">` + lockBadge + `
       <div class="coll-annee">${c.annee||''}</div>
       <div class="coll-card-top">
         <div class="coll-emoji-wrap" style="background:none;width:44px;height:44px;padding:0">${iconSvg}</div>
