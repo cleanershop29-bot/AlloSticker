@@ -1572,6 +1572,11 @@ async function sendPushToUser(userId, title, body, url) {
   } catch(e) { console.warn('sendPush error:', e); }
 }
 
+
+function isPremium(){
+  return S.profile?.plan === 'premium';
+}
+
 function checkCollectionLimit(){
   if(isPremium()) return true;
   const nb = Object.keys(S.activeColls).length;
